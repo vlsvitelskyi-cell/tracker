@@ -1,37 +1,36 @@
 name: Fanvue Daily Scraper
- 
+
 on:
   schedule:
-    - cron: '55 22 * * *'   # 22:55 UTC = 00:55 CET (01:55 летом) — конец дня
-  workflow_dispatch:          # ручной запуск для теста
- 
+    - cron: '55 22 * * *'
+  workflow_dispatch:
+
 jobs:
   scrape:
     runs-on: ubuntu-latest
     timeout-minutes: 15
- 
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
- 
+
       - name: Set up Python 3.11
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
- 
+
       - name: Install dependencies
         run: |
           pip install playwright requests
           playwright install chromium --with-deps
- 
+
       - name: Run scraper
         env:
-          FANVUE_EMAIL:      ${{ secrets.FANVUE_EMAIL }}
-          FANVUE_PASSWORD:   ${{ secrets.FANVUE_PASSWORD }}
+          FANVUE_COOKIES:    ${{ secrets.FANVUE_COOKIES }}
           APPS_SCRIPT_URL:   ${{ secrets.APPS_SCRIPT_URL }}
           APPS_SCRIPT_SECRET: ${{ secrets.APPS_SCRIPT_SECRET }}
         run: python scraper.py
- 
+
       - name: Upload screenshots
         if: always()
         uses: actions/upload-artifact@v4
@@ -39,4 +38,3 @@ jobs:
           name: screenshots
           path: "*.png"
           if-no-files-found: ignore
- 

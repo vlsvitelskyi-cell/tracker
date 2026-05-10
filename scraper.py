@@ -127,6 +127,9 @@ async def scrape():
         }''')
 
         print(f"Raw entries found: {len(raw)}")
+        print(f"Today is: {today}")
+        for item in raw:
+            print(f"  Found: {item['date_str']} ${item['amount']}")
 
         for item in raw:
             try:

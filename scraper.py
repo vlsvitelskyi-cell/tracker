@@ -70,7 +70,7 @@ async def scrape():
 
         # Go directly to earnings page
         print("Loading earnings page...")
-        await page.goto('https://www.fanvue.com/payouts',
+        await page.goto('https://www.fanvue.com/earnings',
                         wait_until='domcontentloaded', timeout=60000)
         await page.wait_for_timeout(5000)
 

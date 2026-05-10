@@ -6,14 +6,43 @@ import requests
 from datetime import date, datetime
 from playwright.async_api import async_playwright
 
-FANVUE_EMAIL    = os.environ['FANVUE_EMAIL']
-FANVUE_PASSWORD = os.environ['FANVUE_PASSWORD']
-APPS_SCRIPT_URL = os.environ['APPS_SCRIPT_URL']
+FANVUE_COOKIES     = os.environ['FANVUE_COOKIES']
+APPS_SCRIPT_URL    = os.environ['APPS_SCRIPT_URL']
 APPS_SCRIPT_SECRET = os.environ['APPS_SCRIPT_SECRET']
 
 async def scrape():
     today = date.today()
     transactions = []
+
+    # Parse cookies from JSON
+    try:
+        raw_cookies = json.loads(FANVUE_COOKIES)
+    except Exception as e:
+        print(f"ERROR: Could not parse FANVUE_COOKIES: {e}")
+        sys.exit(1)
+
+    # Convert to Playwright format
+    pw_cookies = []
+    for c in raw_cookies:
+        cookie = {
+            'name':   c.get('name', ''),
+            'value':  c.get('value', ''),
+            'domain': c.get('domain', '.fanvue.com'),
+            'path':   c.get('path', '/'),
+        }
+        if c.get('expirationDate'):
+            cookie['expires'] = int(c['expirationDate'])
+        if 'secure' in c:
+            cookie['secure'] = c['secure']
+        if 'httpOnly' in c:
+            cookie['httpOnly'] = c['httpOnly']
+        if 'sameSite' in c:
+            val = c['sameSite']
+            if val in ('Strict', 'Lax', 'None'):
+                cookie['sameSite'] = val
+        pw_cookies.append(cookie)
+
+    print(f"Loaded {len(pw_cookies)} cookies")
 
     async with async_playwright() as p:
         browser = await p.chromium.launch(
@@ -33,111 +62,40 @@ async def scrape():
             "Object.defineProperty(navigator,'webdriver',{get:()=>undefined})"
         )
 
+        # Inject cookies
+        await context.add_cookies(pw_cookies)
+        print("Cookies injected")
+
         page = await context.new_page()
 
-        # --- Login ---
-        print("Logging in to Fanvue...")
-        await page.goto('https://www.fanvue.com/signin',
-                        wait_until='domcontentloaded', timeout=60000)
-        await page.wait_for_timeout(5000)
-
-        # Screenshot for debug
-        await page.screenshot(path='login_page.png')
-        print("Screenshot saved: login_page.png")
-        print(f"Page URL: {page.url}")
-        print(f"Page title: {await page.title()}")
-
-        # Accept cookies if banner appears
-        try:
-            await page.click("text=Accept", timeout=3000)
-            print("Accepted cookies")
-            await page.wait_for_timeout(1000)
-        except Exception:
-            pass
-
-        # Try multiple selectors for email field
-        email_selectors = [
-            'input[placeholder="Email"]',
-            'input[type="email"]',
-            'input[name="email"]',
-            'input[placeholder*="email" i]',
-            'input[autocomplete="email"]',
-            'input[id*="email" i]',
-        ]
-        email_found = False
-        for sel in email_selectors:
-            try:
-                await page.wait_for_selector(sel, timeout=5000)
-                await page.fill(sel, FANVUE_EMAIL)
-                print(f"Email filled using selector: {sel}")
-                email_found = True
-                break
-            except Exception:
-                continue
-
-        if not email_found:
-            # Print all inputs on the page for debugging
-            inputs = await page.evaluate('''() => {
-                return Array.from(document.querySelectorAll('input')).map(i => ({
-                    type: i.type, name: i.name, id: i.id,
-                    placeholder: i.placeholder, autocomplete: i.autocomplete
-                }));
-            }''')
-            print(f"Available inputs on page: {inputs}")
-            await browser.close()
-            sys.exit(1)
-
-        await page.wait_for_timeout(400)
-
-        # Try multiple selectors for password field
-        pass_selectors = [
-            'input[type="password"]',
-            'input[name="password"]',
-            'input[placeholder*="password" i]',
-        ]
-        for sel in pass_selectors:
-            try:
-                await page.wait_for_selector(sel, timeout=5000)
-                await page.fill(sel, FANVUE_PASSWORD)
-                print(f"Password filled using selector: {sel}")
-                break
-            except Exception:
-                continue
-
-        await page.wait_for_timeout(400)
-        # Try clicking Sign In button
-        try:
-            await page.click('button[type="submit"]', timeout=5000)
-        except Exception:
-            await page.click('text=Sign In', timeout=5000)
-        await page.wait_for_timeout(8000)
-
-        # Screenshot after login attempt
-        await page.screenshot(path='after_login.png')
-        current_url = page.url
-        print(f"After login URL: {current_url}")
-        if 'signin' in current_url or 'sign-in' in current_url:
-            print("ERROR: Login failed - still on signin page.")
-            await browser.close()
-            sys.exit(1)
-
-        # --- Go to earnings ---
+        # Go directly to earnings page
         print("Loading earnings page...")
         await page.goto('https://www.fanvue.com/payouts',
                         wait_until='domcontentloaded', timeout=60000)
-        await page.wait_for_timeout(4000)
+        await page.wait_for_timeout(5000)
+
+        # Check if we're actually logged in
+        current_url = page.url
+        print(f"URL after goto: {current_url}")
+
+        await page.screenshot(path='earnings_page.png')
+        print("Screenshot saved: earnings_page.png")
+
+        if 'signin' in current_url or 'signup' in current_url:
+            print("ERROR: Not logged in - cookies may have expired.")
+            await browser.close()
+            sys.exit(1)
 
         # Scroll to load all transactions
         for _ in range(3):
             await page.evaluate('window.scrollTo(0, document.body.scrollHeight)')
             await page.wait_for_timeout(1500)
 
-        # --- Extract transactions ---
+        # Extract transactions
         raw = await page.evaluate('''() => {
             const results = [];
             let currentDate = null;
 
-            // Walk all leaf text nodes to find date headers and amounts
             const walker = document.createTreeWalker(
                 document.body,
                 NodeFilter.SHOW_TEXT,
@@ -156,7 +114,7 @@ async def scrape():
                     continue;
                 }
 
-                // Amount: "$8.00"  (standalone dollar amount)
+                // Amount: "$8.00"
                 const m = text.match(/^\\$([0-9]+\\.[0-9]{2})$/);
                 if (m && currentDate) {
                     const amount = parseFloat(m[1]);
@@ -168,7 +126,7 @@ async def scrape():
             return results;
         }''')
 
-        print(f"Raw entries found on page: {len(raw)}")
+        print(f"Raw entries found: {len(raw)}")
 
         for item in raw:
             try:
@@ -181,7 +139,7 @@ async def scrape():
             except Exception as ex:
                 print(f"Date parse error: {ex}")
 
-        print(f"Today's non-zero transactions: {len(transactions)}")
+        print(f"Today's transactions: {len(transactions)}")
         for t in transactions:
             print(f"  {t['date']}  ${t['amount']}")
 

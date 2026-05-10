@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Withdrawal Tracker</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-serif;background:#eae9e7;color:#1a1a1a;padding:1.5rem 1rem;min-height:100vh}
+.app{max-width:700px;margin:0 auto}
+header{font-size:13px;font-weight:500;color:#aaa;margin-bottom:1.25rem;letter-spacing:.02em}
+.card{background:#fff;border:0.5px solid rgba(0,0,0,0.1);border-radius:14px;padding:1.25rem;margin-bottom:.875rem}
+.stitle{font-size:10px;font-weight:700;color:#bbb;letter-spacing:.1em;text-transform:uppercase;margin-bottom:.875rem}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.field label{display:block;font-size:10px;font-weight:700;color:#ccc;letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px}
+.field input,.field select,.field textarea{width:100%;padding:9px 11px;border:0.5px solid rgba(0,0,0,0.14);border-radius:8px;font-size:14px;color:#1a1a1a;background:#fff;font-family:inherit;outline:none}
+.field textarea{font-size:12px;font-family:monospace;resize:vertical}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:#444}
+.badge{display:inline-flex;align-items:center;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px}
+.bv{background:#dce8fd;color:#1849b0}
+.bl{background:#d5f0dd;color:#1a6b30}
+.by{background:#fef0c7;color:#956b00}
+.bgn{background:#d5f0dd;color:#1a6b30}
+.blue{color:#1849b0}.green{color:#1a6b30}.red{color:#c0392b}
+.hint{font-size:12px;color:#aaa;line-height:1.55;margin-bottom:.875rem}
+.sub-hint{font-size:11px;color:#bbb;margin-top:3px}
+.btn{background:#1a1a1a;color:#fff;border:none;padding:9px 20px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit}
+.btn:hover{opacity:.82}
+.btn-sm{font-size:12px;padding:5px 12px;background:transparent;border:0.5px solid rgba(0,0,0,0.16);border-radius:8px;cursor:pointer;color:#555;font-family:inherit}
+.btn-sm:hover{background:#f5f5f3}
+.btn-del{font-size:14px;line-height:1;padding:4px 10px;background:transparent;border:0.5px solid rgba(192,57,43,0.25);border-radius:8px;cursor:pointer;color:#c0392b;font-family:inherit}
+.btn-del:hover{background:rgba(192,57,43,0.07)}
+.btn-blue{background:#1849b0;color:#fff;border:none;padding:8px 18px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit}
+.btn-blue:hover{opacity:.85}
+.btn-blue:disabled{opacity:.4;cursor:not-allowed}
+.tab-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1rem}
+.tab{font-size:12px;font-weight:600;padding:5px 14px;border:0.5px solid rgba(0,0,0,0.13);border-radius:20px;cursor:pointer;background:transparent;color:#888;font-family:inherit}
+.tab.act{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+.sbox{flex:1;min-width:80px;background:#f5f4f1;border-radius:8px;padding:.625rem .875rem}
+.sbox .lbl{font-size:10px;font-weight:700;color:#bbb;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+.sbox .val{font-size:15px;font-weight:500}
+.wi{border:0.5px solid rgba(0,0,0,0.09);border-radius:12px;margin-bottom:.5rem;overflow:hidden;background:#fff}
+.wh{display:flex;justify-content:space-between;align-items:center;padding:.875rem 1rem;gap:8px;flex-wrap:wrap}
+.we{padding:.875rem 1rem;border-top:0.5px solid #f0f0ee;background:#f8f8f6}
+.footer{display:flex;justify-content:space-between;align-items:center;margin-top:.5rem}
+.reset-btn{font-size:11px;color:#ccc;background:none;border:none;cursor:pointer;font-family:inherit;padding:4px 0}
+.reset-btn:hover{color:#c0392b}
+.bars{display:flex;gap:3px;margin:10px 0 0}
+.bar-v{height:4px;background:#1849b0;border-radius:2px;transition:flex .3s;min-width:4px;flex:1}
+.bar-vl{height:4px;background:#1a6b30;border-radius:2px;transition:flex .3s;min-width:4px;flex:1}
+.sync-status{font-size:11px;margin-top:.625rem;min-height:16px}
+.sync-ok{color:#1a6b30}.sync-err{color:#c0392b}.sync-info{color:#aaa}
+.method-tabs{display:flex;gap:0;margin-bottom:.875rem;border:0.5px solid rgba(0,0,0,0.12);border-radius:8px;overflow:hidden}
+.method-tab{flex:1;font-size:12px;font-weight:500;padding:7px 12px;background:transparent;border:none;cursor:pointer;color:#888;font-family:inherit;text-align:center}
+.method-tab.act{background:#1a1a1a;color:#fff}
+.csv-link{font-size:12px;font-family:monospace;word-break:break-all;background:#f5f4f1;padding:.625rem .875rem;border-radius:8px;margin-bottom:.75rem;color:#444;display:block;line-height:1.5}
+</style>
+</head>
+<body>
+<div class="app">
+<header>Fanvue / PayPal / Telegram &mdash; Withdrawal Tracker</header>
+
+<!-- Google Sheets sync -->
+<div class="card">
+  <p class="stitle">Google Sheets Sync</p>
+
+  <div class="method-tabs">
+    <button class="method-tab act" id="mTab1" onclick="switchMethod(1)">Auto (URL)</button>
+    <button class="method-tab" id="mTab2" onclick="switchMethod(2)">Manual (paste CSV)</button>
+  </div>
+
+  <!-- Method 1: auto fetch -->
+  <div id="method1">
+    <div style="display:flex;gap:8px;align-items:flex-end;margin-bottom:.5rem">
+      <div class="field" style="flex:1">
+        <label>Google Sheets URL</label>
+        <input id="sheetsUrl" placeholder="https://docs.google.com/spreadsheets/d/...">
+      </div>
+      <button class="btn-blue" id="syncBtn" onclick="syncAuto()">Sync</button>
+    </div>
+    <div class="sync-status" id="syncStatus1"></div>
+  </div>
+
+  <!-- Method 2: manual paste -->
+  <div id="method2" style="display:none">
+    <p class="hint">Open this URL in your browser, select all (Cmd+A), copy, paste below:</p>
+    <code class="csv-link" id="csvLink">Enter your Sheets URL above first, then switch to this tab.</code>
+    <div class="field" style="margin-bottom:.75rem">
+      <label>Paste CSV here</label>
+      <textarea id="csvPaste" rows="5" placeholder="month_name,fanvue,tg,paypal,vExp,vlExp&#10;March 26,415.46,21.91,76,203,0&#10;..."></textarea>
+    </div>
+    <button class="btn" onclick="syncManual()">Apply</button>
+    <div class="sync-status" id="syncStatus2"></div>
+  </div>
+</div>
+
+<!-- Balance -->
+<div class="card">
+  <div style="display:grid;grid-template-columns:1fr 100px 1fr;align-items:center;margin-bottom:.875rem">
+    <div style="text-align:center;padding:.5rem">
+      <p style="font-size:10px;font-weight:700;color:#bbb;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px">Valerii</p>
+      <p style="font-size:26px;font-weight:500;letter-spacing:-.03em;color:#1849b0" id="bV">&#8364;0.00</p>
+      <p style="font-size:11px;color:#bbb;margin-top:7px">Remaining to withdraw</p>
+      <p style="font-size:15px;font-weight:500;margin-top:2px" id="vRemEl">$0.00</p>
+    </div>
+    <div style="text-align:center;padding:0 .75rem;border-left:0.5px solid #eee;border-right:0.5px solid #eee">
+      <p style="font-size:10px;color:#ccc;text-transform:uppercase;font-weight:700;letter-spacing:.06em;margin-bottom:4px">Gap</p>
+      <p style="font-size:16px;font-weight:500" id="bDiff">&#8364;0.00</p>
+      <p style="font-size:11px;color:#aaa;margin-top:4px;line-height:1.4" id="bWho"></p>
+    </div>
+    <div style="text-align:center;padding:.5rem">
+      <p style="font-size:10px;font-weight:700;color:#bbb;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px">Vladislav</p>
+      <p style="font-size:26px;font-weight:500;letter-spacing:-.03em;color:#1a6b30" id="bVl">&#8364;0.00</p>
+      <p style="font-size:11px;color:#bbb;margin-top:7px">Remaining to withdraw</p>
+      <p style="font-size:15px;font-weight:500;margin-top:2px" id="vlRemEl">$0.00</p>
+    </div>
+  </div>
+  <div class="bars">
+    <div class="bar-v" id="barV"></div>
+    <div class="bar-vl" id="barVl"></div>
+  </div>
+  <div style="display:flex;justify-content:space-between;margin-top:5px">
+    <span style="font-size:11px;color:#1849b0;font-weight:500" id="bVPct"></span>
+    <span style="font-size:11px;color:#1a6b30;font-weight:500" id="bVlPct"></span>
+  </div>
+</div>
+
+<!-- Monthly revenue -->
+<div class="card">
+  <p class="stitle">Monthly Revenue</p>
+  <div class="tab-row" id="mTabs"></div>
+  <div id="mView"></div>
+</div>
+
+<!-- New withdrawal -->
+<div class="card">
+  <p class="stitle">New Withdrawal Request</p>
+  <div class="g3" style="margin-bottom:.75rem">
+    <div class="field">
+      <label>Platform</label>
+      <select id="nPl"><option>Fanvue</option><option>PayPal</option><option>Telegram</option></select>
+    </div>
+    <div class="field">
+      <label>Amount requested (USD)</label>
+      <input id="nUSD" class="num" placeholder="200">
+    </div>
+    <div class="field">
+      <label>Date</label>
+      <input type="date" id="nDate">
+    </div>
+  </div>
+  <button class="btn" onclick="addW()">+ Add withdrawal</button>
+</div>
+
+<div id="wList"></div>
+
+<div class="footer">
+  <p style="font-size:11px;color:#ccc">Data saved in browser localStorage</p>
+  <button class="reset-btn" onclick="resetAll()">&#8635; Reset all data</button>
+</div>
+</div>
+
+<script>
+var REVOLUT=1.17;
+function pn(v){var s=String(v==null?0:v).replace(',','.');return parseFloat(s)||0;}
+function r2(n){return Math.round(n*100)/100;}
+function fe(n){return '\u20ac'+Math.abs(n).toFixed(2);}
+function fu(n){return '$'+Math.abs(n).toFixed(2);}
+function g(id){return document.getElementById(id);}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,5);}
+
+var DEFAULT_MONTHS=[
+  {id:'mar26',name:'March 26', fanvue:415.46,tg:21.91,paypal:76,    vExp:203,  vlExp:0},
+  {id:'apr26',name:'April 26', fanvue:621.51,tg:141.9,paypal:422.85,vExp:72,   vlExp:15.99},
+  {id:'may26',name:'May 26',   fanvue:350.74,tg:0,    paypal:170.64,vExp:0,    vlExp:15.99}
+];
+
+var S={months:JSON.parse(JSON.stringify(DEFAULT_MONTHS)),ws:[],am:2};
+var EXP={};
+var activeMethod=1;
+
+function switchMethod(n){
+  activeMethod=n;
+  g('method1').style.display=n===1?'block':'none';
+  g('method2').style.display=n===2?'block':'none';
+  g('mTab1').className='method-tab'+(n===1?' act':'');
+  g('mTab2').className='method-tab'+(n===2?' act':'');
+  if(n===2)updateCsvLink();
+}
+
+function extractId(url){
+  var m=url.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+  return m?m[1]:null;
+}
+
+function updateCsvLink(){
+  var url=(g('sheetsUrl').value||'').trim();
+  var id=extractId(url);
+  g('csvLink').textContent=id
+    ?'https://docs.google.com/spreadsheets/d/'+id+'/gviz/tq?tqx=out:csv&sheet=Data'
+    :'Enter your Sheets URL in the Auto tab first.';
+}
+
+g('sheetsUrl').addEventListener('input',function(){if(activeMethod===2)updateCsvLink();});
+
+function parseCSVLine(line){
+  var res=[],cur='',inQ=false;
+  for(var i=0;i<line.length;i++){
+    var c=line[i];
+    if(c==='"'){if(inQ&&line[i+1]==='"'){cur+='"';i++;}else{inQ=!inQ;}}
+    else if(c===','&&!inQ){res.push(cur);cur='';}
+    else cur+=c;
+  }
+  res.push(cur);return res;
+}
+
+function applyCSV(csv){
+  var lines=csv.split('\n').map(function(l){return l.trim();}).filter(Boolean);
+  if(lines.length<2)throw new Error('CSV is empty or missing data rows');
+  var updated=0;
+  for(var i=1;i<lines.length;i++){
+    var cols=parseCSVLine(lines[i]);
+    if(cols.length<6)continue;
+    var idx=i-1;
+    var nm=(cols[0]||'').replace(/"/g,'').trim();
+    if(idx<S.months.length){
+      if(nm)S.months[idx].name=nm;
+      S.months[idx].fanvue=pn(cols[1]);
+      S.months[idx].tg    =pn(cols[2]);
+      S.months[idx].paypal=pn(cols[3]);
+      S.months[idx].vExp  =pn(cols[4]);
+      S.months[idx].vlExp =pn(cols[5]);
+    }else{
+      S.months.push({id:'m'+uid(),name:nm||('Month '+(idx+1)),
+        fanvue:pn(cols[1]),tg:pn(cols[2]),paypal:pn(cols[3]),
+        vExp:pn(cols[4]),vlExp:pn(cols[5])});
+    }
+    updated++;
+  }
+  return updated;
+}
+
+function setStatus(elId,type,msg){
+  g(elId).innerHTML='<span class="sync-'+type+'">'+msg+'</span>';
+}
+
+function syncAuto(){
+  var url=(g('sheetsUrl').value||'').trim();
+  if(!url){setStatus('syncStatus1','err','Please enter a Google Sheets URL.');return;}
+  var id=extractId(url);
+  if(!id){setStatus('syncStatus1','err','Could not find spreadsheet ID in URL.');return;}
+  localStorage.setItem('sheetsUrl',url);
+
+  var csvUrl='https://docs.google.com/spreadsheets/d/'+id+'/gviz/tq?tqx=out:csv&sheet=Data';
+  var btn=g('syncBtn');btn.disabled=true;btn.textContent='Syncing...';
+  setStatus('syncStatus1','info','Fetching data&hellip;');
+
+  /* try direct first, fall back to proxy */
+  function tryFetch(url,cb){
+    fetch(url).then(function(r){
+      if(!r.ok)throw new Error('HTTP '+r.status);
+      return r.text();
+    }).then(cb).catch(function(){cb(null);});
+  }
+
+  tryFetch(csvUrl,function(csv){
+    if(csv&&csv.trim()&&!csv.includes('<html')){
+      finish(csv);
+    }else{
+      /* try CORS proxy */
+      tryFetch('https://corsproxy.io/?'+encodeURIComponent(csvUrl),function(csv2){
+        if(csv2&&csv2.trim()&&!csv2.includes('<html')){
+          finish(csv2);
+        }else{
+          btn.disabled=false;btn.textContent='Sync';
+          setStatus('syncStatus1','err',
+            'Auto-sync failed (browser is blocking cross-origin requests from local files). '
+            +'Switch to <b>Manual</b> tab instead.');
+        }
+      });
+    }
+  });
+
+  function finish(csv){
+    try{
+      var n=applyCSV(csv);
+      var now=new Date().toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+      setStatus('syncStatus1','ok','&#10003; Synced '+n+' month'+(n!==1?'s':'')+' &mdash; '+now);
+      localStorage.setItem('lastSync',now);
+      save();sar();
+    }catch(e){setStatus('syncStatus1','err','Parse error: '+e.message);}
+    btn.disabled=false;btn.textContent='Sync';
+  }
+}
+
+function syncManual(){
+  var csv=(g('csvPaste').value||'').trim();
+  if(!csv){setStatus('syncStatus2','err','Paste the CSV content first.');return;}
+  try{
+    var n=applyCSV(csv);
+    var now=new Date().toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+    setStatus('syncStatus2','ok','&#10003; Applied '+n+' month'+(n!==1?'s':'')+' &mdash; '+now);
+    localStorage.setItem('lastSync',now);
+    save();sar();
+  }catch(e){setStatus('syncStatus2','err','Error: '+e.message);}
+}
+
+/* ---- App logic ---- */
+function mTot(m){return m.fanvue+m.tg+m.paypal;}
+function mVSh(m){return(mTot(m)+m.vExp-m.vlExp)/2;}
+function mVlSh(m){return(mTot(m)+m.vlExp-m.vExp)/2;}
+function totalVSh(){return S.months.reduce(function(s,m){return s+mVSh(m);},0);}
+function totalVlSh(){return S.months.reduce(function(s,m){return s+mVlSh(m);},0);}
+function okWs(){return S.ws.filter(function(w){return w.st==='ok'&&w.eur>0;});}
+function totalVEUR(){return okWs().reduce(function(s,w){return s+w.vE;},0);}
+function totalVlEUR(){return okWs().reduce(function(s,w){return s+w.vlE;},0);}
+function totalVUSD(){return okWs().reduce(function(s,w){return s+w.usd*(w.vE/w.eur);},0);}
+function totalVlUSD(){return okWs().reduce(function(s,w){return s+w.usd*(w.vlE/w.eur);},0);}
+function vRem(){return r2(totalVSh()-totalVUSD());}
+function vlRem(){return r2(totalVlSh()-totalVlUSD());}
+function vRatio(){var vs=totalVSh(),t=vs+totalVlSh();return t>0?vs/t:0.5;}
+function suggestSplit(eur){
+  var vE=totalVEUR(),vlE=totalVlEUR(),ra=vRatio(),tot=vE+vlE+eur;
+  var vG=Math.max(0,Math.min(eur,tot*ra-vE));
+  return{vG:r2(vG),vlG:r2(eur-vG)};
+}
+
+function addW(){
+  var usd=pn(g('nUSD').value);
+  if(!usd||usd<=0){g('nUSD').focus();return;}
+  var date=g('nDate').value||new Date().toISOString().slice(0,10);
+  S.ws.unshift({id:uid(),pl:g('nPl').value,usd:r2(usd),date:date,st:'pend',vE:0,vlE:0,eur:0});
+  g('nUSD').value='';sar();
+}
+
+function toggleExp(id){EXP[id]=!EXP[id];renderList();}
+
+function confirmW(id){
+  var eur=pn(g('e_'+id).value);
+  if(!eur||eur<=0){g('e_'+id).focus();return;}
+  var vG=pn(g('sv_'+id).value),vlG=pn(g('svl_'+id).value);
+  if(Math.abs(vG+vlG-eur)>0.02){alert('Valerii + Vladislav must equal '+eur.toFixed(2)+' EUR total');return;}
+  var w=S.ws.find(function(x){return x.id===id;});
+  w.st='ok';w.eur=r2(eur);w.vE=r2(vG);w.vlE=r2(vlG);w.rd=new Date().toISOString().slice(0,10);
+  EXP[id]=false;sar();
+}
+
+function delW(id){
+  S.ws=S.ws.filter(function(w){return w.id!==id;});
+  delete EXP[id];sar();
+}
+
+function resetAll(){
+  if(!confirm('Reset all withdrawal history?'))return;
+  S.ws=[];EXP={};save();sar();
+}
+
+function eurChanged(id){
+  var eur=pn(g('e_'+id).value)||0;
+  var sp=suggestSplit(eur);
+  var sv=g('sv_'+id),svl=g('svl_'+id);
+  if(sv)sv.value=sp.vG.toFixed(2);
+  if(svl)svl.value=sp.vlG.toFixed(2);
+  var hint=g('rh_'+id);
+  if(hint&&eur>0){
+    var w=S.ws.find(function(x){return x.id===id;});
+    if(w){var expE=r2(w.usd/REVOLUT),loss=r2(expE-eur);
+      hint.textContent='Revolut expected: '+fe(expE)+(loss>0?'  |  Loss: '+fe(loss):'  |  On par or better');}
+  }
+}
+
+function updateV(id){
+  var eur=pn(g('e_'+id).value)||0;if(!eur)return;
+  var v=r2(Math.max(0,Math.min(eur,pn(g('sv_'+id).value))));
+  g('sv_'+id).value=v.toFixed(2);g('svl_'+id).value=r2(eur-v).toFixed(2);
+}
+function updateVl(id){
+  var eur=pn(g('e_'+id).value)||0;if(!eur)return;
+  var vl=r2(Math.max(0,Math.min(eur,pn(g('svl_'+id).value))));
+  g('svl_'+id).value=vl.toFixed(2);g('sv_'+id).value=r2(eur-vl).toFixed(2);
+}
+
+function setMonth(i){S.am=i;sar();}
+function mChange(){
+  var m=S.months[S.am]||S.months[0];
+  ['fanvue','tg','paypal','vExp','vlExp'].forEach(function(f){var el=g('mf_'+f);if(el)m[f]=pn(el.value);});
+  renderMCalc();save();
+}
+function addMonth(){
+  var name=prompt('Month name (e.g. June 26)');if(!name)return;
+  S.months.push({id:'m'+uid(),name:name,fanvue:0,tg:0,paypal:0,vExp:0,vlExp:0});
+  S.am=S.months.length-1;sar();
+}
+
+function fdate(d){
+  if(!d)return'';
+  var p=d.split('-');
+  return p[2]+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+p[1]-1];
+}
+
+function renderBal(){
+  var vE=r2(totalVEUR()),vlE=r2(totalVlEUR()),tot=vE+vlE,diff=Math.abs(vE-vlE);
+  var vr=vRem(),vlr=vlRem();
+  g('bV').textContent=fe(vE);g('bVl').textContent=fe(vlE);
+  g('bDiff').textContent=fe(diff);
+  g('bWho').textContent=(diff<0.05||tot<0.01)?'':(vE<vlE?'Valerii received less':'Vladislav received less');
+  g('vRemEl').textContent=vr>=0?fu(vr):'-'+fu(Math.abs(vr));
+  g('vRemEl').style.color=vr>=0?'#1849b0':'#c0392b';
+  g('vlRemEl').textContent=vlr>=0?fu(vlr):'-'+fu(Math.abs(vlr));
+  g('vlRemEl').style.color=vlr>=0?'#1a6b30':'#c0392b';
+  if(tot>0.01){
+    var vf=vE/tot;
+    g('barV').style.flex=vf.toFixed(3);g('barVl').style.flex=(1-vf).toFixed(3);
+    g('bVPct').textContent='Valerii '+(vf*100).toFixed(1)+'%';
+    g('bVlPct').textContent='Vladislav '+((1-vf)*100).toFixed(1)+'%';
+  }else{g('barV').style.flex='1';g('barVl').style.flex='1';g('bVPct').textContent='';g('bVlPct').textContent='';}
+}
+
+function renderMCalc(){
+  var m=S.months[S.am]||S.months[0];
+  var tot=r2(mTot(m)),vSh=r2(mVSh(m)),vlSh=r2(mVlSh(m));
+  var el=g('mCalc');if(!el)return;
+  el.innerHTML='<div style="display:flex;gap:8px;flex-wrap:wrap">'
+    +'<div class="sbox"><p class="lbl">Total revenue</p><p class="val">'+fu(tot)+'</p></div>'
+    +'<div class="sbox"><p class="lbl">Valerii\'s share</p><p class="val blue">'+fu(vSh)+'</p></div>'
+    +'<div class="sbox"><p class="lbl">Vladislav\'s share</p><p class="val green">'+fu(vlSh)+'</p></div>'
+    +'</div>';
+}
+
+function renderMonths(){
+  g('mTabs').innerHTML=S.months.map(function(m,i){
+    return '<button class="tab'+(i===S.am?' act':'')+'" onclick="setMonth('+i+')">'+m.name+'</button>';
+  }).join('')+'<button class="tab" onclick="addMonth()">+ Month</button>';
+  var m=S.months[S.am]||S.months[0];
+  g('mView').innerHTML='<p class="stitle" style="margin-bottom:.5rem">Revenue (USD)</p>'
+    +'<div class="g3" style="margin-bottom:.875rem">'
+    +'<div class="field"><label>Fanvue</label><input class="num" id="mf_fanvue" value="'+m.fanvue+'" oninput="mChange()"></div>'
+    +'<div class="field"><label>Telegram</label><input class="num" id="mf_tg" value="'+m.tg+'" oninput="mChange()"></div>'
+    +'<div class="field"><label>PayPal</label><input class="num" id="mf_paypal" value="'+m.paypal+'" oninput="mChange()"></div>'
+    +'</div>'
+    +'<p class="stitle" style="margin-bottom:.5rem">Expenses (USD)</p>'
+    +'<div class="g2" style="margin-bottom:.875rem">'
+    +'<div class="field"><label>Valerii</label><input class="num" id="mf_vExp" value="'+m.vExp+'" oninput="mChange()"></div>'
+    +'<div class="field"><label>Vladislav</label><input class="num" id="mf_vlExp" value="'+m.vlExp+'" oninput="mChange()"></div>'
+    +'</div><div id="mCalc"></div>';
+  renderMCalc();
+}
+
+function renderList(){
+  var el=g('wList');if(!S.ws.length){el.innerHTML='';return;}
+  var pend=S.ws.filter(function(w){return w.st==='pend';});
+  var done=S.ws.filter(function(w){return w.st==='ok';});
+  var h='';
+  if(pend.length){
+    h+='<p class="stitle" style="margin-bottom:.5rem">Pending receipt</p>';
+    pend.forEach(function(w){
+      var isE=!!EXP[w.id],expE=r2(w.usd/REVOLUT);
+      h+='<div class="wi"><div class="wh">'
+        +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'
+        +'<span class="badge by">'+w.pl+'</span><span style="font-size:14px;font-weight:500">'+fu(w.usd)+'</span>'
+        +'<span style="font-size:12px;color:#aaa">'+fdate(w.date)+'</span>'
+        +'<span style="font-size:11px;color:#ccc">expected: '+fe(expE)+'</span>'
+        +'</div>'
+        +'<div style="display:flex;gap:6px;align-items:center">'
+        +'<button class="btn-sm" onclick="toggleExp(\''+w.id+'\')">'+( isE?'Cancel':'Money received')+'</button>'
+        +'<button class="btn-del" onclick="delW(\''+w.id+'\')">&times;</button>'
+        +'</div></div>';
+      if(isE){
+        h+='<div class="we">'
+          +'<div class="g2" style="margin-bottom:.875rem">'
+          +'<div class="field"><label>Received on card (EUR)</label>'
+          +'<input class="num" id="e_'+w.id+'" placeholder="0.00" oninput="eurChanged(\''+w.id+'\')">'
+          +'<p class="sub-hint" id="rh_'+w.id+'">Revolut expected: '+fe(expE)+'</p></div><div></div></div>'
+          +'<p class="stitle" style="margin-bottom:.5rem">Who gets what</p>'
+          +'<div class="g2" style="margin-bottom:.75rem">'
+          +'<div class="field"><label>Valerii (EUR)</label><input class="num" id="sv_'+w.id+'" placeholder="0.00" oninput="updateV(\''+w.id+'\')"></div>'
+          +'<div class="field"><label>Vladislav (EUR)</label><input class="num" id="svl_'+w.id+'" placeholder="0.00" oninput="updateVl(\''+w.id+'\')"></div>'
+          +'</div>'
+          +'<p class="hint">Enter EUR above &mdash; split fills automatically. Adjust manually if needed.</p>'
+          +'<button class="btn" onclick="confirmW(\''+w.id+'\')">Confirm</button></div>';
+      }
+      h+='</div>';
+    });
+  }
+  if(done.length){
+    if(pend.length)h+='<div style="height:.375rem"></div>';
+    var tU=0,tE=0,tLoss=0,hasLoss=false;
+    done.forEach(function(w){tU+=w.usd;tE+=w.eur;var l=r2(w.usd/REVOLUT-w.eur);if(l>0){tLoss+=l;hasLoss=true;}});
+    h+='<p class="stitle" style="margin-bottom:.5rem">Withdrawal history</p>'
+      +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:.625rem">'
+      +'<div class="sbox"><p class="lbl">Requested</p><p class="val">'+fu(r2(tU))+'</p></div>'
+      +'<div class="sbox"><p class="lbl">Received</p><p class="val">'+fe(r2(tE))+'</p></div>'
+      +'<div class="sbox"><p class="lbl">Avg rate</p><p class="val">'+(tU>0?(tE/tU).toFixed(4):'-')+'</p></div>'
+      +(hasLoss?'<div class="sbox"><p class="lbl">Total loss</p><p class="val red">'+fe(r2(tLoss))+'</p></div>':'')
+      +'</div>';
+    done.forEach(function(w){
+      var rate=w.usd>0?(w.eur/w.usd).toFixed(4):'-';
+      var loss=r2(w.usd/REVOLUT-w.eur);
+      var lx=loss>0?' <span style="font-size:11px;color:#c0392b">loss: '+fe(loss)+'</span>':'';
+      h+='<div class="wi"><div class="wh" style="flex-wrap:wrap;gap:8px">'
+        +'<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">'
+        +'<span class="badge bgn">'+w.pl+'</span>'
+        +'<span style="font-size:13px;font-weight:500">'+fu(w.usd)+' &rarr; '+fe(w.eur)+'</span>'
+        +'<span style="font-size:11px;color:#aaa">'+fdate(w.date)+(w.rd&&w.rd!==w.date?' &rarr; '+fdate(w.rd):'')+' &middot; '+rate+' EUR/USD</span>'
+        +lx+'</div>'
+        +'<div style="display:flex;align-items:center;gap:6px">'
+        +'<span class="badge bv">Valerii '+fe(w.vE)+'</span>'
+        +'<span class="badge bl">Vladislav '+fe(w.vlE)+'</span>'
+        +'<button class="btn-del" onclick="delW(\''+w.id+'\')">&times;</button>'
+        +'</div></div></div>';
+    });
+  }
+  el.innerHTML=h;
+}
+
+function save(){try{localStorage.setItem('ft5',JSON.stringify(S));}catch(e){}}
+function sar(){save();renderBal();renderMonths();renderList();}
+
+document.addEventListener('keydown',function(e){
+  if(!e.target.classList||!e.target.classList.contains('num'))return;
+  var ok=['0','1','2','3','4','5','6','7','8','9','.',',','Backspace','Delete','Tab','ArrowLeft','ArrowRight','Home','End','Enter'];
+  if(ok.indexOf(e.key)===-1&&!e.ctrlKey&&!e.metaKey)e.preventDefault();
+});
+
+function init(){
+  try{
+    var sv=localStorage.getItem('ft5');
+    if(sv){
+      var p=JSON.parse(sv);
+      S.ws=p.ws||[];S.am=p.am!=null?p.am:2;
+      if(p.months){p.months.forEach(function(pm){
+        var d=S.months.find(function(d){return d.id===pm.id;});
+        if(d)Object.assign(d,pm);else S.months.push(pm);
+      });}
+    }
+  }catch(e){}
+  var savedUrl=localStorage.getItem('sheetsUrl')||'';
+  if(savedUrl){g('sheetsUrl').value=savedUrl;}
+  var lastSync=localStorage.getItem('lastSync');
+  if(lastSync)setStatus('syncStatus1','ok','Last synced: '+lastSync);
+  g('nDate').value=new Date().toISOString().slice(0,10);
+  sar();
+}
+init();
+</script>
+</body>
+</html>

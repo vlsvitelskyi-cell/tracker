@@ -37,7 +37,7 @@ async def scrape():
 
         # --- Login ---
         print("Logging in to Fanvue...")
-        await page.goto('https://www.fanvue.com/signin', wait_until='networkidle')
+        await page.goto('https://www.fanvue.com/signin', wait_until='domcontentloaded', timeout=60000)
         await page.wait_for_timeout(4000)
 
         # Screenshot for debug
@@ -107,7 +107,7 @@ async def scrape():
 
         # --- Go to earnings ---
         print("Loading earnings page...")
-        await page.goto('https://fanvue.com/payouts', wait_until='domcontentloaded')
+        await page.goto('https://www.fanvue.com/payouts', wait_until='domcontentloaded')
         await page.wait_for_timeout(4000)
 
         # Scroll to load all transactions

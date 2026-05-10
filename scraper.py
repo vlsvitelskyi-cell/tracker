@@ -105,15 +105,21 @@ async def scrape():
                 continue
 
         await page.wait_for_timeout(400)
-        await page.click('button[type="submit"]')
-        await page.wait_for_timeout(7000)
+        # Try clicking Sign In button
+        try:
+            await page.click('button[type="submit"]', timeout=5000)
+        except Exception:
+            await page.click('text=Sign In', timeout=5000)
+        await page.wait_for_timeout(8000)
 
+        # Screenshot after login attempt
+        await page.screenshot(path='after_login.png')
         current_url = page.url
         print(f"After login URL: {current_url}")
-        if 'sign-in' in current_url:
-            print("ERROR: Login failed. Check credentials.")
+        if 'signin' in current_url or 'sign-in' in current_url:
+            print("ERROR: Login failed - still on signin page.")
             await browser.close()
-            return []
+            sys.exit(1)
 
         # --- Go to earnings ---
         print("Loading earnings page...")

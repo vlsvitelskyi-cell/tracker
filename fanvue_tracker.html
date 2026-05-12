@@ -102,6 +102,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-seri
 .w-meta{font-size:12px;color:var(--text3)}
 .w-exp{font-size:11px;color:var(--text3)}
 .w-actions{display:flex;gap:6px;align-items:center;flex-shrink:0}
+.w-row1{display:flex;justify-content:space-between;align-items:center;padding:.75rem 1rem .375rem}
+.w-row2{display:flex;justify-content:space-between;align-items:center;padding:.375rem 1rem .75rem}
+.w-row1-left{display:flex;align-items:center;gap:8px}
+.w-row2-left{font-size:12px;color:var(--text3)}
+.w-row2-right{display:flex;gap:6px;align-items:center}
 .list-section-label{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin:.875rem 0 .5rem}
 .list-section-label:first-child{margin-top:0}
 .hist-summary{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:.75rem}
@@ -788,15 +793,17 @@ function renderList(){
     h+='<p class="list-section-label">Pending receipt</p>';
     pend.forEach(function(w){
       var isE=!!EXP[w.id],expE=expectedEur(w.usd);
-      h+='<div class="w-item"><div class="w-head">'
-        +'<div class="w-info"><span class="badge badge-pend">'+w.pl+'</span>'
-        +'<span class="w-amt">'+fu(w.usd)+'</span>'
-        +'<span class="w-meta">'+fdate(w.date)+'</span>'
-        +'<span class="w-exp">≈ '+fe(expE)+'</span></div>'
-        +'<div class="w-actions">'
+      h+='<div class="w-item">'
+        +'<div class="w-row1">'
+        +'<div class="w-row1-left"><span class="badge badge-pend">'+w.pl+'</span><span class="w-amt">'+fu(w.usd)+'</span></div>'
+        +'<div style="display:flex;gap:6px;align-items:center">'
         +'<button class="btn-outline" style="font-size:11px;padding:6px 12px" onclick="toggleExp(\''+w.id+'\')">'+( isE?'Cancel':'Money received')+'</button>'
         +'<button class="btn-del" onclick="delW(\''+w.id+'\')">&times;</button>'
-        +'</div></div>';
+        +'</div></div>'
+        +'<div class="w-row2">'
+        +'<div class="w-row2-left">'+fdate(w.date)+'</div>'
+        +'<div class="w-row2-right"><span class="w-exp">≈ '+fe(expE)+'</span></div>'
+        +'</div>';
       if(isE){
         h+='<div class="w-expand">'
           +'<div class="g2" style="margin-bottom:.875rem">'
@@ -827,16 +834,16 @@ function renderList(){
     done.forEach(function(w){
       var rate=w.usd>0?(w.eur/w.usd).toFixed(4):'-';
       var loss=r2(expectedEur(w.usd)-w.eur);
-      h+='<div class="w-item"><div class="w-head">'
-        +'<div class="w-info"><span class="badge badge-ok">'+w.pl+'</span>'
-        +'<span class="w-amt">'+fu(w.usd)+' → '+fe(w.eur)+'</span>'
-        +'<span class="w-meta">'+fdate(w.date)+(w.rd?' → '+fdate(w.rd):'')+' · '+rate+'</span>'
-        +(loss>0?'<span class="w-exp" style="color:var(--red)">loss: '+fe(loss)+'</span>':'')+'</div>'
-        +'<div class="w-actions">'
-        +'<span class="badge badge-v">Valerii '+fe(w.vE)+'</span>'
-        +'<span class="badge badge-vl">Vladislav '+fe(w.vlE)+'</span>'
+      h+='<div class="w-item">'
+        +'<div class="w-row1">'
+        +'<div class="w-row1-left"><span class="badge badge-ok">'+w.pl+'</span><span class="w-amt">'+fu(w.usd)+' → '+fe(w.eur)+'</span></div>'
         +'<button class="btn-del" onclick="delW(\''+w.id+'\')">&times;</button>'
-        +'</div></div></div>';
+        +'</div>'
+        +'<div class="w-row2">'
+        +'<div class="w-row2-left">'+fdate(w.date)+(w.rd?' → '+fdate(w.rd):'')+' · '+rate+(loss>0?' · <span style="color:var(--red)">loss: '+fe(loss)+'</span>':'')+'</div>'
+        +'<div class="w-row2-right"><span class="badge badge-v">Valerii '+fe(w.vE)+'</span><span class="badge badge-vl">Vladislav '+fe(w.vlE)+'</span></div>'
+        +'</div>'
+        +'</div>';
     });
   }
   el.innerHTML=h;

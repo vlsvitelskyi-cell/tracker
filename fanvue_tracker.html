@@ -64,6 +64,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-seri
 .split-bar-v{background:var(--blue);border-radius:3px 0 0 3px;transition:flex .4s;min-width:4px}
 .split-bar-vl{background:var(--green);border-radius:0 3px 3px 0;transition:flex .4s;min-width:4px}
 .split-labels{display:flex;justify-content:space-between;font-size:11px;margin-top:5px}
+.split-hint{font-size:12px;margin-top:8px;min-height:18px;line-height:1.4}
 .stats-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1rem}
 .stat-box{flex:1;min-width:80px;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:.75rem .875rem}
 .stat-lbl{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
@@ -111,7 +112,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-seri
 .mtab.act{background:var(--text);color:var(--bg);border-color:var(--text)}
 .mtab:not(.act):hover{background:var(--card2)}
 .chart-wrap{width:100%;overflow-x:auto;margin-bottom:1rem}
-.chart-svg{display:block}
 .chart-legend{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:.875rem}
 .legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)}
 .legend-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
@@ -125,12 +125,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-seri
 .sec-row .sec-label{margin:0}
 .divider{height:1px;background:var(--border);margin:1rem 0}
 .tab-page{display:none}.tab-page.act{display:block}
+.pl-item{display:flex;align-items:center;justify-content:space-between;padding:.5rem .75rem;background:var(--card2);border:1px solid var(--border);border-radius:9px;margin-bottom:6px}
+.pl-name{font-size:13px;color:var(--text)}
+.pl-add-row{display:flex;gap:8px;margin-top:.75rem}
+.pl-add-row .field{flex:1}
 @media(max-width:540px){
   .tabs-desktop{display:none}
   .tabs-mobile{display:flex}
   body{padding-bottom:90px}
-  .g3{grid-template-columns:1fr 1fr}
-  .g3 .field:last-child{grid-column:span 2}
   .partner-eur{font-size:22px}
   .card{padding:1rem}
 }
@@ -189,6 +191,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-seri
       <span style="color:var(--text3)" id="bDiff"></span>
       <span style="color:var(--green-text);font-weight:600" id="bVlPct"></span>
     </div>
+    <div class="split-hint" id="splitHint"></div>
   </div>
   <div class="stats-row" id="dashStats"></div>
 </div>
@@ -200,7 +203,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-seri
     <div class="add-row">
       <div class="field">
         <label>Platform</label>
-        <select id="nPl"><option>Fanvue</option><option>PayPal</option><option>Telegram</option></select>
+        <select id="nPl"></select>
       </div>
       <div class="field">
         <label>Amount (USD)</label>
@@ -226,11 +229,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-seri
       <div class="sec-label">Monthly Revenue</div>
       <button class="btn-outline" style="font-size:11px;padding:5px 11px" onclick="addMonth()">+ Month</button>
     </div>
-    <div class="chart-legend">
-      <div class="legend-item"><div class="legend-dot" style="background:#5b8ff0"></div>Fanvue</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#a78bfa"></div>Telegram</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#fb923c"></div>PayPal</div>
-    </div>
+    <div class="chart-legend" id="chartLegend"></div>
     <div class="chart-wrap"><div id="chartContainer"></div></div>
     <div class="mtab-row" id="mTabs"></div>
     <div id="mView"></div>
@@ -266,9 +265,27 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-seri
       <div class="sync-status" id="syncStatus2"></div>
     </div>
   </div>
+
+  <div class="card">
+    <div class="sec-row">
+      <div class="sec-label" style="margin:0">Platforms</div>
+    </div>
+    <div style="margin-bottom:.75rem" id="platformList"></div>
+    <div class="pl-add-row">
+      <div class="field">
+        <input id="newPlatform" placeholder="Platform name…" onkeydown="if(event.key==='Enter')addPlatform()">
+      </div>
+      <button class="btn-outline" onclick="addPlatform()" style="align-self:flex-end">Add</button>
+    </div>
+  </div>
+
   <div class="card">
     <div class="sec-label">Info</div>
-    <p style="font-size:12px;color:var(--text2);line-height:1.6">Real-time sync via Supabase &bull; Revenue from Google Sheets &bull; Rate reference: 1 USD = 1/1.17 EUR (Revolut)</p>
+    <p id="infoCard" style="font-size:12px;color:var(--text2);line-height:1.8">
+      Real-time sync via Supabase &bull; Revenue from Google Sheets<br>
+      <span style="color:var(--text3)">Revolut reference: 1 USD = 0.8547 EUR</span><br>
+      <span id="wiseRateLine" style="color:var(--text3)">Wise mid-market: loading…</span>
+    </p>
   </div>
 </div>
 
@@ -296,25 +313,37 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-seri
 
 </div>
 <script>
+/* ---- Supabase ---- */
 var SUPA_URL='https://bhrwrrosvmjuprkpjush.supabase.co';
 var SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJocndycm9zdm1qdXBya3BqdXNoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MDY1NzEsImV4cCI6MjA5Mzk4MjU3MX0.wRbNiKXdNzSceaqKb1hr0e5rM1AbDuCRQTE9E0ZaX3Y';
 var db=supabase.createClient(SUPA_URL,SUPA_KEY);
-var REVOLUT=1.17;
+
+/* ---- Globals ---- */
+var WISE_RATE=0.855; // fallback: ~1/1.17
+var PLATFORM_COLORS=['#5b8ff0','#a78bfa','#fb923c','#34d399','#f87171','#fbbf24','#60a5fa','#c084fc'];
+var DEFAULT_PLATFORMS=['Fanvue','Telegram','PayPal'];
+
+/* ---- Utils ---- */
 function pn(v){var s=String(v==null?0:v).replace(/[$€£\s]/g,'').replace(/[,]/,'.');if(s==='-'||s==='')return 0;return parseFloat(s)||0;}
 function r2(n){return Math.round(n*100)/100;}
 function fe(n){return '€'+Math.abs(n).toFixed(2);}
 function fu(n){return '$'+Math.abs(n).toFixed(2);}
 function g(id){return document.getElementById(id);}
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,5);}
+function slug(p){return p.toLowerCase().replace(/[^a-z0-9]/g,'_');}
+
+/* ---- State ---- */
 var DEFAULT_MONTHS=[
-  {id:'mar26',name:'March 26',fanvue:415.46,tg:21.91,paypal:76,vExp:203,vlExp:0},
-  {id:'apr26',name:'April 26',fanvue:621.51,tg:141.9,paypal:422.85,vExp:72,vlExp:15.99},
-  {id:'may26',name:'May 26',fanvue:350.74,tg:0,paypal:170.64,vExp:0,vlExp:15.99}
+  {id:'mar26',name:'March 26',revenues:{Fanvue:415.46,Telegram:21.91,PayPal:76},vExp:203,vlExp:0},
+  {id:'apr26',name:'April 26',revenues:{Fanvue:621.51,Telegram:141.9,PayPal:422.85},vExp:72,vlExp:15.99},
+  {id:'may26',name:'May 26',revenues:{Fanvue:350.74,Telegram:0,PayPal:170.64},vExp:0,vlExp:15.99}
 ];
-var S={months:JSON.parse(JSON.stringify(DEFAULT_MONTHS)),ws:[],am:2};
+var S={months:JSON.parse(JSON.stringify(DEFAULT_MONTHS)),ws:[],am:2,platforms:DEFAULT_PLATFORMS.slice()};
 var EXP={};
 var activeMethod=1;
 var currentTab='dashboard';
+
+/* ---- Theme ---- */
 function toggleTheme(){
   var html=document.documentElement;
   var next=html.getAttribute('data-theme')==='dark'?'light':'dark';
@@ -326,9 +355,10 @@ function toggleTheme(){
 (function(){
   var saved=localStorage.getItem('theme')||'dark';
   document.documentElement.setAttribute('data-theme',saved);
-  var icon=g('themeIcon');
-  if(icon)icon.textContent=saved==='dark'?'☀':'☾';
+  var icon=g('themeIcon');if(icon)icon.textContent=saved==='dark'?'☀':'☾';
 })();
+
+/* ---- Tabs ---- */
 function showTab(name,btn,isMobile){
   currentTab=name;
   document.querySelectorAll('.tab-page').forEach(function(p){p.classList.remove('act');});
@@ -346,6 +376,62 @@ function showTab(name,btn,isMobile){
   }
   if(name==='revenue')setTimeout(renderChart,50);
 }
+
+/* ---- Wise rate ---- */
+async function fetchWiseRate(){
+  try{
+    var res=await fetch('https://api.wise.com/v1/rates?source=USD&target=EUR');
+    if(!res.ok)throw new Error();
+    var data=await res.json();
+    var entry=Array.isArray(data)?data[0]:data;
+    if(entry&&typeof entry.rate==='number')WISE_RATE=entry.rate;
+  }catch(e){}
+  var el=g('wiseRateLine');
+  if(el)el.innerHTML='<span style="color:var(--green-text)">Wise mid-market: 1 USD = '+WISE_RATE.toFixed(4)+' EUR</span>';
+}
+
+/* ---- Platform management ---- */
+function savePlatforms(){
+  try{localStorage.setItem('ft6_platforms',JSON.stringify(S.platforms));}catch(e){}
+}
+function renderPlatformSelect(){
+  var sel=g('nPl');if(!sel)return;
+  var cur=sel.value;
+  sel.innerHTML=S.platforms.map(function(p){
+    return '<option'+(p===cur?' selected':'')+'>'+p+'</option>';
+  }).join('');
+}
+function renderPlatformSettings(){
+  var el=g('platformList');if(!el)return;
+  el.innerHTML=S.platforms.map(function(p,i){
+    return '<div class="pl-item">'
+      +'<span class="pl-name">'+p+'</span>'
+      +(S.platforms.length>1
+        ?'<button class="btn-del" style="padding:3px 9px;font-size:12px" onclick="removePlatform('+i+')">&times;</button>'
+        :'<span style="font-size:11px;color:var(--text3)">last</span>')
+      +'</div>';
+  }).join('');
+}
+function addPlatform(){
+  var input=g('newPlatform');
+  var name=(input.value||'').trim();
+  if(!name||S.platforms.indexOf(name)!==-1)return;
+  S.platforms.push(name);
+  S.months.forEach(function(m){m.revenues=m.revenues||{};if(m.revenues[name]===undefined)m.revenues[name]=0;});
+  savePlatforms();saveLocal();
+  input.value='';
+  renderPlatformSettings();renderPlatformSelect();renderChartLegend();renderMonths();
+}
+function removePlatform(i){
+  if(S.platforms.length<=1)return;
+  var name=S.platforms[i];
+  S.platforms.splice(i,1);
+  S.months.forEach(function(m){if(m.revenues)delete m.revenues[name];});
+  savePlatforms();saveLocal();
+  renderPlatformSettings();renderPlatformSelect();renderChartLegend();renderMonths();renderBal();
+}
+
+/* ---- DB helpers ---- */
 function dbToLocal(row){
   return{id:row.id,pl:row.platform,usd:parseFloat(row.usd)||0,
     eur:parseFloat(row.eur)||0,vE:parseFloat(row.v_eur)||0,vlE:parseFloat(row.vl_eur)||0,
@@ -357,6 +443,8 @@ async function loadWithdrawals(){
   S.ws=(res.data||[]).map(dbToLocal);
   renderAll();
 }
+
+/* ---- Real-time ---- */
 function setupRealtime(){
   db.channel('withdrawals-live')
     .on('postgres_changes',{event:'*',schema:'public',table:'withdrawals'},function(){loadWithdrawals();})
@@ -367,6 +455,8 @@ function setupRealtime(){
       else{dot.className='live-dot';lbl.textContent='connecting…';}
     });
 }
+
+/* ---- CRUD ---- */
 async function addW(){
   var usd=pn(g('nUSD').value);
   if(!usd||usd<=0){g('nUSD').focus();return;}
@@ -396,6 +486,8 @@ async function resetAll(){
   var res=await db.from('withdrawals').delete().neq('id','00000000-0000-0000-0000-000000000000');
   if(res.error)alert('Error: '+res.error.message);
 }
+
+/* ---- Google Sheets sync ---- */
 function switchMethod(n){
   activeMethod=n;
   g('method1').style.display=n===1?'block':'none';
@@ -424,16 +516,22 @@ function applyCSV(csv){
   var lines=csv.split('\n').map(function(l){return l.trim();}).filter(Boolean);
   if(lines.length<2)throw new Error('CSV is empty or missing rows');
   var updated=0;
+  // CSV cols 1,2,3 map to first 3 platforms
+  var pl0=S.platforms[0]||'Fanvue',pl1=S.platforms[1]||'Telegram',pl2=S.platforms[2]||'PayPal';
   for(var i=1;i<lines.length;i++){
     var cols=parseCSVLine(lines[i]);
     if(cols.length<6)continue;
     var idx=i-1,nm=(cols[0]||'').replace(/"/g,'').trim();
     if(idx<S.months.length){
       if(nm)S.months[idx].name=nm;
-      S.months[idx].fanvue=pn(cols[1]);S.months[idx].tg=pn(cols[2]);
-      S.months[idx].paypal=pn(cols[3]);S.months[idx].vExp=pn(cols[4]);S.months[idx].vlExp=pn(cols[5]);
+      S.months[idx].revenues=S.months[idx].revenues||{};
+      S.months[idx].revenues[pl0]=pn(cols[1]);
+      S.months[idx].revenues[pl1]=pn(cols[2]);
+      S.months[idx].revenues[pl2]=pn(cols[3]);
+      S.months[idx].vExp=pn(cols[4]);S.months[idx].vlExp=pn(cols[5]);
     }else{
-      S.months.push({id:'m'+uid(),name:nm||('Month '+(idx+1)),fanvue:pn(cols[1]),tg:pn(cols[2]),paypal:pn(cols[3]),vExp:pn(cols[4]),vlExp:pn(cols[5])});
+      var rev={};rev[pl0]=pn(cols[1]);rev[pl1]=pn(cols[2]);rev[pl2]=pn(cols[3]);
+      S.months.push({id:'m'+uid(),name:nm||('Month '+(idx+1)),revenues:rev,vExp:pn(cols[4]),vlExp:pn(cols[5])});
     }
     updated++;
   }
@@ -473,7 +571,9 @@ function syncManual(){
     localStorage.setItem('lastSync',now);renderAll();}
   catch(e){setStatus('syncStatus2','err','Error: '+e.message);}
 }
-function mTot(m){return m.fanvue+m.tg+m.paypal;}
+
+/* ---- Calculations ---- */
+function mTot(m){return Object.values(m.revenues||{}).reduce(function(s,v){return s+(v||0);},0);}
 function mVSh(m){return(mTot(m)+m.vExp-m.vlExp)/2;}
 function mVlSh(m){return(mTot(m)+m.vlExp-m.vExp)/2;}
 function totalVSh(){return S.months.reduce(function(s,m){return s+mVSh(m);},0);}
@@ -491,6 +591,8 @@ function suggestSplit(eur){
   var vG=Math.max(0,Math.min(eur,tot*ra-vE));
   return{vG:r2(vG),vlG:r2(eur-vG)};
 }
+function expectedEur(usd){return r2(usd*WISE_RATE);}
+
 function toggleExp(id){EXP[id]=!EXP[id];renderList();}
 function eurChanged(id){
   var eur=pn(g('e_'+id).value)||0;
@@ -501,8 +603,8 @@ function eurChanged(id){
   var hint=g('rh_'+id);
   if(hint&&eur>0){
     var w=S.ws.find(function(x){return x.id===id;});
-    if(w){var expE=r2(w.usd/REVOLUT),loss=r2(expE-eur);
-      hint.textContent='Revolut expected: '+fe(expE)+(loss>0?'  |  Loss: '+fe(loss):'  |  On par or better');}
+    if(w){var expE=expectedEur(w.usd),loss=r2(expE-eur);
+      hint.textContent='Wise expected: '+fe(expE)+(loss>0?'  |  Loss: '+fe(loss):'  |  On par or better');}
   }
 }
 function updateV(id){
@@ -518,18 +620,23 @@ function updateVl(id){
 function setMonth(i){S.am=i;saveLocal();renderMonths();}
 function mChange(){
   var m=S.months[S.am]||S.months[0];
-  ['fanvue','tg','paypal','vExp','vlExp'].forEach(function(f){var el=g('mf_'+f);if(el)m[f]=pn(el.value);});
+  m.revenues=m.revenues||{};
+  S.platforms.forEach(function(p){var el=g('mf_'+slug(p));if(el)m.revenues[p]=pn(el.value);});
+  ['vExp','vlExp'].forEach(function(f){var el=g('mf_'+f);if(el)m[f]=pn(el.value);});
   renderMCalc();saveLocal();renderChart();
 }
 function addMonth(){
   var name=prompt('Month name (e.g. June 26)');if(!name)return;
-  S.months.push({id:'m'+uid(),name:name,fanvue:0,tg:0,paypal:0,vExp:0,vlExp:0});
+  var rev={};S.platforms.forEach(function(p){rev[p]=0;});
+  S.months.push({id:'m'+uid(),name:name,revenues:rev,vExp:0,vlExp:0});
   S.am=S.months.length-1;saveLocal();renderAll();
 }
 function fdate(d){
   if(!d)return'';var p=d.split('-');
   return p[2]+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+p[1]-1];
 }
+
+/* ---- Render: Dashboard ---- */
 function renderBal(){
   var vE=r2(totalVEUR()),vlE=r2(totalVlEUR()),tot=vE+vlE,diff=Math.abs(vE-vlE);
   var vr=vRem(),vlr=vlRem();
@@ -538,31 +645,57 @@ function renderBal(){
   g('vRemEl').style.color=vr>=0?'var(--blue-text)':'var(--red)';
   g('vlRemEl').textContent=vlr>=0?fu(vlr):'-'+fu(Math.abs(vlr));
   g('vlRemEl').style.color=vlr>=0?'var(--green-text)':'var(--red)';
+
   if(tot>0.01){
     var vf=vE/tot;
     g('barV').style.flex=vf.toFixed(3);g('barVl').style.flex=(1-vf).toFixed(3);
     g('bVPct').textContent='V '+(vf*100).toFixed(1)+'%';
     g('bVlPct').textContent='Vl '+((1-vf)*100).toFixed(1)+'%';
     g('bDiff').textContent=diff>0.05?'Gap: '+fe(diff):'';
+    // split hint
+    var hint=g('splitHint');
+    if(hint){
+      if(diff<5){
+        hint.innerHTML='<span style="color:var(--green-text)">✓ Splits are balanced</span>';
+      }else{
+        var behind=vE<vlE?'Valerii':'Vladislav';
+        hint.innerHTML='<span style="color:var(--yellow)">Next withdrawal should favor '+behind+' to balance the split (gap: '+fe(diff)+')</span>';
+      }
+    }
   }else{
     g('barV').style.flex='1';g('barVl').style.flex='1';
     g('bVPct').textContent='';g('bVlPct').textContent='';g('bDiff').textContent='';
+    var hint=g('splitHint');if(hint)hint.textContent='';
   }
+
   var totalRev=r2(S.months.reduce(function(s,m){return s+mTot(m);},0));
   var totalW=r2(S.ws.filter(function(w){return w.st==='ok';}).reduce(function(s,w){return s+w.usd;},0));
   var tLoss=0;
-  okWs().forEach(function(w){var l=r2(w.usd/REVOLUT-w.eur);if(l>0)tLoss+=l;});
+  var oks=okWs(),tU=0,tEur=0;
+  oks.forEach(function(w){var l=r2(expectedEur(w.usd)-w.eur);if(l>0)tLoss+=l;tU+=w.usd;tEur+=w.eur;});
   tLoss=r2(tLoss);
+  var avgRate=tU>0?(tEur/tU).toFixed(4):null;
+
   g('dashStats').innerHTML=
     '<div class="stat-box"><p class="stat-lbl">Total revenue</p><p class="stat-val">'+fu(totalRev)+'</p></div>'
     +'<div class="stat-box"><p class="stat-lbl">Total withdrawn</p><p class="stat-val">'+fu(totalW)+'</p></div>'
     +'<div class="stat-box"><p class="stat-lbl">Valerii share</p><p class="stat-val blue">'+fu(r2(totalVSh()))+'</p></div>'
     +'<div class="stat-box"><p class="stat-lbl">Vladislav share</p><p class="stat-val green">'+fu(r2(totalVlSh()))+'</p></div>'
+    +(avgRate?'<div class="stat-box"><p class="stat-lbl">Avg rate</p><p class="stat-val">'+avgRate+'</p></div>':'')
     +(tLoss>0?'<div class="stat-box"><p class="stat-lbl">FX loss</p><p class="stat-val red">'+fe(tLoss)+'</p></div>':'');
 }
+
+/* ---- Render: Chart legend ---- */
+function renderChartLegend(){
+  var el=g('chartLegend');if(!el)return;
+  el.innerHTML=S.platforms.map(function(p,i){
+    return '<div class="legend-item"><div class="legend-dot" style="background:'+PLATFORM_COLORS[i%PLATFORM_COLORS.length]+'"></div>'+p+'</div>';
+  }).join('');
+}
+
+/* ---- Render: Chart ---- */
 function renderChart(){
-  var container=g('chartContainer');
-  if(!container)return;
+  var container=g('chartContainer');if(!container)return;
   var months=S.months;
   if(!months.length){container.innerHTML='';return;}
   var W=Math.max(300,container.clientWidth||600);
@@ -575,20 +708,20 @@ function renderChart(){
   var isDark=document.documentElement.getAttribute('data-theme')==='dark';
   var gridColor=isDark?'rgba(255,255,255,0.05)':'rgba(0,0,0,0.06)';
   var textColor=isDark?'#5c5c6e':'#a0a0ae';
-  var fv='#5b8ff0',ft='#a78bfa',fp='#fb923c';
   var sv=['<svg width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg">'];
   for(var gi=0;gi<=4;gi++){
     var gy=PT+cH-(gi/4)*cH;
-    var gv=Math.round(maxVal/4*gi);
     sv.push('<line x1="'+PL+'" y1="'+gy.toFixed(1)+'" x2="'+(W-PR)+'" y2="'+gy.toFixed(1)+'" stroke="'+gridColor+'" stroke-width="1"/>');
-    sv.push('<text x="'+(PL-5)+'" y="'+(gy+4).toFixed(1)+'" text-anchor="end" fill="'+textColor+'" font-size="9" font-family="system-ui,sans-serif">$'+gv+'</text>');
+    sv.push('<text x="'+(PL-5)+'" y="'+(gy+4).toFixed(1)+'" text-anchor="end" fill="'+textColor+'" font-size="9" font-family="system-ui,sans-serif">$'+Math.round(maxVal/4*gi)+'</text>');
   }
   months.forEach(function(m,i){
     var x=PL+gap+i*(barW+gap);
     var base=PT+cH;
-    var segs=[{v:m.fanvue,c:fv},{v:m.tg,c:ft},{v:m.paypal,c:fp}];
-    var yOff=0;
+    var segs=S.platforms.map(function(p,pi){
+      return{v:(m.revenues||{})[p]||0,c:PLATFORM_COLORS[pi%PLATFORM_COLORS.length]};
+    });
     var tot=mTot(m);
+    var yOff=0;
     segs.forEach(function(s,si){
       var sh=tot>0?(s.v/maxVal)*cH:0;
       if(sh<0.5)return;
@@ -611,6 +744,8 @@ function renderChart(){
   sv.push('</svg>');
   container.innerHTML=sv.join('');
 }
+
+/* ---- Render: Monthly revenue tab ---- */
 function renderMCalc(){
   var m=S.months[S.am]||S.months[0];
   var tot=r2(mTot(m)),vSh=r2(mVSh(m)),vlSh=r2(mVlSh(m));
@@ -626,12 +761,13 @@ function renderMonths(){
     return '<button class="mtab'+(i===S.am?' act':'')+'" onclick="setMonth('+i+')">'+m.name+'</button>';
   }).join('');
   var m=S.months[S.am]||S.months[0];
+  var revFields=S.platforms.map(function(p){
+    var val=(m.revenues||{})[p]||0;
+    return '<div class="field"><label>'+p+'</label><input class="num" id="mf_'+slug(p)+'" value="'+val+'" oninput="mChange()"></div>';
+  }).join('');
   g('mView').innerHTML='<p class="sec-label" style="margin-bottom:.625rem">Revenue (USD)</p>'
-    +'<div class="g3" style="margin-bottom:1rem">'
-    +'<div class="field"><label>Fanvue</label><input class="num" id="mf_fanvue" value="'+m.fanvue+'" oninput="mChange()"></div>'
-    +'<div class="field"><label>Telegram</label><input class="num" id="mf_tg" value="'+m.tg+'" oninput="mChange()"></div>'
-    +'<div class="field"><label>PayPal</label><input class="num" id="mf_paypal" value="'+m.paypal+'" oninput="mChange()"></div>'
-    +'</div>'
+    +'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-bottom:1rem">'
+    +revFields+'</div>'
     +'<p class="sec-label" style="margin-bottom:.625rem">Expenses (USD)</p>'
     +'<div class="g2" style="margin-bottom:.5rem">'
     +'<div class="field"><label>Valerii</label><input class="num" id="mf_vExp" value="'+m.vExp+'" oninput="mChange()"></div>'
@@ -640,6 +776,8 @@ function renderMonths(){
   renderMCalc();
   if(currentTab==='revenue')renderChart();
 }
+
+/* ---- Render: Withdrawal list ---- */
 function renderList(){
   var el=g('wList');
   if(!S.ws.length){el.innerHTML='';return;}
@@ -649,7 +787,7 @@ function renderList(){
   if(pend.length){
     h+='<p class="list-section-label">Pending receipt</p>';
     pend.forEach(function(w){
-      var isE=!!EXP[w.id],expE=r2(w.usd/REVOLUT);
+      var isE=!!EXP[w.id],expE=expectedEur(w.usd);
       h+='<div class="w-item"><div class="w-head">'
         +'<div class="w-info"><span class="badge badge-pend">'+w.pl+'</span>'
         +'<span class="w-amt">'+fu(w.usd)+'</span>'
@@ -664,7 +802,7 @@ function renderList(){
           +'<div class="g2" style="margin-bottom:.875rem">'
           +'<div class="field"><label>Received (EUR)</label>'
           +'<input class="num" id="e_'+w.id+'" placeholder="0.00" oninput="eurChanged(\''+w.id+'\')">'
-          +'<p class="sub-hint" id="rh_'+w.id+'">Revolut expected: '+fe(expE)+'</p></div><div></div></div>'
+          +'<p class="sub-hint" id="rh_'+w.id+'">Wise expected: '+fe(expE)+'</p></div><div></div></div>'
           +'<p class="sec-label" style="margin-bottom:.625rem">Split</p>'
           +'<div class="g2" style="margin-bottom:.875rem">'
           +'<div class="field"><label>Valerii (EUR)</label><input class="num" id="sv_'+w.id+'" placeholder="0.00" oninput="updateV(\''+w.id+'\')"></div>'
@@ -678,7 +816,7 @@ function renderList(){
   }
   if(done.length){
     var tU=0,tE=0,tLoss=0,hasLoss=false;
-    done.forEach(function(w){tU+=w.usd;tE+=w.eur;var l=r2(w.usd/REVOLUT-w.eur);if(l>0){tLoss+=l;hasLoss=true;}});
+    done.forEach(function(w){tU+=w.usd;tE+=w.eur;var l=r2(expectedEur(w.usd)-w.eur);if(l>0){tLoss+=l;hasLoss=true;}});
     h+='<p class="list-section-label"'+(pend.length?' style="margin-top:1.25rem"':'')+'>Withdrawal history</p>';
     h+='<div class="hist-summary">'
       +'<div class="stat-box"><p class="stat-lbl">Requested</p><p class="stat-val">'+fu(r2(tU))+'</p></div>'
@@ -688,35 +826,59 @@ function renderList(){
       +'</div>';
     done.forEach(function(w){
       var rate=w.usd>0?(w.eur/w.usd).toFixed(4):'-';
-      var loss=r2(w.usd/REVOLUT-w.eur);
+      var loss=r2(expectedEur(w.usd)-w.eur);
       h+='<div class="w-item"><div class="w-head">'
         +'<div class="w-info"><span class="badge badge-ok">'+w.pl+'</span>'
         +'<span class="w-amt">'+fu(w.usd)+' → '+fe(w.eur)+'</span>'
         +'<span class="w-meta">'+fdate(w.date)+(w.rd?' → '+fdate(w.rd):'')+' · '+rate+'</span>'
         +(loss>0?'<span class="w-exp" style="color:var(--red)">loss: '+fe(loss)+'</span>':'')+'</div>'
-        +'<div class="w-actions"><span class="badge badge-v">V '+fe(w.vE)+'</span>'
-        +'<span class="badge badge-vl">Vl '+fe(w.vlE)+'</span>'
+        +'<div class="w-actions">'
+        +'<span class="badge badge-v">Valerii '+fe(w.vE)+'</span>'
+        +'<span class="badge badge-vl">Vladislav '+fe(w.vlE)+'</span>'
         +'<button class="btn-del" onclick="delW(\''+w.id+'\')">&times;</button>'
         +'</div></div></div>';
     });
   }
   el.innerHTML=h;
 }
-function renderAll(){renderBal();renderMonths();renderList();}
+
+function renderAll(){
+  renderBal();renderChartLegend();renderMonths();renderList();
+  renderPlatformSettings();renderPlatformSelect();
+}
+
+/* ---- Local storage ---- */
 function saveLocal(){
   try{localStorage.setItem('ft6',JSON.stringify({months:S.months,am:S.am}));}catch(e){}
 }
+
+/* ---- Numeric input filter ---- */
 document.addEventListener('keydown',function(e){
   if(!e.target.classList||!e.target.classList.contains('num'))return;
   var ok=['0','1','2','3','4','5','6','7','8','9','.',',','Backspace','Delete','Tab','ArrowLeft','ArrowRight','Home','End','Enter'];
   if(ok.indexOf(e.key)===-1&&!e.ctrlKey&&!e.metaKey)e.preventDefault();
 });
 window.addEventListener('resize',function(){if(currentTab==='revenue')renderChart();});
+
+/* ---- Init ---- */
 async function init(){
+  // load platforms
+  try{
+    var savedPl=localStorage.getItem('ft6_platforms');
+    if(savedPl)S.platforms=JSON.parse(savedPl);
+  }catch(e){}
+  // load months + UI state
   try{
     var sv=localStorage.getItem('ft6');
     if(sv){var p=JSON.parse(sv);S.am=p.am!=null?p.am:2;
       if(p.months)p.months.forEach(function(pm){
+        // migrate old format (fanvue/tg/paypal fields) to revenues object
+        if(!pm.revenues){
+          pm.revenues={};
+          if(pm.fanvue!=null)pm.revenues['Fanvue']=pm.fanvue;
+          if(pm.tg!=null)pm.revenues['Telegram']=pm.tg;
+          if(pm.paypal!=null)pm.revenues['PayPal']=pm.paypal;
+        }
         var d=S.months.find(function(d){return d.id===pm.id;});
         if(d)Object.assign(d,pm);else S.months.push(pm);
       });}
@@ -727,6 +889,7 @@ async function init(){
   if(lastSync)setStatus('syncStatus1','ok','Last synced: '+lastSync);
   g('nDate').value=new Date().toISOString().slice(0,10);
   renderAll();
+  fetchWiseRate();
   await loadWithdrawals();
   setupRealtime();
   if(savedUrl)setTimeout(syncAuto,800);

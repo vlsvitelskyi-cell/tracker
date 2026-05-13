@@ -2,8 +2,8 @@ name: Fanvue Daily Scraper
 
 on:
   schedule:
-    - cron: '55 20 * * *'
-  workflow_dispatch:
+    - cron: '55 22 * * *'   # 22:55 UTC = 00:55 CET (01:55 летом) — конец дня
+  workflow_dispatch:          # ручной запуск для теста
 
 jobs:
   scrape:
@@ -26,9 +26,12 @@ jobs:
 
       - name: Run scraper
         env:
-          FANVUE_COOKIES:    ${{ secrets.FANVUE_COOKIES }}
-          APPS_SCRIPT_URL:   ${{ secrets.APPS_SCRIPT_URL }}
-          APPS_SCRIPT_SECRET: ${{ secrets.APPS_SCRIPT_SECRET }}
+          FANVUE_COOKIES:     ${{ secrets.FANVUE_COOKIES }}
+          SUPABASE_URL:       ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY:       ${{ secrets.SUPABASE_KEY }}
+          SUPABASE_MODEL_ID:  ${{ secrets.SUPABASE_MODEL_ID }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID:   ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python scraper.py
 
       - name: Upload screenshots

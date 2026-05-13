@@ -130,11 +130,24 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-seri
 .loading-row{display:flex;align-items:center;gap:8px;color:var(--text3);font-size:13px;padding:.5rem 0}
 .spinner{width:14px;height:14px;border:2px solid var(--border2);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
 @keyframes spin{to{transform:rotate(360deg)}}
-.tx-item{display:flex;align-items:center;justify-content:space-between;padding:.5rem .75rem;background:var(--card2);border:1px solid var(--border);border-radius:9px;margin-bottom:5px}
+.tx-item{background:var(--card2);border:1px solid var(--border);border-radius:9px;margin-bottom:5px;overflow:hidden}
+.tx-item.editing{border-color:var(--blue)}
+.tx-row{display:flex;align-items:center;justify-content:space-between;padding:.5rem .75rem}
 .tx-left{display:flex;align-items:center;gap:8px}
 .tx-pl{font-size:11px;font-weight:700;padding:2px 8px;border-radius:12px;background:var(--card);color:var(--text2)}
 .tx-amt{font-size:13px;font-weight:600}
 .tx-date{font-size:11px;color:var(--text3)}
+.tx-source{font-size:10px;color:var(--text3);background:var(--card);border:1px solid var(--border);border-radius:8px;padding:1px 6px}
+.tx-actions{display:flex;gap:5px;align-items:center;flex-shrink:0}
+.btn-edit{font-size:12px;padding:4px 9px;background:transparent;border:1px solid var(--border2);border-radius:7px;cursor:pointer;color:var(--text2);font-family:inherit;transition:background .15s,color .15s}
+.btn-edit:hover{background:var(--blue-bg);color:var(--blue-text);border-color:var(--blue)}
+.tx-edit-row{padding:.625rem .75rem;border-top:1px solid var(--border);background:var(--card);display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap}
+.tx-edit-row .field{flex:1;min-width:80px}
+.tx-edit-row .field input,.tx-edit-row .field select{padding:7px 9px;font-size:13px}
+.btn-save{font-size:12px;font-weight:600;padding:7px 14px;background:var(--blue);color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:inherit;transition:opacity .15s;white-space:nowrap}
+.btn-save:hover{opacity:.85}
+.btn-cancel{font-size:12px;padding:7px 12px;background:transparent;border:1px solid var(--border2);color:var(--text2);border-radius:8px;cursor:pointer;font-family:inherit;transition:background .15s}
+.btn-cancel:hover{background:var(--card2)}
 @media(max-width:540px){
   .tabs-desktop{display:none}
   .tabs-mobile{display:flex}
@@ -367,7 +380,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-seri
     <div class="sec-row">
       <div class="sec-label">Revenue Data Source</div>
     </div>
-    <p class="hint">Revenue is read directly from Supabase (<code style="font-size:11px;background:var(--card2);padding:1px 5px;border-radius:4px">transactions</code> + <code style="font-size:11px;background:var(--card2);padding:1px 5px;border-radius:4px">expenses</code>). Fanvue transactions are written automatically by the scraper at 03:00 UTC. Telegram and PayPal can be added manually in the Revenue tab.</p>
+    <p class="hint">Revenue is read directly from Supabase (<code style="font-size:11px;background:var(--card2);padding:1px 5px;border-radius:4px">transactions</code> + <code style="font-size:11px;background:var(--card2);padding:1px 5px;border-radius:4px">expenses</code>). Fanvue transactions are written automatically by the scraper at 09:00 Kyiv. Telegram and PayPal can be added manually in the Revenue tab.</p>
     <div style="display:flex;gap:8px;align-items:center;margin-top:.75rem">
       <button class="btn-blue" onclick="refreshRevenue()">↻ Refresh now</button>
       <span id="lastRefreshLabel" style="font-size:11px;color:var(--text3)"></span>
@@ -524,8 +537,9 @@ function slug(p){return p.toLowerCase().replace(/[^a-z0-9]/g,'_');}
 function fdate(d){if(!d)return'';var p=d.split('-');return p[2]+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+p[1]-1];}
 
 /* ---- State ---- */
-var S={months:[],ws:[],am:0,platforms:DEFAULT_PLATFORMS.slice()};
+var S={months:[],ws:[],txs:[],am:0,platforms:DEFAULT_PLATFORMS.slice()};
 var EXP={};
+var TX_EDIT={};  // id -> true when in edit mode
 var currentTab='dashboard';
 
 /* ---- Platform normalization ---- */
@@ -639,7 +653,7 @@ async function loadRevenueData(){
 
   var results=await Promise.all([
     db.from('transactions')
-      .select('amount_usd,platform,date')
+      .select('id,amount_usd,platform,date,source')
       .eq('model_id',MODEL_ID)
       .order('date',{ascending:true}),
     db.from('expenses')
@@ -651,6 +665,11 @@ async function loadRevenueData(){
 
   if(txRes.error)console.error('transactions error:',txRes.error);
   if(expRes.error)console.error('expenses error:',expRes.error);
+
+  // Store raw transactions for management UI
+  S.txs=(txRes.data||[]).map(function(tx){
+    return{id:tx.id,amount:parseFloat(tx.amount_usd)||0,platform:tx.platform,date:tx.date,source:tx.source||'manual'};
+  });
 
   var monthMap={};
 
@@ -822,7 +841,8 @@ async function addTransaction(){
     model_id:MODEL_ID,
     platform:pl.toLowerCase(),
     amount_usd:r2(amt),
-    date:date
+    date:date,
+    source:'manual'
   });
 
   if(res.error){
@@ -836,7 +856,52 @@ async function addTransaction(){
   btn.disabled=false;btn.textContent='Add';
 }
 
-/* ---- Refresh revenue ---- */
+/* ---- Transaction management (admin only) ---- */
+function txEditStart(id){
+  TX_EDIT[id]=true;
+  renderMonths();
+  // Focus amount field after render
+  setTimeout(function(){var el=g('te_amt_'+id);if(el)el.focus();},30);
+}
+function txEditCancel(id){
+  TX_EDIT[id]=false;
+  renderMonths();
+}
+
+async function txDelete(id,source){
+  var msg=source==='scraper'
+    ?'Delete this Fanvue transaction? (written by scraper)'
+    :'Delete this transaction?';
+  if(!confirm(msg))return;
+  var res=await db.from('transactions').delete().eq('id',id);
+  if(res.error){alert('Error: '+res.error.message);return;}
+  await loadRevenueData();renderAll();
+}
+
+async function txSave(id){
+  var amt=pn(g('te_amt_'+id).value);
+  var date=g('te_date_'+id).value;
+  var pl=g('te_pl_'+id).value;
+  if(!amt||amt<=0){g('te_amt_'+id).focus();return;}
+  if(!date)return;
+
+  var btn=g('te_save_'+id);
+  if(btn){btn.disabled=true;btn.textContent='Saving…';}
+
+  var res=await db.from('transactions').update({
+    amount_usd:r2(amt),
+    date:date,
+    platform:pl.toLowerCase()
+  }).eq('id',id);
+
+  if(res.error){
+    alert('Error: '+res.error.message);
+    if(btn){btn.disabled=false;btn.textContent='Save';}
+    return;
+  }
+  TX_EDIT[id]=false;
+  await loadRevenueData();renderAll();
+}
 async function refreshRevenue(){
   await loadRevenueData();
   renderAll();
@@ -1021,7 +1086,7 @@ function renderMonths(){
       +'</div>';
   }).join('');
 
-  g('mView').innerHTML=
+  var html=
     '<p class="sec-label" style="margin-bottom:.625rem">Revenue</p>'
     +'<div class="stats-row" style="margin-bottom:1rem">'+revBoxes+'</div>'
     +'<p class="sec-label" style="margin-bottom:.625rem">Expenses</p>'
@@ -1036,6 +1101,65 @@ function renderMonths(){
     +'<div class="stat-box"><p class="stat-lbl">Vladislav\'s share</p><p class="stat-val green">'+fu(vlSh)+'</p></div>'
     +'</div>';
 
+  // Transaction list for selected month (admin sees edit/delete)
+  var monthKey=m.id; // 'YYYY-MM'
+  var monthTxs=S.txs.filter(function(tx){return tx.date&&tx.date.slice(0,7)===monthKey;});
+  monthTxs.sort(function(a,b){return b.date<a.date?-1:b.date>a.date?1:0;});
+
+  if(monthTxs.length){
+    var isAdmin=currentRole==='admin';
+    html+='<div class="divider"></div>';
+    html+='<p class="sec-label" style="margin-bottom:.625rem">Transactions ('+monthTxs.length+')</p>';
+    monthTxs.forEach(function(tx){
+      var isEditing=!!TX_EDIT[tx.id];
+      var plLabel=normalizePlatform(tx.platform);
+      var plIdx=S.platforms.indexOf(plLabel);
+      var plColor=PLATFORM_COLORS[(plIdx>=0?plIdx:0)%PLATFORM_COLORS.length];
+
+      if(isEditing){
+        // Edit mode
+        var plOptions=S.platforms.map(function(p){
+          return '<option value="'+p.toLowerCase()+'"'+(p.toLowerCase()===tx.platform?' selected':'')+'>'+p+'</option>';
+        }).join('');
+        html+='<div class="tx-item editing">'
+          +'<div class="tx-row">'
+          +'<span class="tx-pl" style="background:'+plColor+'22;color:'+plColor+'">'+plLabel+'</span>'
+          +'<span style="font-size:11px;color:var(--blue-text);font-weight:600">Editing</span>'
+          +'</div>'
+          +'<div class="tx-edit-row">'
+          +'<div class="field"><label>Amount (USD)</label>'
+          +'<input class="num" id="te_amt_'+tx.id+'" value="'+tx.amount.toFixed(2)+'"></div>'
+          +'<div class="field"><label>Date</label>'
+          +'<input type="date" id="te_date_'+tx.id+'" value="'+tx.date+'"></div>'
+          +'<div class="field"><label>Platform</label>'
+          +'<select id="te_pl_'+tx.id+'">'+plOptions+'</select></div>'
+          +'<button class="btn-save" id="te_save_'+tx.id+'" onclick="txSave(\''+tx.id+'\')">Save</button>'
+          +'<button class="btn-cancel" onclick="txEditCancel(\''+tx.id+'\')">Cancel</button>'
+          +'</div>'
+          +'</div>';
+      }else{
+        // View mode
+        html+='<div class="tx-item">'
+          +'<div class="tx-row">'
+          +'<div class="tx-left">'
+          +'<span class="tx-pl" style="background:'+plColor+'22;color:'+plColor+'">'+plLabel+'</span>'
+          +'<span class="tx-amt">'+fu(tx.amount)+'</span>'
+          +'<span class="tx-date">'+fdate(tx.date)+'</span>'
+          +(tx.source==='scraper'?'<span class="tx-source">auto</span>':'')
+          +'</div>'
+          +(isAdmin
+            ?'<div class="tx-actions">'
+              +'<button class="btn-edit" onclick="txEditStart(\''+tx.id+'\')">Edit</button>'
+              +'<button class="btn-del" onclick="txDelete(\''+tx.id+'\',\''+tx.source+'\')">×</button>'
+              +'</div>'
+            :'')
+          +'</div>'
+          +'</div>';
+      }
+    });
+  }
+
+  g('mView').innerHTML=html;
   if(currentTab==='revenue')renderChart();
 }
 

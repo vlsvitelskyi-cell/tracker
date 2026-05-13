@@ -477,13 +477,12 @@ async function loadRevenueData(){
 
   var results=await Promise.all([
     db.from('transactions')
-      .select('amount,platform,transaction_date')
+      .select('amount_usd,platform,date')
       .eq('model_id',MODEL_ID)
-      .order('transaction_date',{ascending:true}),
+      .order('date',{ascending:true}),
     db.from('expenses')
-      .select('amount,partner_id,expense_date')
-      .eq('model_id',MODEL_ID)
-      .order('expense_date',{ascending:true})
+      .select('amount_usd,partner_id,date')
+      .order('date',{ascending:true})
   ]);
 
   var txRes=results[0],expRes=results[1];
@@ -501,19 +500,19 @@ async function loadRevenueData(){
   }
 
   (txRes.data||[]).forEach(function(tx){
-    var key=dateToMonthKey(tx.transaction_date);
+    var key=dateToMonthKey(tx.date);
     if(!key)return;
     ensureMonth(key);
     var pl=normalizePlatform(tx.platform);
     if(monthMap[key].revenues[pl]===undefined)monthMap[key].revenues[pl]=0;
-    monthMap[key].revenues[pl]+=parseFloat(tx.amount)||0;
+    monthMap[key].revenues[pl]+=parseFloat(tx.amount_usd)||0;
   });
 
   (expRes.data||[]).forEach(function(exp){
-    var key=dateToMonthKey(exp.expense_date);
+    var key=dateToMonthKey(exp.date);
     if(!key)return;
     ensureMonth(key);
-    var amt=parseFloat(exp.amount)||0;
+    var amt=parseFloat(exp.amount_usd)||0;
     if(exp.partner_id===VALERII_ID)monthMap[key].vExp+=amt;
     else if(exp.partner_id===VLADISLAV_ID)monthMap[key].vlExp+=amt;
   });
@@ -660,8 +659,8 @@ async function addTransaction(){
   var res=await db.from('transactions').insert({
     model_id:MODEL_ID,
     platform:pl.toLowerCase(),
-    amount:r2(amt),
-    transaction_date:date
+    amount_usd:r2(amt),
+    date:date
   });
 
   if(res.error){

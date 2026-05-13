@@ -8,7 +8,7 @@ from playwright.async_api import async_playwright
 
 FANVUE_COOKIES   = os.environ['FANVUE_COOKIES']
 SUPABASE_URL     = os.environ['SUPABASE_URL']       # https://bhrwrrosvmjuprkpjush.supabase.co
-SUPABASE_KEY     = os.environ['SUPABASE_KEY']       # anon key from Supabase dashboard
+SUPABASE_KEY     = os.environ['SUPABASE_SERVICE_KEY']  # service role key — bypasses RLS
 SUPABASE_MODEL_ID = os.environ['SUPABASE_MODEL_ID'] # UUID from: select id from models
 
 # Optional — if set, sends a daily summary to Telegram after writing to Supabase

@@ -145,9 +145,90 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-seri
 @media(max-width:360px){
   .partner-row{grid-template-columns:1fr}
 }
+
+/* ---- Auth overlay ---- */
+#authOverlay{
+  position:fixed;inset:0;z-index:999;
+  background:var(--bg);
+  display:flex;align-items:center;justify-content:center;
+  padding:1.5rem;
+  transition:opacity .25s;
+}
+#authOverlay.hidden{opacity:0;pointer-events:none;}
+.auth-box{
+  width:100%;max-width:360px;
+  background:var(--card);border:1px solid var(--border2);
+  border-radius:20px;padding:2rem 1.75rem;
+  box-shadow:0 8px 40px rgba(0,0,0,.35);
+}
+.auth-logo{font-size:15px;font-weight:700;letter-spacing:-.02em;margin-bottom:.25rem}
+.auth-sub{font-size:12px;color:var(--text3);margin-bottom:1.75rem}
+.auth-field{display:flex;flex-direction:column;gap:5px;margin-bottom:.875rem}
+.auth-field label{font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.07em;text-transform:uppercase}
+.auth-field input{
+  width:100%;padding:10px 12px;
+  border:1px solid var(--border2);border-radius:10px;
+  font-size:14px;color:var(--text);background:var(--card2);
+  font-family:inherit;outline:none;transition:border-color .15s;
+}
+.auth-field input:focus{border-color:var(--blue)}
+.auth-btn{
+  width:100%;padding:10px;margin-top:.25rem;
+  background:var(--blue);color:#fff;border:none;
+  border-radius:10px;font-size:14px;font-weight:600;
+  cursor:pointer;font-family:inherit;transition:opacity .15s;
+}
+.auth-btn:hover{opacity:.88}
+.auth-btn:disabled{opacity:.4;cursor:not-allowed}
+.auth-err{font-size:12px;color:var(--red);margin-top:.625rem;min-height:16px;text-align:center}
+
+/* ---- User chip in header ---- */
+.user-chip{
+  display:flex;align-items:center;gap:7px;
+  font-size:11px;color:var(--text2);
+  background:var(--card2);border:1px solid var(--border);
+  border-radius:20px;padding:4px 10px;cursor:default;
+}
+.user-role-badge{
+  font-size:10px;font-weight:700;
+  padding:2px 7px;border-radius:10px;
+  text-transform:uppercase;letter-spacing:.05em;
+}
+.role-admin{background:rgba(240,180,41,.15);color:var(--yellow)}
+.role-partner{background:var(--blue-bg);color:var(--blue-text)}
+.role-operator{background:var(--green-bg);color:var(--green-text)}
+.logout-btn{
+  width:28px;height:28px;border-radius:7px;
+  border:1px solid var(--border2);background:var(--card2);
+  color:var(--text3);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;transition:color .15s,background .15s;
+  flex-shrink:0;
+}
+.logout-btn:hover{color:var(--red);background:var(--red-bg)}
 </style>
 </head>
 <body>
+<!-- AUTH OVERLAY -->
+<div id="authOverlay">
+  <div class="auth-box">
+    <div class="auth-logo">Revenue Tracker</div>
+    <div class="auth-sub">Sign in to continue</div>
+    <div class="auth-field">
+      <label>Email</label>
+      <input type="email" id="authEmail" placeholder="you@example.com"
+        onkeydown="if(event.key==='Enter')document.getElementById('authPass').focus()">
+    </div>
+    <div class="auth-field">
+      <label>Password</label>
+      <input type="password" id="authPass" placeholder="••••••••"
+        onkeydown="if(event.key==='Enter')login()">
+    </div>
+    <button class="auth-btn" id="authBtn" onclick="login()">Sign in</button>
+    <div class="auth-err" id="authErr"></div>
+  </div>
+</div>
+
 <div class="app">
 
 <header class="header">
@@ -160,6 +241,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-seri
       <div class="live-dot" id="liveDot"></div>
       <span id="liveStatus">connecting…</span>
     </div>
+    <div class="user-chip" id="userChip" style="display:none">
+      <span id="userEmail" style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+      <span class="user-role-badge" id="userRoleBadge"></span>
+    </div>
+    <button class="logout-btn" id="logoutBtn" style="display:none" onclick="logout()" title="Sign out">
+      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+        <polyline points="16 17 21 12 16 7"/>
+        <line x1="21" y1="12" x2="9" y2="12"/>
+      </svg>
+    </button>
     <button class="theme-btn" onclick="toggleTheme()" title="Toggle theme"><span id="themeIcon">☀</span></button>
   </div>
 </header>
@@ -334,6 +426,82 @@ var SUPA_URL='https://bhrwrrosvmjuprkpjush.supabase.co';
 var SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJocndycm9zdm1qdXBya3BqdXNoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MDY1NzEsImV4cCI6MjA5Mzk4MjU3MX0.wRbNiKXdNzSceaqKb1hr0e5rM1AbDuCRQTE9E0ZaX3Y';
 var db=supabase.createClient(SUPA_URL,SUPA_KEY);
 
+/* ---- Auth state ---- */
+var currentUser=null;
+var currentRole=null;
+
+async function loadUserRole(userId){
+  var res=await db.from('user_roles').select('role,partner_id,operator_id').eq('user_id',userId).single();
+  if(res.error||!res.data)return null;
+  return res.data;
+}
+
+function showApp(user,roleData){
+  currentUser=user;
+  currentRole=roleData?roleData.role:'partner';
+
+  // Hide overlay
+  var ov=g('authOverlay');
+  ov.classList.add('hidden');
+  setTimeout(function(){ov.style.display='none';},260);
+
+  // Show user chip + logout
+  var chip=g('userChip'),logBtn=g('logoutBtn');
+  chip.style.display='flex';logBtn.style.display='flex';
+  g('userEmail').textContent=user.email;
+  var badge=g('userRoleBadge');
+  badge.textContent=currentRole;
+  badge.className='user-role-badge role-'+currentRole;
+}
+
+function showLogin(errMsg){
+  var ov=g('authOverlay');
+  ov.style.display='flex';ov.classList.remove('hidden');
+  g('userChip').style.display='none';
+  g('logoutBtn').style.display='none';
+  currentUser=null;currentRole=null;
+  if(errMsg){g('authErr').textContent=errMsg;}
+  setTimeout(function(){var em=g('authEmail');if(em)em.focus();},50);
+}
+
+async function login(){
+  var email=(g('authEmail').value||'').trim();
+  var pass=g('authPass').value||'';
+  var err=g('authErr'),btn=g('authBtn');
+  err.textContent='';
+  if(!email||!pass){err.textContent='Enter email and password.';return;}
+  btn.disabled=true;btn.textContent='Signing in…';
+
+  var res=await db.auth.signInWithPassword({email:email,password:pass});
+  if(res.error){
+    err.textContent=res.error.message==='Invalid login credentials'
+      ?'Wrong email or password.'
+      :res.error.message;
+    btn.disabled=false;btn.textContent='Sign in';
+    return;
+  }
+
+  var roleData=await loadUserRole(res.data.user.id);
+  if(!roleData){
+    await db.auth.signOut();
+    err.textContent='Your account has no role assigned. Contact admin.';
+    btn.disabled=false;btn.textContent='Sign in';
+    return;
+  }
+
+  btn.disabled=false;btn.textContent='Sign in';
+  showApp(res.data.user,roleData);
+  init();
+}
+
+async function logout(){
+  await db.auth.signOut();
+  showLogin();
+  // Reset state
+  S={months:[],ws:[],am:0,platforms:DEFAULT_PLATFORMS.slice()};
+  renderAll();
+}
+
 /* ---- Entity IDs ---- */
 var MODEL_ID='7461a252-076f-4e15-9bc9-6557863d9432';
 var VALERII_ID='38f3b0ad-648e-4cd7-abc6-573049b7092e';
@@ -392,12 +560,6 @@ function toggleTheme(){
   localStorage.setItem('theme',next);
   if(currentTab==='revenue')renderChart();
 }
-(function(){
-  var saved=localStorage.getItem('theme')||'dark';
-  document.documentElement.setAttribute('data-theme',saved);
-  var icon=g('themeIcon');if(icon)icon.textContent=saved==='dark'?'☀':'☾';
-})();
-
 /* ---- Tabs ---- */
 function showTab(name,btn,isMobile){
   currentTab=name;
@@ -985,7 +1147,31 @@ async function init(){
 
   setupRealtime();
 }
-init();
+
+/* ---- Auth-aware startup ---- */
+(async function startup(){
+  // Apply saved theme before anything renders
+  var saved=localStorage.getItem('theme')||'dark';
+  document.documentElement.setAttribute('data-theme',saved);
+  var icon=g('themeIcon');if(icon)icon.textContent=saved==='dark'?'☀':'☾';
+
+  // Check for existing session
+  var sessionRes=await db.auth.getSession();
+  var session=sessionRes.data&&sessionRes.data.session;
+
+  if(session&&session.user){
+    var roleData=await loadUserRole(session.user.id);
+    if(roleData){
+      showApp(session.user,roleData);
+      init();
+      return;
+    }
+    // Session exists but no role — sign out and show login
+    await db.auth.signOut();
+  }
+
+  showLogin();
+})();
 </script>
 </body>
 </html>

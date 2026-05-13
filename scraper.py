@@ -141,7 +141,7 @@ async def scrape():
         for item in raw:
             try:
                 tx_date = datetime.strptime(item['date_str'], '%B %d, %Y').date()
-                if tx_date == today:
+                if tx_date >= today - timedelta(days=3):
                     transactions.append({
                         'date': tx_date.isoformat(),
                         'amount': item['amount']
@@ -160,61 +160,112 @@ async def scrape():
 
 def send_to_supabase(transactions):
     """
-    Insert transactions into Supabase.
-    Deduplication is handled by the unique index on (model_id, platform, amount_usd, date).
-    Prefer: resolution=ignore-duplicates tells PostgREST to silently skip duplicates.
+    Insert transactions into Supabase with count-based deduplication.
+    Same amount can appear multiple times on one day (e.g. two $7.99 subscribers),
+    so we compare counts — not just existence — before inserting.
     """
-    rows = [
-        {
-            'model_id':   SUPABASE_MODEL_ID,
-            'platform':   'fanvue',
-            'amount_usd': t['amount'],
-            'date':       t['date'],
-            'source':     'scraper',
-        }
-        for t in transactions
-    ]
+    from collections import Counter
 
     headers = {
         'apikey':        SUPABASE_KEY,
         'Authorization': f'Bearer {SUPABASE_KEY}',
         'Content-Type':  'application/json',
-        'Prefer':        'resolution=ignore-duplicates',
+        'Prefer':        'return=minimal',
     }
+
+    # Count how many times each (date, amount) appears in scraped results
+    new_counts = Counter((t['date'], t['amount']) for t in transactions)
+
+    rows_to_insert = []
+    for (tx_date, amount), new_count in new_counts.items():
+        # Check how many rows already exist in Supabase for this combo
+        resp = requests.get(
+            f'{SUPABASE_URL}/rest/v1/transactions',
+            headers=headers,
+            params={
+                'model_id':   f'eq.{SUPABASE_MODEL_ID}',
+                'platform':   'eq.fanvue',
+                'amount_usd': f'eq.{amount}',
+                'date':       f'eq.{tx_date}',
+                'select':     'id',
+            },
+            timeout=15,
+        )
+        existing_count = len(resp.json()) if resp.ok else 0
+        delta = new_count - existing_count
+
+        print(f"  {tx_date} ${amount:.2f}: found {new_count}, existing {existing_count}, inserting {max(delta, 0)}")
+
+        for _ in range(max(delta, 0)):
+            rows_to_insert.append({
+                'model_id':   SUPABASE_MODEL_ID,
+                'platform':   'fanvue',
+                'amount_usd': amount,
+                'date':       tx_date,
+                'source':     'scraper',
+            })
+
+    if not rows_to_insert:
+        print("Supabase: all transactions already exist, nothing to insert")
+        return
 
     resp = requests.post(
         f'{SUPABASE_URL}/rest/v1/transactions',
         headers=headers,
-        json=rows,
+        json=rows_to_insert,
         timeout=30,
     )
 
     if resp.status_code in (200, 201):
-        print(f"Supabase: {len(rows)} row(s) sent (duplicates silently skipped)")
+        print(f"Supabase: inserted {len(rows_to_insert)} new row(s)")
     else:
         print(f"Supabase error {resp.status_code}: {resp.text}")
         sys.exit(1)
 
 
-def send_telegram(transactions):
+def send_telegram():
     """
-    Send a daily summary to Telegram.
+    Send yesterday's summary to Telegram.
+    Reads directly from Supabase — independent of when the scraper ran.
     Only runs if TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID are set.
     """
     if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
         print("Telegram secrets not set — skipping notification")
         return
 
-    today = date.today().strftime('%d %b %Y')
-    count = len(transactions)
-    total = sum(t['amount'] for t in transactions)
+    yesterday = (date.today() - timedelta(days=1)).isoformat()
+
+    headers = {
+        'apikey':        SUPABASE_KEY,
+        'Authorization': f'Bearer {SUPABASE_KEY}',
+    }
+
+    resp = requests.get(
+        f'{SUPABASE_URL}/rest/v1/transactions',
+        headers=headers,
+        params={
+            'date':     f'eq.{yesterday}',
+            'platform': 'eq.fanvue',
+            'select':   'amount_usd',
+        },
+        timeout=15,
+    )
+
+    if not resp.ok:
+        print(f"Telegram: failed to fetch yesterday's data — {resp.status_code}")
+        return
+
+    rows = resp.json()
+    count = len(rows)
+    total = sum(float(r['amount_usd']) for r in rows)
+    date_label = (date.today() - timedelta(days=1)).strftime('%d %b %Y')
 
     if count == 0:
-        text = f"📊 *Fanvue {today}*\nNo transactions today."
+        text = f"📊 *Fanvue {date_label}*\nNo transactions."
     else:
-        lines = '\n'.join(f"  • ${t['amount']:.2f}" for t in transactions)
+        lines = '\n'.join(f"  • ${float(r['amount_usd']):.2f}" for r in rows)
         text = (
-            f"📊 *Fanvue {today}*\n"
+            f"📊 *Fanvue {date_label}*\n"
             f"{count} transaction(s) — *${total:.2f}* total\n\n"
             f"{lines}"
         )
@@ -230,7 +281,7 @@ def send_telegram(transactions):
     )
 
     if resp.status_code == 200:
-        print(f"Telegram: notification sent (${total:.2f} in {count} tx)")
+        print(f"Telegram: sent summary for {date_label} (${total:.2f} in {count} tx)")
     else:
         print(f"Telegram error {resp.status_code}: {resp.text}")
 
@@ -238,15 +289,13 @@ def send_telegram(transactions):
 async def main():
     transactions = await scrape()
 
-    if not transactions:
-        print("Nothing to write today.")
-        send_telegram([])
-        return
-
     print(f"\nWriting {len(transactions)} transaction(s) to Supabase...")
-    send_to_supabase(transactions)
+    if transactions:
+        send_to_supabase(transactions)
+    else:
+        print("Nothing new to write.")
 
-    send_telegram(transactions)
+    send_telegram()
 
 
 if __name__ == '__main__':

@@ -6,9 +6,15 @@ import requests
 from datetime import date, datetime, timedelta
 from playwright.async_api import async_playwright
 
-FANVUE_COOKIES     = os.environ['FANVUE_COOKIES']
-APPS_SCRIPT_URL    = os.environ['APPS_SCRIPT_URL']
-APPS_SCRIPT_SECRET = os.environ['APPS_SCRIPT_SECRET']
+FANVUE_COOKIES   = os.environ['FANVUE_COOKIES']
+SUPABASE_URL     = os.environ['SUPABASE_URL']       # https://bhrwrrosvmjuprkpjush.supabase.co
+SUPABASE_KEY     = os.environ['SUPABASE_KEY']       # anon key from Supabase dashboard
+SUPABASE_MODEL_ID = os.environ['SUPABASE_MODEL_ID'] # UUID from: select id from models
+
+# Optional — if set, sends a daily summary to Telegram after writing to Supabase
+TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
+TELEGRAM_CHAT_ID   = os.environ.get('TELEGRAM_CHAT_ID')
+
 
 async def scrape():
     today = date.today()
@@ -80,8 +86,6 @@ async def scrape():
             await browser.close()
             sys.exit(1)
 
-        # Scroll until yesterday's date header appears
-        # This ensures ALL of today's transactions are loaded before extracting
         yesterday = (today - timedelta(days=1)).strftime('%B %-d, %Y')
         print(f"Scrolling until '{yesterday}' appears...")
         max_scrolls = 25
@@ -101,12 +105,11 @@ async def scrape():
                 yesterday
             )
             if found:
-                print(f"Found '{yesterday}' after {i+1} scroll(s) — all today's transactions loaded")
+                print(f"Found '{yesterday}' after {i+1} scroll(s)")
                 break
             if i == max_scrolls - 1:
                 print(f"Warning: '{yesterday}' not found after {max_scrolls} scrolls, proceeding anyway")
 
-        # Extract transactions
         raw = await page.evaluate('''() => {
             const results = [];
             let currentDate = null;
@@ -132,7 +135,6 @@ async def scrape():
         }''')
 
         print(f"Raw entries found: {len(raw)}")
-        print(f"Today is: {today}")
         for item in raw:
             print(f"  Found: {item['date_str']} ${item['amount']}")
 
@@ -156,24 +158,95 @@ async def scrape():
     return transactions
 
 
+def send_to_supabase(transactions):
+    """
+    Insert transactions into Supabase.
+    Deduplication is handled by the unique index on (model_id, platform, amount_usd, date).
+    Prefer: resolution=ignore-duplicates tells PostgREST to silently skip duplicates.
+    """
+    rows = [
+        {
+            'model_id':   SUPABASE_MODEL_ID,
+            'platform':   'fanvue',
+            'amount_usd': t['amount'],
+            'date':       t['date'],
+            'source':     'scraper',
+        }
+        for t in transactions
+    ]
+
+    headers = {
+        'apikey':        SUPABASE_KEY,
+        'Authorization': f'Bearer {SUPABASE_KEY}',
+        'Content-Type':  'application/json',
+        'Prefer':        'resolution=ignore-duplicates',
+    }
+
+    resp = requests.post(
+        f'{SUPABASE_URL}/rest/v1/transactions',
+        headers=headers,
+        json=rows,
+        timeout=30,
+    )
+
+    if resp.status_code in (200, 201):
+        print(f"Supabase: {len(rows)} row(s) sent (duplicates silently skipped)")
+    else:
+        print(f"Supabase error {resp.status_code}: {resp.text}")
+        sys.exit(1)
+
+
+def send_telegram(transactions):
+    """
+    Send a daily summary to Telegram.
+    Only runs if TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID are set.
+    """
+    if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
+        print("Telegram secrets not set — skipping notification")
+        return
+
+    today = date.today().strftime('%d %b %Y')
+    count = len(transactions)
+    total = sum(t['amount'] for t in transactions)
+
+    if count == 0:
+        text = f"📊 *Fanvue {today}*\nNo transactions today."
+    else:
+        lines = '\n'.join(f"  • ${t['amount']:.2f}" for t in transactions)
+        text = (
+            f"📊 *Fanvue {today}*\n"
+            f"{count} transaction(s) — *${total:.2f}* total\n\n"
+            f"{lines}"
+        )
+
+    resp = requests.post(
+        f'https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage',
+        json={
+            'chat_id':    TELEGRAM_CHAT_ID,
+            'text':       text,
+            'parse_mode': 'Markdown',
+        },
+        timeout=15,
+    )
+
+    if resp.status_code == 200:
+        print(f"Telegram: notification sent (${total:.2f} in {count} tx)")
+    else:
+        print(f"Telegram error {resp.status_code}: {resp.text}")
+
+
 async def main():
     transactions = await scrape()
 
     if not transactions:
-        print("Nothing to send today.")
+        print("Nothing to write today.")
+        send_telegram([])
         return
 
-    print(f"\nSending {len(transactions)} transactions to Google Sheets...")
-    try:
-        resp = requests.post(
-            APPS_SCRIPT_URL,
-            json={'secret': APPS_SCRIPT_SECRET, 'transactions': transactions},
-            timeout=30
-        )
-        print(f"Response {resp.status_code}: {resp.text}")
-    except Exception as ex:
-        print(f"Request error: {ex}")
-        sys.exit(1)
+    print(f"\nWriting {len(transactions)} transaction(s) to Supabase...")
+    send_to_supabase(transactions)
+
+    send_telegram(transactions)
 
 
 if __name__ == '__main__':

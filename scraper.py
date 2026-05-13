@@ -1,992 +1,302 @@
-<!DOCTYPE html>
-<html lang="en" data-theme="dark">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Withdrawal Tracker</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<style>
-:root{
-  --bg:#111113;--bg2:#18181b;--card:#1e1e22;--card2:#252529;
-  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.11);
-  --text:#e8e8ec;--text2:#9898a6;--text3:#5c5c6e;
-  --blue:#5b8ff0;--blue-bg:rgba(91,143,240,0.12);--blue-text:#7ba7f5;
-  --green:#3db870;--green-bg:rgba(61,184,112,0.12);--green-text:#52cc82;
-  --yellow:#f0b429;--yellow-bg:rgba(240,180,41,0.12);
-  --red:#e05252;--red-bg:rgba(224,82,82,0.12);
-  --shadow:0 2px 12px rgba(0,0,0,0.35);
-}
-[data-theme="light"]{
-  --bg:#f0eff0;--bg2:#e8e7e8;--card:#ffffff;--card2:#f5f4f5;
-  --border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.13);
-  --text:#1a1a1f;--text2:#6b6b7a;--text3:#a0a0ae;
-  --blue:#2b5fd4;--blue-bg:rgba(43,95,212,0.09);--blue-text:#1849b0;
-  --green:#1e8a4a;--green-bg:rgba(30,138,74,0.09);--green-text:#1a6b30;
-  --yellow:#b07d00;--yellow-bg:rgba(176,125,0,0.1);
-  --red:#c0392b;--red-bg:rgba(192,57,43,0.09);
-  --shadow:0 2px 8px rgba(0,0,0,0.08);
-}
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:80px;transition:background .2s,color .2s}
-.app{max-width:720px;margin:0 auto;padding:0 1rem}
-.header{display:flex;justify-content:space-between;align-items:center;padding:1.25rem 0 1rem}
-.header-title{font-size:15px;font-weight:600;letter-spacing:-.01em}
-.header-sub{font-size:12px;color:var(--text3);margin-top:2px}
-.header-right{display:flex;align-items:center;gap:10px}
-.live-badge{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3);background:var(--card2);border:1px solid var(--border);border-radius:20px;padding:4px 10px}
-.live-dot{width:6px;height:6px;border-radius:50%;background:var(--text3);transition:background .3s;flex-shrink:0}
-.live-dot.on{background:var(--green);box-shadow:0 0 6px var(--green)}
-.theme-btn{width:32px;height:32px;border-radius:8px;border:1px solid var(--border2);background:var(--card2);color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;transition:background .15s}
-.theme-btn:hover{background:var(--card)}
-.tabs-desktop{display:flex;gap:2px;background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:4px;margin-bottom:1.25rem}
-.tab-btn{flex:1;font-size:13px;font-weight:500;padding:7px 12px;border:none;border-radius:8px;background:transparent;color:var(--text2);cursor:pointer;font-family:inherit;transition:background .15s,color .15s;white-space:nowrap}
-.tab-btn.act{background:var(--card);color:var(--text);box-shadow:var(--shadow)}
-.tabs-mobile{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--border);z-index:100;padding:6px 0 env(safe-area-inset-bottom,0)}
-.tabs-mobile-inner{display:flex;max-width:720px;margin:0 auto}
-.tab-mob{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;font-weight:500;color:var(--text3);background:none;border:none;cursor:pointer;font-family:inherit;padding:5px 0;transition:color .15s}
-.tab-mob.act{color:var(--blue)}
-.tab-mob svg{opacity:.45;transition:opacity .15s}
-.tab-mob.act svg{opacity:1}
-.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1.25rem;margin-bottom:1rem;box-shadow:var(--shadow)}
-.sec-label{font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.875rem}
-.partner-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem}
-.partner-card{background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:1rem 1.125rem;position:relative;overflow:hidden}
-.partner-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
-.partner-card.blue::before{background:var(--blue)}
-.partner-card.green::before{background:var(--green)}
-.partner-name{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.625rem}
-.partner-eur{font-size:28px;font-weight:500;letter-spacing:-.04em;line-height:1;margin-bottom:.5rem}
-.partner-card.blue .partner-eur{color:var(--blue-text)}
-.partner-card.green .partner-eur{color:var(--green-text)}
-.partner-rem-lbl{font-size:10px;color:var(--text3);margin-bottom:3px}
-.partner-rem{font-size:14px;font-weight:500}
-.split-bar{display:flex;height:5px;border-radius:3px;overflow:hidden;background:var(--card2);gap:1px}
-.split-bar-v{background:var(--blue);border-radius:3px 0 0 3px;transition:flex .4s;min-width:4px}
-.split-bar-vl{background:var(--green);border-radius:0 3px 3px 0;transition:flex .4s;min-width:4px}
-.split-labels{display:flex;justify-content:space-between;font-size:11px;margin-top:5px}
-.split-hint{font-size:12px;margin-top:8px;min-height:18px;line-height:1.4}
-.stats-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1rem}
-.stat-box{flex:1;min-width:80px;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:.75rem .875rem}
-.stat-lbl{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
-.stat-val{font-size:15px;font-weight:500;color:var(--text)}
-.stat-val.blue{color:var(--blue-text)}.stat-val.green{color:var(--green-text)}.stat-val.red{color:var(--red)}
-.field{display:flex;flex-direction:column;gap:5px}
-.field label{font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.06em;text-transform:uppercase}
-.field input,.field select,.field textarea{width:100%;padding:9px 11px;border:1px solid var(--border2);border-radius:9px;font-size:14px;color:var(--text);background:var(--card2);font-family:inherit;outline:none;transition:border-color .15s;-webkit-appearance:none}
-.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--blue)}
-.sub-hint{font-size:11px;color:var(--text3);margin-top:2px}
-.hint{font-size:12px;color:var(--text2);line-height:1.55;margin-bottom:.875rem}
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
-.btn{background:var(--text);color:var(--bg);border:none;padding:9px 20px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:opacity .15s;white-space:nowrap}
-.btn:hover{opacity:.82}.btn:disabled{opacity:.35;cursor:not-allowed}
-.btn-outline{background:transparent;border:1px solid var(--border2);color:var(--text2);padding:8px 16px;border-radius:9px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;transition:background .15s,color .15s;white-space:nowrap}
-.btn-outline:hover{background:var(--card2);color:var(--text)}
-.btn-blue{background:var(--blue);color:#fff;border:none;padding:9px 18px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:opacity .15s}
-.btn-blue:hover{opacity:.88}.btn-blue:disabled{opacity:.35;cursor:not-allowed}
-.btn-del{font-size:14px;line-height:1;padding:5px 10px;background:transparent;border:1px solid var(--red-bg);border-radius:8px;cursor:pointer;color:var(--red);font-family:inherit;transition:background .15s}
-.btn-del:hover{background:var(--red-bg)}
-.btn-ghost{font-size:11px;color:var(--text3);background:none;border:none;cursor:pointer;font-family:inherit;padding:4px 0;transition:color .15s}
-.btn-ghost:hover{color:var(--red)}
-.badge{display:inline-flex;align-items:center;font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px}
-.badge-v{background:var(--blue-bg);color:var(--blue-text)}
-.badge-vl{background:var(--green-bg);color:var(--green-text)}
-.badge-pend{background:var(--yellow-bg);color:var(--yellow)}
-.badge-ok{background:var(--green-bg);color:var(--green-text)}
-.w-item{border:1px solid var(--border);border-radius:12px;margin-bottom:.625rem;overflow:hidden;background:var(--card)}
-.w-head{display:flex;justify-content:space-between;align-items:center;padding:.875rem 1rem;gap:8px;flex-wrap:wrap}
-.w-expand{padding:1rem;border-top:1px solid var(--border);background:var(--card2)}
-.w-info{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.w-amt{font-size:14px;font-weight:600}
-.w-meta{font-size:12px;color:var(--text3)}
-.w-exp{font-size:11px;color:var(--text3)}
-.w-actions{display:flex;gap:6px;align-items:center;flex-shrink:0}
-.w-row1{display:flex;justify-content:space-between;align-items:center;padding:.75rem 1rem .375rem}
-.w-row2{display:flex;justify-content:space-between;align-items:center;padding:.375rem 1rem .75rem}
-.w-row1-left{display:flex;align-items:center;gap:8px}
-.w-row2-left{font-size:12px;color:var(--text3)}
-.w-row2-right{display:flex;gap:6px;align-items:center}
-.list-section-label{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin:.875rem 0 .5rem}
-.list-section-label:first-child{margin-top:0}
-.hist-summary{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:.75rem}
-.add-row{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap}
-.add-row .field{flex:1;min-width:90px}
-.mtab-row{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:1rem}
-.mtab{font-size:12px;font-weight:600;padding:5px 13px;border:1px solid var(--border2);border-radius:20px;cursor:pointer;background:transparent;color:var(--text2);font-family:inherit;transition:background .15s,color .15s,border-color .15s}
-.mtab.act{background:var(--text);color:var(--bg);border-color:var(--text)}
-.mtab:not(.act):hover{background:var(--card2)}
-.chart-wrap{width:100%;overflow-x:auto;margin-bottom:1rem}
-.chart-legend{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:.875rem}
-.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)}
-.legend-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
-.sec-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:.875rem}
-.sec-row .sec-label{margin:0}
-.divider{height:1px;background:var(--border);margin:1rem 0}
-.tab-page{display:none}.tab-page.act{display:block}
-.pl-item{display:flex;align-items:center;justify-content:space-between;padding:.5rem .75rem;background:var(--card2);border:1px solid var(--border);border-radius:9px;margin-bottom:6px}
-.pl-name{font-size:13px;color:var(--text)}
-.pl-add-row{display:flex;gap:8px;margin-top:.75rem}
-.pl-add-row .field{flex:1}
-.loading-row{display:flex;align-items:center;gap:8px;color:var(--text3);font-size:13px;padding:.5rem 0}
-.spinner{width:14px;height:14px;border:2px solid var(--border2);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
-@keyframes spin{to{transform:rotate(360deg)}}
-.tx-item{display:flex;align-items:center;justify-content:space-between;padding:.5rem .75rem;background:var(--card2);border:1px solid var(--border);border-radius:9px;margin-bottom:5px}
-.tx-left{display:flex;align-items:center;gap:8px}
-.tx-pl{font-size:11px;font-weight:700;padding:2px 8px;border-radius:12px;background:var(--card);color:var(--text2)}
-.tx-amt{font-size:13px;font-weight:600}
-.tx-date{font-size:11px;color:var(--text3)}
-@media(max-width:540px){
-  .tabs-desktop{display:none}
-  .tabs-mobile{display:flex}
-  body{padding-bottom:90px}
-  .partner-eur{font-size:22px}
-  .card{padding:1rem}
-}
-@media(max-width:360px){
-  .partner-row{grid-template-columns:1fr}
-}
-</style>
-</head>
-<body>
-<div class="app">
+import asyncio
+import json
+import os
+import sys
+import requests
+from datetime import date, datetime, timedelta
+from playwright.async_api import async_playwright
 
-<header class="header">
-  <div>
-    <div class="header-title">Withdrawal Tracker</div>
-    <div class="header-sub">Fanvue · PayPal · Telegram</div>
-  </div>
-  <div class="header-right">
-    <div class="live-badge">
-      <div class="live-dot" id="liveDot"></div>
-      <span id="liveStatus">connecting…</span>
-    </div>
-    <button class="theme-btn" onclick="toggleTheme()" title="Toggle theme"><span id="themeIcon">☀</span></button>
-  </div>
-</header>
+FANVUE_COOKIES   = os.environ['FANVUE_COOKIES']
+SUPABASE_URL     = os.environ['SUPABASE_URL']       # https://bhrwrrosvmjuprkpjush.supabase.co
+SUPABASE_KEY     = os.environ['SUPABASE_KEY']       # anon key from Supabase dashboard
+SUPABASE_MODEL_ID = os.environ['SUPABASE_MODEL_ID'] # UUID from: select id from models
 
-<nav class="tabs-desktop">
-  <button class="tab-btn act" onclick="showTab('dashboard',this)">Dashboard</button>
-  <button class="tab-btn" onclick="showTab('withdrawals',this)">Withdrawals</button>
-  <button class="tab-btn" onclick="showTab('revenue',this)">Revenue</button>
-  <button class="tab-btn" onclick="showTab('settings',this)">Settings</button>
-</nav>
+# Optional — if set, sends a daily summary to Telegram after writing to Supabase
+TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
+TELEGRAM_CHAT_ID   = os.environ.get('TELEGRAM_CHAT_ID')
 
-<!-- DASHBOARD -->
-<div class="tab-page act" id="tab-dashboard">
-  <div class="partner-row">
-    <div class="partner-card blue">
-      <div class="partner-name">Valerii</div>
-      <div class="partner-eur" id="bV">€0.00</div>
-      <div class="partner-rem-lbl">Remaining to withdraw</div>
-      <div class="partner-rem" id="vRemEl">$0.00</div>
-    </div>
-    <div class="partner-card green">
-      <div class="partner-name">Vladislav</div>
-      <div class="partner-eur" id="bVl">€0.00</div>
-      <div class="partner-rem-lbl">Remaining to withdraw</div>
-      <div class="partner-rem" id="vlRemEl">$0.00</div>
-    </div>
-  </div>
-  <div class="card" style="padding:.875rem 1.25rem;margin-bottom:1rem">
-    <div class="split-bar">
-      <div class="split-bar-v" id="barV"></div>
-      <div class="split-bar-vl" id="barVl"></div>
-    </div>
-    <div class="split-labels">
-      <span style="color:var(--blue-text);font-weight:600" id="bVPct"></span>
-      <span style="color:var(--text3)" id="bDiff"></span>
-      <span style="color:var(--green-text);font-weight:600" id="bVlPct"></span>
-    </div>
-    <div class="split-hint" id="splitHint"></div>
-  </div>
-  <div class="stats-row" id="dashStats"></div>
-</div>
 
-<!-- WITHDRAWALS -->
-<div class="tab-page" id="tab-withdrawals">
-  <div class="card">
-    <div class="sec-label">New Withdrawal Request</div>
-    <div class="add-row">
-      <div class="field">
-        <label>Platform</label>
-        <select id="nPl"></select>
-      </div>
-      <div class="field">
-        <label>Amount (USD)</label>
-        <input id="nUSD" class="num" placeholder="200">
-      </div>
-      <div class="field">
-        <label>Date</label>
-        <input type="date" id="nDate">
-      </div>
-      <button class="btn" id="addBtn" onclick="addW()" style="align-self:flex-end;padding:9px 16px">Add</button>
-    </div>
-  </div>
-  <div id="wList"></div>
-  <div style="display:flex;justify-content:flex-end;margin-top:.25rem">
-    <button class="btn-ghost" onclick="resetAll()">⟳ Reset all withdrawals</button>
-  </div>
-</div>
+async def scrape():
+    today = date.today()
+    transactions = []
 
-<!-- REVENUE -->
-<div class="tab-page" id="tab-revenue">
-  <div class="card">
-    <div class="sec-row">
-      <div class="sec-label">Monthly Revenue</div>
-      <div style="display:flex;gap:8px;align-items:center">
-        <span id="revLoadStatus" style="font-size:11px;color:var(--text3)"></span>
-        <button class="btn-outline" style="font-size:11px;padding:5px 11px" onclick="refreshRevenue()">↻ Refresh</button>
-      </div>
-    </div>
-    <div class="chart-legend" id="chartLegend"></div>
-    <div class="chart-wrap"><div id="chartContainer"></div></div>
-    <div class="mtab-row" id="mTabs"></div>
-    <div id="mView"></div>
-  </div>
+    try:
+        raw_cookies = json.loads(FANVUE_COOKIES)
+    except Exception as e:
+        print(f"ERROR: Could not parse FANVUE_COOKIES: {e}")
+        sys.exit(1)
 
-  <!-- Manual transaction entry -->
-  <div class="card" id="addTxCard">
-    <div class="sec-row">
-      <div class="sec-label">Add Transaction</div>
-      <span style="font-size:11px;color:var(--text3)">Telegram / PayPal manual entry</span>
-    </div>
-    <div class="add-row">
-      <div class="field">
-        <label>Platform</label>
-        <select id="txPl"></select>
-      </div>
-      <div class="field">
-        <label>Amount (USD)</label>
-        <input id="txAmt" class="num" placeholder="50.00">
-      </div>
-      <div class="field">
-        <label>Date</label>
-        <input type="date" id="txDate">
-      </div>
-      <button class="btn" id="txAddBtn" onclick="addTransaction()" style="align-self:flex-end;padding:9px 16px">Add</button>
-    </div>
-    <div id="txStatus" style="font-size:11px;margin-top:.5rem;min-height:16px"></div>
-  </div>
-</div>
+    pw_cookies = []
+    for c in raw_cookies:
+        cookie = {
+            'name':   c.get('name', ''),
+            'value':  c.get('value', ''),
+            'domain': c.get('domain', '.fanvue.com'),
+            'path':   c.get('path', '/'),
+        }
+        if c.get('expirationDate'):
+            cookie['expires'] = int(c['expirationDate'])
+        if 'secure' in c:
+            cookie['secure'] = c['secure']
+        if 'httpOnly' in c:
+            cookie['httpOnly'] = c['httpOnly']
+        if 'sameSite' in c:
+            val = c['sameSite']
+            if val in ('Strict', 'Lax', 'None'):
+                cookie['sameSite'] = val
+        pw_cookies.append(cookie)
 
-<!-- SETTINGS -->
-<div class="tab-page" id="tab-settings">
-  <div class="card">
-    <div class="sec-row">
-      <div class="sec-label">Revenue Data Source</div>
-    </div>
-    <p class="hint">Revenue is read directly from Supabase (<code style="font-size:11px;background:var(--card2);padding:1px 5px;border-radius:4px">transactions</code> + <code style="font-size:11px;background:var(--card2);padding:1px 5px;border-radius:4px">expenses</code>). Fanvue transactions are written automatically by the scraper at 09:00 Kyiv. Telegram and PayPal can be added manually in the Revenue tab.</p>
-    <div style="display:flex;gap:8px;align-items:center;margin-top:.75rem">
-      <button class="btn-blue" onclick="refreshRevenue()">↻ Refresh now</button>
-      <span id="lastRefreshLabel" style="font-size:11px;color:var(--text3)"></span>
-    </div>
-  </div>
+    print(f"Loaded {len(pw_cookies)} cookies")
 
-  <div class="card">
-    <div class="sec-row">
-      <div class="sec-label" style="margin:0">Platforms</div>
-    </div>
-    <div style="margin-bottom:.75rem" id="platformList"></div>
-    <div class="pl-add-row">
-      <div class="field">
-        <input id="newPlatform" placeholder="Platform name…" onkeydown="if(event.key==='Enter')addPlatform()">
-      </div>
-      <button class="btn-outline" onclick="addPlatform()" style="align-self:flex-end">Add</button>
-    </div>
-  </div>
+    async with async_playwright() as p:
+        browser = await p.chromium.launch(
+            headless=True,
+            args=['--no-sandbox', '--disable-dev-shm-usage',
+                  '--disable-blink-features=AutomationControlled']
+        )
+        context = await browser.new_context(
+            user_agent='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) '
+                       'AppleWebKit/537.36 (KHTML, like Gecko) '
+                       'Chrome/124.0.0.0 Safari/537.36',
+            viewport={'width': 1280, 'height': 900},
+            locale='en-US',
+            timezone_id='Europe/Paris',
+        )
+        await context.add_init_script(
+            "Object.defineProperty(navigator,'webdriver',{get:()=>undefined})"
+        )
 
-  <div class="card">
-    <div class="sec-label">Info</div>
-    <p id="infoCard" style="font-size:12px;color:var(--text2);line-height:1.8">
-      Real-time sync via Supabase &bull; Revenue from transactions table<br>
-      <span style="color:var(--text3)">Revolut reference: 1 USD = 0.8547 EUR</span><br>
-      <span id="wiseRateLine" style="color:var(--text3)">Wise mid-market: loading…</span>
-    </p>
-  </div>
-</div>
+        await context.add_cookies(pw_cookies)
+        print("Cookies injected")
 
-<!-- MOBILE BOTTOM NAV -->
-<nav class="tabs-mobile">
-  <div class="tabs-mobile-inner">
-    <button class="tab-mob act" id="mob-dashboard" onclick="showTab('dashboard',this,true)">
-      <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
-      Dashboard
-    </button>
-    <button class="tab-mob" id="mob-withdrawals" onclick="showTab('withdrawals',this,true)">
-      <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-      Withdrawals
-    </button>
-    <button class="tab-mob" id="mob-revenue" onclick="showTab('revenue',this,true)">
-      <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-      Revenue
-    </button>
-    <button class="tab-mob" id="mob-settings" onclick="showTab('settings',this,true)">
-      <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-      Settings
-    </button>
-  </div>
-</nav>
+        page = await context.new_page()
 
-</div>
-<script>
-/* ---- Supabase ---- */
-var SUPA_URL='https://bhrwrrosvmjuprkpjush.supabase.co';
-var SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJocndycm9zdm1qdXBya3BqdXNoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MDY1NzEsImV4cCI6MjA5Mzk4MjU3MX0.wRbNiKXdNzSceaqKb1hr0e5rM1AbDuCRQTE9E0ZaX3Y';
-var db=supabase.createClient(SUPA_URL,SUPA_KEY);
+        print("Loading earnings page...")
+        await page.goto('https://www.fanvue.com/earnings',
+                        wait_until='domcontentloaded', timeout=60000)
+        await page.wait_for_timeout(8000)
 
-/* ---- Entity IDs ---- */
-var MODEL_ID='7461a252-076f-4e15-9bc9-6557863d9432';
-var VALERII_ID='38f3b0ad-648e-4cd7-abc6-573049b7092e';
-var VLADISLAV_ID='cc1482e8-5832-42d1-b65a-bf307400b694';
+        current_url = page.url
+        print(f"URL after goto: {current_url}")
+        await page.screenshot(path='earnings_page.png')
+        print("Screenshot saved: earnings_page.png")
 
-/* ---- Globals ---- */
-var WISE_RATE=0.855;
-var PLATFORM_COLORS=['#5b8ff0','#a78bfa','#fb923c','#34d399','#f87171','#fbbf24','#60a5fa','#c084fc'];
-var DEFAULT_PLATFORMS=['Fanvue','Telegram','PayPal'];
-var MONTH_NAMES=['January','February','March','April','May','June','July','August','September','October','November','December'];
+        if 'signin' in current_url or 'signup' in current_url:
+            print("ERROR: Not logged in - cookies may have expired.")
+            await browser.close()
+            sys.exit(1)
 
-/* ---- Utils ---- */
-function pn(v){var s=String(v==null?0:v).replace(/[$€£\s]/g,'').replace(/[,]/,'.');if(s==='-'||s==='')return 0;return parseFloat(s)||0;}
-function r2(n){return Math.round(n*100)/100;}
-function fe(n){return '€'+Math.abs(n).toFixed(2);}
-function fu(n){return '$'+Math.abs(n).toFixed(2);}
-function g(id){return document.getElementById(id);}
-function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,5);}
-function slug(p){return p.toLowerCase().replace(/[^a-z0-9]/g,'_');}
-function fdate(d){if(!d)return'';var p=d.split('-');return p[2]+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+p[1]-1];}
+        yesterday = (today - timedelta(days=1)).strftime('%B %-d, %Y')
+        print(f"Scrolling until '{yesterday}' appears...")
+        max_scrolls = 25
+        for i in range(max_scrolls):
+            await page.evaluate('window.scrollTo(0, document.body.scrollHeight)')
+            await page.wait_for_timeout(1500)
+            found = await page.evaluate(
+                '''(target) => {
+                    const walker = document.createTreeWalker(
+                        document.body, NodeFilter.SHOW_TEXT, null, false);
+                    let node;
+                    while ((node = walker.nextNode())) {
+                        if (node.textContent.trim() === target) return true;
+                    }
+                    return false;
+                }''',
+                yesterday
+            )
+            if found:
+                print(f"Found '{yesterday}' after {i+1} scroll(s)")
+                break
+            if i == max_scrolls - 1:
+                print(f"Warning: '{yesterday}' not found after {max_scrolls} scrolls, proceeding anyway")
 
-/* ---- State ---- */
-var S={months:[],ws:[],am:0,platforms:DEFAULT_PLATFORMS.slice()};
-var EXP={};
-var currentTab='dashboard';
+        raw = await page.evaluate('''() => {
+            const results = [];
+            let currentDate = null;
+            const walker = document.createTreeWalker(
+                document.body, NodeFilter.SHOW_TEXT, null, false);
+            let node;
+            while ((node = walker.nextNode())) {
+                const text = node.textContent.trim();
+                if (!text) continue;
+                if (/^[A-Z][a-z]+ \\d{1,2}, \\d{4}$/.test(text)) {
+                    currentDate = text;
+                    continue;
+                }
+                const m = text.match(/^\\$([0-9]+\\.[0-9]{2})$/);
+                if (m && currentDate) {
+                    const amount = parseFloat(m[1]);
+                    if (amount > 0) {
+                        results.push({ date_str: currentDate, amount: amount });
+                    }
+                }
+            }
+            return results;
+        }''')
 
-/* ---- Platform normalization ---- */
-// Maps DB platform values (any case) to canonical S.platforms names
-function normalizePlatform(raw){
-  if(!raw)return'Other';
-  var lower=raw.toLowerCase().trim();
-  for(var i=0;i<S.platforms.length;i++){
-    if(S.platforms[i].toLowerCase()===lower)return S.platforms[i];
-  }
-  // common aliases
-  if(lower==='tg'||lower==='telegram')return'Telegram';
-  if(lower==='fanvue')return'Fanvue';
-  if(lower==='paypal')return'PayPal';
-  return raw;
-}
+        print(f"Raw entries found: {len(raw)}")
+        for item in raw:
+            print(f"  Found: {item['date_str']} ${item['amount']}")
 
-/* ---- Month key helpers ---- */
-// key = 'YYYY-MM', returns e.g. "March '26"
-function monthKeyToName(key){
-  var parts=key.split('-');
-  return MONTH_NAMES[parseInt(parts[1],10)-1]+" '"+parts[0].slice(2);
-}
-function dateToMonthKey(d){return d?d.slice(0,7):null;}
+        for item in raw:
+            try:
+                tx_date = datetime.strptime(item['date_str'], '%B %d, %Y').date()
+                if tx_date >= today - timedelta(days=3):
+                    transactions.append({
+                        'date': tx_date.isoformat(),
+                        'amount': item['amount']
+                    })
+            except Exception as ex:
+                print(f"Date parse error: {ex}")
 
-/* ---- Theme ---- */
-function toggleTheme(){
-  var html=document.documentElement;
-  var next=html.getAttribute('data-theme')==='dark'?'light':'dark';
-  html.setAttribute('data-theme',next);
-  g('themeIcon').textContent=next==='dark'?'☀':'☾';
-  localStorage.setItem('theme',next);
-  if(currentTab==='revenue')renderChart();
-}
-(function(){
-  var saved=localStorage.getItem('theme')||'dark';
-  document.documentElement.setAttribute('data-theme',saved);
-  var icon=g('themeIcon');if(icon)icon.textContent=saved==='dark'?'☀':'☾';
-})();
+        print(f"Today's transactions: {len(transactions)}")
+        for t in transactions:
+            print(f"  {t['date']}  ${t['amount']}")
 
-/* ---- Tabs ---- */
-function showTab(name,btn,isMobile){
-  currentTab=name;
-  document.querySelectorAll('.tab-page').forEach(function(p){p.classList.remove('act');});
-  g('tab-'+name).classList.add('act');
-  document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('act');});
-  document.querySelectorAll('.tab-mob').forEach(function(b){b.classList.remove('act');});
-  if(isMobile){
-    var idx=['dashboard','withdrawals','revenue','settings'].indexOf(name);
-    var dBtns=document.querySelectorAll('.tab-btn');
-    if(dBtns[idx])dBtns[idx].classList.add('act');
-    btn.classList.add('act');
-  }else{
-    btn.classList.add('act');
-    var mb=g('mob-'+name);if(mb)mb.classList.add('act');
-  }
-  if(name==='revenue')setTimeout(renderChart,50);
-}
+        await browser.close()
 
-/* ---- Wise rate ---- */
-async function fetchWiseRate(){
-  try{
-    var res=await fetch('https://api.wise.com/v1/rates?source=USD&target=EUR');
-    if(!res.ok)throw new Error();
-    var data=await res.json();
-    var entry=Array.isArray(data)?data[0]:data;
-    if(entry&&typeof entry.rate==='number')WISE_RATE=entry.rate;
-  }catch(e){}
-  var el=g('wiseRateLine');
-  if(el)el.innerHTML='<span style="color:var(--green-text)">Wise mid-market: 1 USD = '+WISE_RATE.toFixed(4)+' EUR</span>';
-}
+    return transactions
 
-/* ---- Platform management ---- */
-function savePlatforms(){
-  try{localStorage.setItem('ft6_platforms',JSON.stringify(S.platforms));}catch(e){}
-}
-function renderPlatformSelect(){
-  [g('nPl'),g('txPl')].forEach(function(sel){
-    if(!sel)return;
-    var cur=sel.value;
-    sel.innerHTML=S.platforms.map(function(p){
-      return '<option'+(p===cur?' selected':'')+'>'+p+'</option>';
-    }).join('');
-  });
-}
-function renderPlatformSettings(){
-  var el=g('platformList');if(!el)return;
-  el.innerHTML=S.platforms.map(function(p,i){
-    return '<div class="pl-item">'
-      +'<span class="pl-name">'+p+'</span>'
-      +(S.platforms.length>1
-        ?'<button class="btn-del" style="padding:3px 9px;font-size:12px" onclick="removePlatform('+i+')">&times;</button>'
-        :'<span style="font-size:11px;color:var(--text3)">last</span>')
-      +'</div>';
-  }).join('');
-}
-function addPlatform(){
-  var input=g('newPlatform');
-  var name=(input.value||'').trim();
-  if(!name||S.platforms.indexOf(name)!==-1)return;
-  S.platforms.push(name);
-  savePlatforms();
-  input.value='';
-  renderPlatformSettings();renderPlatformSelect();renderChartLegend();renderMonths();
-}
-function removePlatform(i){
-  if(S.platforms.length<=1)return;
-  S.platforms.splice(i,1);
-  savePlatforms();
-  renderPlatformSettings();renderPlatformSelect();renderChartLegend();renderMonths();renderBal();
-}
 
-/* ---- Load revenue data from Supabase ---- */
-async function loadRevenueData(){
-  var statusEl=g('revLoadStatus');
-  if(statusEl)statusEl.innerHTML='<span style="display:inline-flex;align-items:center;gap:5px"><span class="spinner"></span>Loading…</span>';
+def send_to_supabase(transactions):
+    """
+    Insert transactions into Supabase with count-based deduplication.
+    Same amount can appear multiple times on one day (e.g. two $7.99 subscribers),
+    so we compare counts — not just existence — before inserting.
+    """
+    from collections import Counter
 
-  var results=await Promise.all([
-    db.from('transactions')
-      .select('amount,platform,transaction_date')
-      .eq('model_id',MODEL_ID)
-      .order('transaction_date',{ascending:true}),
-    db.from('expenses')
-      .select('amount,partner_id,expense_date')
-      .eq('model_id',MODEL_ID)
-      .order('expense_date',{ascending:true})
-  ]);
-
-  var txRes=results[0],expRes=results[1];
-
-  if(txRes.error)console.error('transactions error:',txRes.error);
-  if(expRes.error)console.error('expenses error:',expRes.error);
-
-  var monthMap={};
-
-  function ensureMonth(key){
-    if(!monthMap[key]){
-      monthMap[key]={revenues:{},vExp:0,vlExp:0};
-      S.platforms.forEach(function(p){monthMap[key].revenues[p]=0;});
+    headers = {
+        'apikey':        SUPABASE_KEY,
+        'Authorization': f'Bearer {SUPABASE_KEY}',
+        'Content-Type':  'application/json',
+        'Prefer':        'return=minimal',
     }
-  }
 
-  (txRes.data||[]).forEach(function(tx){
-    var key=dateToMonthKey(tx.transaction_date);
-    if(!key)return;
-    ensureMonth(key);
-    var pl=normalizePlatform(tx.platform);
-    if(monthMap[key].revenues[pl]===undefined)monthMap[key].revenues[pl]=0;
-    monthMap[key].revenues[pl]+=parseFloat(tx.amount)||0;
-  });
+    # Count how many times each (date, amount) appears in scraped results
+    new_counts = Counter((t['date'], t['amount']) for t in transactions)
 
-  (expRes.data||[]).forEach(function(exp){
-    var key=dateToMonthKey(exp.expense_date);
-    if(!key)return;
-    ensureMonth(key);
-    var amt=parseFloat(exp.amount)||0;
-    if(exp.partner_id===VALERII_ID)monthMap[key].vExp+=amt;
-    else if(exp.partner_id===VLADISLAV_ID)monthMap[key].vlExp+=amt;
-  });
+    rows_to_insert = []
+    for (tx_date, amount), new_count in new_counts.items():
+        # Check how many rows already exist in Supabase for this combo
+        resp = requests.get(
+            f'{SUPABASE_URL}/rest/v1/transactions',
+            headers=headers,
+            params={
+                'model_id':   f'eq.{SUPABASE_MODEL_ID}',
+                'platform':   'eq.fanvue',
+                'amount_usd': f'eq.{amount}',
+                'date':       f'eq.{tx_date}',
+                'select':     'id',
+            },
+            timeout=15,
+        )
+        existing_count = len(resp.json()) if resp.ok else 0
+        delta = new_count - existing_count
 
-  var newMonths=Object.keys(monthMap).sort().map(function(key){
-    var data=monthMap[key];
-    S.platforms.forEach(function(p){
-      if(data.revenues[p]===undefined)data.revenues[p]=0;
-      else data.revenues[p]=r2(data.revenues[p]);
-    });
-    return{id:key,name:monthKeyToName(key),revenues:data.revenues,vExp:r2(data.vExp),vlExp:r2(data.vlExp)};
-  });
+        print(f"  {tx_date} ${amount:.2f}: found {new_count}, existing {existing_count}, inserting {max(delta, 0)}")
 
-  if(newMonths.length>0){
-    S.months=newMonths;
-    var savedAm=parseInt(localStorage.getItem('ft6_am')||'');
-    if(!isNaN(savedAm)&&savedAm<S.months.length)S.am=savedAm;
-    else S.am=S.months.length-1;
-  }
+        for _ in range(max(delta, 0)):
+            rows_to_insert.append({
+                'model_id':   SUPABASE_MODEL_ID,
+                'platform':   'fanvue',
+                'amount_usd': amount,
+                'date':       tx_date,
+                'source':     'scraper',
+            })
 
-  var now=new Date().toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
-  localStorage.setItem('lastRevRefresh',now);
-  if(statusEl)statusEl.textContent='';
-  var lrl=g('lastRefreshLabel');if(lrl)lrl.textContent='Last refresh: '+now;
-}
+    if not rows_to_insert:
+        print("Supabase: all transactions already exist, nothing to insert")
+        return
 
-/* ---- Load withdrawals (joins withdrawal_splits) ---- */
-async function loadWithdrawals(){
-  var results=await Promise.all([
-    db.from('withdrawals').select('*').order('request_date',{ascending:false}),
-    db.from('withdrawal_splits').select('*')
-  ]);
+    resp = requests.post(
+        f'{SUPABASE_URL}/rest/v1/transactions',
+        headers=headers,
+        json=rows_to_insert,
+        timeout=30,
+    )
 
-  var wRes=results[0],splitsRes=results[1];
-  if(wRes.error){console.error(wRes.error);return;}
+    if resp.status_code in (200, 201):
+        print(f"Supabase: inserted {len(rows_to_insert)} new row(s)")
+    else:
+        print(f"Supabase error {resp.status_code}: {resp.text}")
+        sys.exit(1)
 
-  // Build splits map: withdrawal_id -> {vE, vlE}
-  var splitsMap={};
-  (splitsRes.data||[]).forEach(function(s){
-    if(!splitsMap[s.withdrawal_id])splitsMap[s.withdrawal_id]={};
-    var amt=parseFloat(s.eur_amount)||0;
-    if(s.partner_id===VALERII_ID)splitsMap[s.withdrawal_id].vE=amt;
-    else if(s.partner_id===VLADISLAV_ID)splitsMap[s.withdrawal_id].vlE=amt;
-  });
 
-  S.ws=(wRes.data||[]).map(function(row){
-    var sp=splitsMap[row.id]||{};
-    // prefer withdrawal_splits; fall back to v_eur/vl_eur columns for backward compat
-    return{
-      id:row.id,pl:row.platform,
-      usd:parseFloat(row.usd)||0,
-      eur:parseFloat(row.eur)||0,
-      vE:sp.vE!=null?sp.vE:(parseFloat(row.v_eur)||0),
-      vlE:sp.vlE!=null?sp.vlE:(parseFloat(row.vl_eur)||0),
-      date:row.request_date,rd:row.received_date,
-      st:row.status==='ok'?'ok':'pend'
-    };
-  });
-  renderAll();
-}
+def send_telegram():
+    """
+    Send yesterday's summary to Telegram.
+    Reads directly from Supabase — independent of when the scraper ran.
+    Only runs if TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID are set.
+    """
+    if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
+        print("Telegram secrets not set — skipping notification")
+        return
 
-/* ---- Real-time ---- */
-function setupRealtime(){
-  db.channel('app-live')
-    .on('postgres_changes',{event:'*',schema:'public',table:'withdrawals'},function(){loadWithdrawals();})
-    .on('postgres_changes',{event:'*',schema:'public',table:'withdrawal_splits'},function(){loadWithdrawals();})
-    .on('postgres_changes',{event:'*',schema:'public',table:'transactions'},async function(){
-      await loadRevenueData();renderAll();
-    })
-    .on('postgres_changes',{event:'*',schema:'public',table:'expenses'},async function(){
-      await loadRevenueData();renderAll();
-    })
-    .subscribe(function(status){
-      var dot=g('liveDot'),lbl=g('liveStatus');
-      if(status==='SUBSCRIBED'){dot.className='live-dot on';lbl.textContent='live';}
-      else if(status==='CLOSED'||status==='CHANNEL_ERROR'){dot.className='live-dot';lbl.textContent='offline';}
-      else{dot.className='live-dot';lbl.textContent='connecting…';}
-    });
-}
+    yesterday = (date.today() - timedelta(days=1)).isoformat()
 
-/* ---- CRUD: withdrawals ---- */
-async function addW(){
-  var usd=pn(g('nUSD').value);
-  if(!usd||usd<=0){g('nUSD').focus();return;}
-  var date=g('nDate').value||new Date().toISOString().slice(0,10);
-  var btn=g('addBtn');btn.disabled=true;btn.textContent='Adding…';
-  var res=await db.from('withdrawals').insert({
-    platform:g('nPl').value,usd:r2(usd),request_date:date,
-    eur:0,v_eur:0,vl_eur:0,status:'pending'
-  });
-  if(res.error)alert('Error: '+res.error.message);
-  else g('nUSD').value='';
-  btn.disabled=false;btn.textContent='Add';
-}
-
-async function confirmW(id){
-  var eur=pn(g('e_'+id).value);
-  if(!eur||eur<=0){g('e_'+id).focus();return;}
-  var vG=pn(g('sv_'+id).value),vlG=pn(g('svl_'+id).value);
-  if(Math.abs(vG+vlG-eur)>0.02){alert('Valerii + Vladislav must equal '+eur.toFixed(2)+' EUR');return;}
-  var today=new Date().toISOString().slice(0,10);
-
-  // 1. Update withdrawals (keep v_eur/vl_eur for backward compat)
-  var res=await db.from('withdrawals').update({
-    eur:r2(eur),v_eur:r2(vG),vl_eur:r2(vlG),
-    status:'ok',received_date:today
-  }).eq('id',id);
-  if(res.error){alert('Error: '+res.error.message);return;}
-
-  // 2. Write per-partner splits (delete + re-insert to avoid unique constraint issues)
-  await db.from('withdrawal_splits').delete().eq('withdrawal_id',id);
-  var splitsRes=await db.from('withdrawal_splits').insert([
-    {withdrawal_id:id,partner_id:VALERII_ID,eur_amount:r2(vG)},
-    {withdrawal_id:id,partner_id:VLADISLAV_ID,eur_amount:r2(vlG)}
-  ]);
-  if(splitsRes.error)console.error('splits write error:',splitsRes.error);
-
-  EXP[id]=false;
-}
-
-async function delW(id){
-  if(!confirm('Delete this withdrawal?'))return;
-  await db.from('withdrawal_splits').delete().eq('withdrawal_id',id);
-  var res=await db.from('withdrawals').delete().eq('id',id);
-  if(res.error)alert('Error: '+res.error.message);
-}
-
-async function resetAll(){
-  if(!confirm('Delete ALL withdrawal history from the database?'))return;
-  await db.from('withdrawal_splits').delete().neq('id','00000000-0000-0000-0000-000000000000');
-  var res=await db.from('withdrawals').delete().neq('id','00000000-0000-0000-0000-000000000000');
-  if(res.error)alert('Error: '+res.error.message);
-}
-
-/* ---- CRUD: manual transactions (TG/PayPal) ---- */
-async function addTransaction(){
-  var amt=pn(g('txAmt').value);
-  if(!amt||amt<=0){g('txAmt').focus();return;}
-  var date=g('txDate').value||new Date().toISOString().slice(0,10);
-  var pl=g('txPl').value;
-  var btn=g('txAddBtn');btn.disabled=true;btn.textContent='Adding…';
-  var statusEl=g('txStatus');statusEl.textContent='';
-
-  var res=await db.from('transactions').insert({
-    model_id:MODEL_ID,
-    platform:pl.toLowerCase(),
-    amount:r2(amt),
-    transaction_date:date
-  });
-
-  if(res.error){
-    statusEl.innerHTML='<span style="color:var(--red)">Error: '+res.error.message+'</span>';
-  }else{
-    g('txAmt').value='';
-    statusEl.innerHTML='<span style="color:var(--green-text)">✓ Added '+fu(amt)+' ('+pl+') for '+fdate(date)+'</span>';
-    await loadRevenueData();renderAll();
-    setTimeout(function(){statusEl.textContent='';},3000);
-  }
-  btn.disabled=false;btn.textContent='Add';
-}
-
-/* ---- Refresh revenue ---- */
-async function refreshRevenue(){
-  await loadRevenueData();
-  renderAll();
-  if(currentTab==='revenue')renderChart();
-}
-
-/* ---- Calculations ---- */
-function mTot(m){return Object.values(m.revenues||{}).reduce(function(s,v){return s+(v||0);},0);}
-function mVSh(m){return(mTot(m)+m.vExp-m.vlExp)/2;}
-function mVlSh(m){return(mTot(m)+m.vlExp-m.vExp)/2;}
-function totalVSh(){return S.months.reduce(function(s,m){return s+mVSh(m);},0);}
-function totalVlSh(){return S.months.reduce(function(s,m){return s+mVlSh(m);},0);}
-function okWs(){return S.ws.filter(function(w){return w.st==='ok'&&w.eur>0;});}
-function totalVEUR(){return okWs().reduce(function(s,w){return s+w.vE;},0);}
-function totalVlEUR(){return okWs().reduce(function(s,w){return s+w.vlE;},0);}
-function totalVUSD(){return okWs().reduce(function(s,w){return s+w.usd*(w.eur>0?w.vE/w.eur:0);},0);}
-function totalVlUSD(){return okWs().reduce(function(s,w){return s+w.usd*(w.eur>0?w.vlE/w.eur:0);},0);}
-function vRem(){return r2(totalVSh()-totalVUSD());}
-function vlRem(){return r2(totalVlSh()-totalVlUSD());}
-function vRatio(){var vs=totalVSh(),t=vs+totalVlSh();return t>0?vs/t:0.5;}
-function suggestSplit(eur){
-  var vE=totalVEUR(),vlE=totalVlEUR(),ra=vRatio(),tot=vE+vlE+eur;
-  var vG=Math.max(0,Math.min(eur,tot*ra-vE));
-  return{vG:r2(vG),vlG:r2(eur-vG)};
-}
-function expectedEur(usd){return r2(usd*WISE_RATE);}
-
-function toggleExp(id){EXP[id]=!EXP[id];renderList();}
-function eurChanged(id){
-  var eur=pn(g('e_'+id).value)||0;
-  var sp=suggestSplit(eur);
-  var sv=g('sv_'+id),svl=g('svl_'+id);
-  if(sv)sv.value=sp.vG.toFixed(2);
-  if(svl)svl.value=sp.vlG.toFixed(2);
-  var hint=g('rh_'+id);
-  if(hint&&eur>0){
-    var w=S.ws.find(function(x){return x.id===id;});
-    if(w){var expE=expectedEur(w.usd),loss=r2(expE-eur);
-      hint.textContent='Wise expected: '+fe(expE)+(loss>0?'  |  Loss: '+fe(loss):'  |  On par or better');}
-  }
-}
-function updateV(id){
-  var eur=pn(g('e_'+id).value)||0;if(!eur)return;
-  var v=r2(Math.max(0,Math.min(eur,pn(g('sv_'+id).value))));
-  g('sv_'+id).value=v.toFixed(2);g('svl_'+id).value=r2(eur-v).toFixed(2);
-}
-function updateVl(id){
-  var eur=pn(g('e_'+id).value)||0;if(!eur)return;
-  var vl=r2(Math.max(0,Math.min(eur,pn(g('svl_'+id).value))));
-  g('svl_'+id).value=vl.toFixed(2);g('sv_'+id).value=r2(eur-vl).toFixed(2);
-}
-function setMonth(i){
-  S.am=i;
-  localStorage.setItem('ft6_am',String(i));
-  renderMonths();
-}
-
-/* ---- Render: Dashboard ---- */
-function renderBal(){
-  var vE=r2(totalVEUR()),vlE=r2(totalVlEUR()),tot=vE+vlE,diff=Math.abs(vE-vlE);
-  var vr=vRem(),vlr=vlRem();
-  g('bV').textContent=fe(vE);g('bVl').textContent=fe(vlE);
-  g('vRemEl').textContent=vr>=0?fu(vr):'-'+fu(Math.abs(vr));
-  g('vRemEl').style.color=vr>=0?'var(--blue-text)':'var(--red)';
-  g('vlRemEl').textContent=vlr>=0?fu(vlr):'-'+fu(Math.abs(vlr));
-  g('vlRemEl').style.color=vlr>=0?'var(--green-text)':'var(--red)';
-
-  if(tot>0.01){
-    var vf=vE/tot;
-    g('barV').style.flex=vf.toFixed(3);g('barVl').style.flex=(1-vf).toFixed(3);
-    g('bVPct').textContent='V '+(vf*100).toFixed(1)+'%';
-    g('bVlPct').textContent='Vl '+((1-vf)*100).toFixed(1)+'%';
-    g('bDiff').textContent=diff>0.05?'Gap: '+fe(diff):'';
-    var hint=g('splitHint');
-    if(hint){
-      if(diff<5){hint.innerHTML='<span style="color:var(--green-text)">✓ Splits are balanced</span>';}
-      else{var behind=vE<vlE?'Valerii':'Vladislav';
-        hint.innerHTML='<span style="color:var(--yellow)">Next withdrawal should favor '+behind+' to balance the split (gap: '+fe(diff)+')</span>';}
+    headers = {
+        'apikey':        SUPABASE_KEY,
+        'Authorization': f'Bearer {SUPABASE_KEY}',
     }
-  }else{
-    g('barV').style.flex='1';g('barVl').style.flex='1';
-    g('bVPct').textContent='';g('bVlPct').textContent='';g('bDiff').textContent='';
-    var hint=g('splitHint');if(hint)hint.textContent='';
-  }
 
-  var totalRev=r2(S.months.reduce(function(s,m){return s+mTot(m);},0));
-  var totalW=r2(S.ws.filter(function(w){return w.st==='ok';}).reduce(function(s,w){return s+w.usd;},0));
-  var tLoss=0,oks=okWs(),tU=0,tEur=0;
-  oks.forEach(function(w){var l=r2(expectedEur(w.usd)-w.eur);if(l>0)tLoss+=l;tU+=w.usd;tEur+=w.eur;});
-  tLoss=r2(tLoss);
-  var avgRate=tU>0?(tEur/tU).toFixed(4):null;
+    resp = requests.get(
+        f'{SUPABASE_URL}/rest/v1/transactions',
+        headers=headers,
+        params={
+            'date':     f'eq.{yesterday}',
+            'platform': 'eq.fanvue',
+            'select':   'amount_usd',
+        },
+        timeout=15,
+    )
 
-  g('dashStats').innerHTML=
-    '<div class="stat-box"><p class="stat-lbl">Total revenue</p><p class="stat-val">'+fu(totalRev)+'</p></div>'
-    +'<div class="stat-box"><p class="stat-lbl">Total withdrawn</p><p class="stat-val">'+fu(totalW)+'</p></div>'
-    +'<div class="stat-box"><p class="stat-lbl">Valerii share</p><p class="stat-val blue">'+fu(r2(totalVSh()))+'</p></div>'
-    +'<div class="stat-box"><p class="stat-lbl">Vladislav share</p><p class="stat-val green">'+fu(r2(totalVlSh()))+'</p></div>'
-    +(avgRate?'<div class="stat-box"><p class="stat-lbl">Avg rate</p><p class="stat-val">'+avgRate+'</p></div>':'')
-    +(tLoss>0?'<div class="stat-box"><p class="stat-lbl">FX loss</p><p class="stat-val red">'+fe(tLoss)+'</p></div>':'');
-}
+    if not resp.ok:
+        print(f"Telegram: failed to fetch yesterday's data — {resp.status_code}")
+        return
 
-/* ---- Render: Chart legend ---- */
-function renderChartLegend(){
-  var el=g('chartLegend');if(!el)return;
-  el.innerHTML=S.platforms.map(function(p,i){
-    return '<div class="legend-item"><div class="legend-dot" style="background:'+PLATFORM_COLORS[i%PLATFORM_COLORS.length]+'"></div>'+p+'</div>';
-  }).join('');
-}
+    rows = resp.json()
+    count = len(rows)
+    total = sum(float(r['amount_usd']) for r in rows)
+    date_label = (date.today() - timedelta(days=1)).strftime('%d %b %Y')
 
-/* ---- Render: Chart ---- */
-function renderChart(){
-  var container=g('chartContainer');if(!container)return;
-  var months=S.months;
-  if(!months.length){container.innerHTML='<p style="color:var(--text3);font-size:13px;padding:.5rem 0">No data yet</p>';return;}
-  var W=Math.max(300,container.clientWidth||600);
-  var H=160,PL=44,PR=8,PT=14,PB=28;
-  var cW=W-PL-PR,cH=H-PT-PB,n=months.length;
-  var barW=Math.max(12,Math.min(44,Math.floor(cW/n*0.55)));
-  var gap=(cW-barW*n)/(n+1);
-  var maxVal=Math.max.apply(null,months.map(function(m){return mTot(m);}));
-  if(maxVal<=0)maxVal=1;
-  var isDark=document.documentElement.getAttribute('data-theme')==='dark';
-  var gridColor=isDark?'rgba(255,255,255,0.05)':'rgba(0,0,0,0.06)';
-  var textColor=isDark?'#5c5c6e':'#a0a0ae';
-  var sv=['<svg width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg">'];
-  for(var gi=0;gi<=4;gi++){
-    var gy=PT+cH-(gi/4)*cH;
-    sv.push('<line x1="'+PL+'" y1="'+gy.toFixed(1)+'" x2="'+(W-PR)+'" y2="'+gy.toFixed(1)+'" stroke="'+gridColor+'" stroke-width="1"/>');
-    sv.push('<text x="'+(PL-5)+'" y="'+(gy+4).toFixed(1)+'" text-anchor="end" fill="'+textColor+'" font-size="9" font-family="system-ui,sans-serif">$'+Math.round(maxVal/4*gi)+'</text>');
-  }
-  months.forEach(function(m,i){
-    var x=PL+gap+i*(barW+gap);
-    var base=PT+cH;
-    var segs=S.platforms.map(function(p,pi){return{v:(m.revenues||{})[p]||0,c:PLATFORM_COLORS[pi%PLATFORM_COLORS.length]};});
-    var tot=mTot(m);
-    var yOff=0;
-    segs.forEach(function(s,si){
-      var sh=tot>0?(s.v/maxVal)*cH:0;
-      if(sh<0.5)return;
-      var sy=base-yOff-sh;
-      var isTop=segs.slice(si+1).every(function(s2){return s2.v<=0;});
-      if(isTop&&sh>=2){
-        sv.push('<path d="M'+(x+2).toFixed(1)+','+sy.toFixed(1)+' h'+(barW-4).toFixed(1)+' a2,2 0 0 1 2,2 v'+(sh-2).toFixed(1)+' h-'+barW.toFixed(1)+' v-'+(sh-2).toFixed(1)+' a2,2 0 0 1 2,-2Z" fill="'+s.c+'"/>');
-      }else{
-        sv.push('<rect x="'+x.toFixed(1)+'" y="'+sy.toFixed(1)+'" width="'+barW+'" height="'+Math.max(0,sh).toFixed(1)+'" fill="'+s.c+'"/>');
-      }
-      yOff+=sh;
-    });
-    var lx=(x+barW/2).toFixed(1);
-    sv.push('<text x="'+lx+'" y="'+(H-8)+'" text-anchor="middle" fill="'+textColor+'" font-size="10" font-family="system-ui,sans-serif">'+m.name.split(' ')[0].slice(0,3)+'</text>');
-    if(tot>0){
-      var totalH=(tot/maxVal)*cH;
-      sv.push('<text x="'+lx+'" y="'+(base-totalH-5).toFixed(1)+'" text-anchor="middle" fill="'+textColor+'" font-size="9" font-family="system-ui,sans-serif">$'+Math.round(tot)+'</text>');
-    }
-  });
-  sv.push('</svg>');
-  container.innerHTML=sv.join('');
-}
+    if count == 0:
+        text = f"📊 *Fanvue {date_label}*\nNo transactions."
+    else:
+        lines = '\n'.join(f"  • ${float(r['amount_usd']):.2f}" for r in rows)
+        text = (
+            f"📊 *Fanvue {date_label}*\n"
+            f"{count} transaction(s) — *${total:.2f}* total\n\n"
+            f"{lines}"
+        )
 
-/* ---- Render: Monthly revenue (read-only from Supabase) ---- */
-function renderMonths(){
-  if(!S.months.length){
-    g('mTabs').innerHTML='';
-    g('mView').innerHTML='<div class="loading-row"><div class="spinner"></div><span>Loading revenue data…</span></div>';
-    return;
-  }
+    resp = requests.post(
+        f'https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage',
+        json={
+            'chat_id':    TELEGRAM_CHAT_ID,
+            'text':       text,
+            'parse_mode': 'Markdown',
+        },
+        timeout=15,
+    )
 
-  g('mTabs').innerHTML=S.months.map(function(m,i){
-    return '<button class="mtab'+(i===S.am?' act':'')+'\" onclick="setMonth('+i+')">'+m.name+'</button>';
-  }).join('');
+    if resp.status_code == 200:
+        print(f"Telegram: sent summary for {date_label} (${total:.2f} in {count} tx)")
+    else:
+        print(f"Telegram error {resp.status_code}: {resp.text}")
 
-  var m=S.months[S.am]||S.months[S.months.length-1];
-  if(!m){g('mView').innerHTML='';return;}
 
-  var tot=r2(mTot(m)),vSh=r2(mVSh(m)),vlSh=r2(mVlSh(m));
+async def main():
+    transactions = await scrape()
 
-  var revBoxes=S.platforms.map(function(p,pi){
-    var val=(m.revenues||{})[p]||0;
-    return '<div class="stat-box">'
-      +'<p class="stat-lbl">'+p+'</p>'
-      +'<p class="stat-val" style="color:'+PLATFORM_COLORS[pi%PLATFORM_COLORS.length]+'">'+fu(val)+'</p>'
-      +'</div>';
-  }).join('');
+    print(f"\nWriting {len(transactions)} transaction(s) to Supabase...")
+    if transactions:
+        send_to_supabase(transactions)
+    else:
+        print("Nothing new to write.")
 
-  g('mView').innerHTML=
-    '<p class="sec-label" style="margin-bottom:.625rem">Revenue</p>'
-    +'<div class="stats-row" style="margin-bottom:1rem">'+revBoxes+'</div>'
-    +'<p class="sec-label" style="margin-bottom:.625rem">Expenses</p>'
-    +'<div class="stats-row" style="margin-bottom:.5rem">'
-    +'<div class="stat-box"><p class="stat-lbl">Valerii</p><p class="stat-val blue">'+fu(m.vExp)+'</p></div>'
-    +'<div class="stat-box"><p class="stat-lbl">Vladislav</p><p class="stat-val green">'+fu(m.vlExp)+'</p></div>'
-    +'</div>'
-    +'<div class="divider"></div>'
-    +'<div class="stats-row" style="margin-bottom:0">'
-    +'<div class="stat-box"><p class="stat-lbl">Total</p><p class="stat-val">'+fu(tot)+'</p></div>'
-    +'<div class="stat-box"><p class="stat-lbl">Valerii\'s share</p><p class="stat-val blue">'+fu(vSh)+'</p></div>'
-    +'<div class="stat-box"><p class="stat-lbl">Vladislav\'s share</p><p class="stat-val green">'+fu(vlSh)+'</p></div>'
-    +'</div>';
+    send_telegram()
 
-  if(currentTab==='revenue')renderChart();
-}
 
-/* ---- Render: Withdrawal list ---- */
-function renderList(){
-  var el=g('wList');
-  if(!S.ws.length){el.innerHTML='';return;}
-  var pend=S.ws.filter(function(w){return w.st==='pend';});
-  var done=S.ws.filter(function(w){return w.st==='ok';});
-  var h='';
-  if(pend.length){
-    h+='<p class="list-section-label">Pending receipt</p>';
-    pend.forEach(function(w){
-      var isE=!!EXP[w.id],expE=expectedEur(w.usd);
-      h+='<div class="w-item">'
-        +'<div class="w-row1">'
-        +'<div class="w-row1-left"><span class="badge badge-pend">'+w.pl+'</span><span class="w-amt">'+fu(w.usd)+'</span></div>'
-        +'<div style="display:flex;gap:6px;align-items:center">'
-        +'<button class="btn-outline" style="font-size:11px;padding:6px 12px" onclick="toggleExp(\''+w.id+'\')">'+( isE?'Cancel':'Money received')+'</button>'
-        +'<button class="btn-del" onclick="delW(\''+w.id+'\')">&times;</button>'
-        +'</div></div>'
-        +'<div class="w-row2">'
-        +'<div class="w-row2-left">'+fdate(w.date)+'</div>'
-        +'<div class="w-row2-right"><span class="w-exp">≈ '+fe(expE)+'</span></div>'
-        +'</div>';
-      if(isE){
-        h+='<div class="w-expand">'
-          +'<div class="g2" style="margin-bottom:.875rem">'
-          +'<div class="field"><label>Received (EUR)</label>'
-          +'<input class="num" id="e_'+w.id+'" placeholder="0.00" oninput="eurChanged(\''+w.id+'\')">'
-          +'<p class="sub-hint" id="rh_'+w.id+'">Wise expected: '+fe(expE)+'</p></div><div></div></div>'
-          +'<p class="sec-label" style="margin-bottom:.625rem">Split</p>'
-          +'<div class="g2" style="margin-bottom:.875rem">'
-          +'<div class="field"><label>Valerii (EUR)</label><input class="num" id="sv_'+w.id+'" placeholder="0.00" oninput="updateV(\''+w.id+'\')"></div>'
-          +'<div class="field"><label>Vladislav (EUR)</label><input class="num" id="svl_'+w.id+'" placeholder="0.00" oninput="updateVl(\''+w.id+'\')"></div>'
-          +'</div>'
-          +'<p class="hint" style="margin-bottom:.75rem">Enter EUR received — split fills automatically. Adjust if needed.</p>'
-          +'<button class="btn" onclick="confirmW(\''+w.id+'\')">Confirm receipt</button></div>';
-      }
-      h+='</div>';
-    });
-  }
-  if(done.length){
-    var tU=0,tE=0,tLoss=0,hasLoss=false;
-    done.forEach(function(w){tU+=w.usd;tE+=w.eur;var l=r2(expectedEur(w.usd)-w.eur);if(l>0){tLoss+=l;hasLoss=true;}});
-    h+='<p class="list-section-label"'+(pend.length?' style="margin-top:1.25rem"':'')+'>Withdrawal history</p>';
-    h+='<div class="hist-summary">'
-      +'<div class="stat-box"><p class="stat-lbl">Requested</p><p class="stat-val">'+fu(r2(tU))+'</p></div>'
-      +'<div class="stat-box"><p class="stat-lbl">Received</p><p class="stat-val">'+fe(r2(tE))+'</p></div>'
-      +'<div class="stat-box"><p class="stat-lbl">Avg rate</p><p class="stat-val">'+(tU>0?(tE/tU).toFixed(4):'-')+'</p></div>'
-      +(hasLoss?'<div class="stat-box"><p class="stat-lbl">FX loss</p><p class="stat-val red">'+fe(r2(tLoss))+'</p></div>':'')
-      +'</div>';
-    done.forEach(function(w){
-      var rate=w.usd>0?(w.eur/w.usd).toFixed(4):'-';
-      var loss=r2(expectedEur(w.usd)-w.eur);
-      h+='<div class="w-item">'
-        +'<div class="w-row1">'
-        +'<div class="w-row1-left"><span class="badge badge-ok">'+w.pl+'</span><span class="w-amt">'+fu(w.usd)+' → '+fe(w.eur)+'</span></div>'
-        +'<button class="btn-del" onclick="delW(\''+w.id+'\')">&times;</button>'
-        +'</div>'
-        +'<div class="w-row2">'
-        +'<div class="w-row2-left">'+fdate(w.date)+(w.rd?' → '+fdate(w.rd):'')+' · '+rate+(loss>0?' · <span style="color:var(--red)">loss: '+fe(loss)+'</span>':'')+'</div>'
-        +'<div class="w-row2-right"><span class="badge badge-v">Valerii '+fe(w.vE)+'</span><span class="badge badge-vl">Vladislav '+fe(w.vlE)+'</span></div>'
-        +'</div>'
-        +'</div>';
-    });
-  }
-  el.innerHTML=h;
-}
-
-function renderAll(){
-  renderBal();renderChartLegend();renderMonths();renderList();
-  renderPlatformSettings();renderPlatformSelect();
-}
-
-/* ---- Numeric input filter ---- */
-document.addEventListener('keydown',function(e){
-  if(!e.target.classList||!e.target.classList.contains('num'))return;
-  var ok=['0','1','2','3','4','5','6','7','8','9','.',',','Backspace','Delete','Tab','ArrowLeft','ArrowRight','Home','End','Enter'];
-  if(ok.indexOf(e.key)===-1&&!e.ctrlKey&&!e.metaKey)e.preventDefault();
-});
-window.addEventListener('resize',function(){if(currentTab==='revenue')renderChart();});
-
-/* ---- Init ---- */
-async function init(){
-  // Load platforms
-  try{
-    var savedPl=localStorage.getItem('ft6_platforms');
-    if(savedPl)S.platforms=JSON.parse(savedPl);
-  }catch(e){}
-
-  // Restore active month index
-  var savedAm=parseInt(localStorage.getItem('ft6_am')||'');
-  if(!isNaN(savedAm))S.am=savedAm;
-
-  g('nDate').value=new Date().toISOString().slice(0,10);
-  g('txDate').value=new Date().toISOString().slice(0,10);
-
-  // Restore last refresh time label
-  var lastRefresh=localStorage.getItem('lastRevRefresh');
-  var lrl=g('lastRefreshLabel');if(lrl&&lastRefresh)lrl.textContent='Last refresh: '+lastRefresh;
-
-  renderAll();
-  fetchWiseRate();
-
-  // Load all data from Supabase in parallel
-  await Promise.all([loadRevenueData(),loadWithdrawals()]);
-  renderAll();
-
-  setupRealtime();
-}
-init();
-</script>
-</body>
-</html>
+if __name__ == '__main__':
+    asyncio.run(main())

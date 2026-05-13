@@ -3,7 +3,7 @@ import json
 import os
 import sys
 import requests
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from playwright.async_api import async_playwright
 
 FANVUE_COOKIES     = os.environ['FANVUE_COOKIES']
@@ -14,14 +14,12 @@ async def scrape():
     today = date.today()
     transactions = []
 
-    # Parse cookies from JSON
     try:
         raw_cookies = json.loads(FANVUE_COOKIES)
     except Exception as e:
         print(f"ERROR: Could not parse FANVUE_COOKIES: {e}")
         sys.exit(1)
 
-    # Convert to Playwright format
     pw_cookies = []
     for c in raw_cookies:
         cookie = {
@@ -62,22 +60,18 @@ async def scrape():
             "Object.defineProperty(navigator,'webdriver',{get:()=>undefined})"
         )
 
-        # Inject cookies
         await context.add_cookies(pw_cookies)
         print("Cookies injected")
 
         page = await context.new_page()
 
-        # Go directly to earnings page
         print("Loading earnings page...")
         await page.goto('https://www.fanvue.com/earnings',
                         wait_until='domcontentloaded', timeout=60000)
         await page.wait_for_timeout(8000)
 
-        # Check if we're actually logged in
         current_url = page.url
         print(f"URL after goto: {current_url}")
-
         await page.screenshot(path='earnings_page.png')
         print("Screenshot saved: earnings_page.png")
 
@@ -86,35 +80,46 @@ async def scrape():
             await browser.close()
             sys.exit(1)
 
-        # Scroll to load all transactions
-        for _ in range(3):
+        # Scroll until yesterday's date header appears
+        # This ensures ALL of today's transactions are loaded before extracting
+        yesterday = (today - timedelta(days=1)).strftime('%B %-d, %Y')
+        print(f"Scrolling until '{yesterday}' appears...")
+        max_scrolls = 25
+        for i in range(max_scrolls):
             await page.evaluate('window.scrollTo(0, document.body.scrollHeight)')
             await page.wait_for_timeout(1500)
+            found = await page.evaluate(
+                '''(target) => {
+                    const walker = document.createTreeWalker(
+                        document.body, NodeFilter.SHOW_TEXT, null, false);
+                    let node;
+                    while ((node = walker.nextNode())) {
+                        if (node.textContent.trim() === target) return true;
+                    }
+                    return false;
+                }''',
+                yesterday
+            )
+            if found:
+                print(f"Found '{yesterday}' after {i+1} scroll(s) — all today's transactions loaded")
+                break
+            if i == max_scrolls - 1:
+                print(f"Warning: '{yesterday}' not found after {max_scrolls} scrolls, proceeding anyway")
 
         # Extract transactions
         raw = await page.evaluate('''() => {
             const results = [];
             let currentDate = null;
-
             const walker = document.createTreeWalker(
-                document.body,
-                NodeFilter.SHOW_TEXT,
-                null,
-                false
-            );
-
+                document.body, NodeFilter.SHOW_TEXT, null, false);
             let node;
             while ((node = walker.nextNode())) {
                 const text = node.textContent.trim();
                 if (!text) continue;
-
-                // Date header: "May 10, 2026"
                 if (/^[A-Z][a-z]+ \\d{1,2}, \\d{4}$/.test(text)) {
                     currentDate = text;
                     continue;
                 }
-
-                // Amount: "$8.00"
                 const m = text.match(/^\\$([0-9]+\\.[0-9]{2})$/);
                 if (m && currentDate) {
                     const amount = parseFloat(m[1]);

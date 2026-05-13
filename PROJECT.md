@@ -149,6 +149,7 @@ Nothing required. New months appear automatically when the scraper writes the fi
 - Roles: Admin / Partner / Operator
 - RLS policies on all tables
 - Login UI in the tracker
+- Transaction management UI (edit/delete) — blocked by auth, anyone with URL can modify data without it
 
 ### Later: Multi-model + Operators
 - Multiple Fanvue accounts per agency

@@ -1,9 +1,7 @@
 name: Fanvue Daily Scraper
 
 on:
-  schedule:
-    - cron: '0 6 * * *'    # 06:00 UTC = 09:00 Kyiv (UTC+3 летом) — утренний итог за вчера
-  workflow_dispatch:          # ручной запуск для теста
+  workflow_dispatch:          # запускается через cron-job.org или вручную
 
 jobs:
   scrape:

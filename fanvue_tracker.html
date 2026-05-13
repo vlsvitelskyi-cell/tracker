@@ -540,6 +540,7 @@ function fdate(d){if(!d)return'';var p=d.split('-');return p[2]+' '+['Jan','Feb'
 var S={months:[],ws:[],txs:[],am:0,platforms:DEFAULT_PLATFORMS.slice()};
 var EXP={};
 var TX_EDIT={};  // id -> true when in edit mode
+var TX_FILTER={platform:'all',source:'all'}; // active filters
 var currentTab='dashboard';
 
 /* ---- Platform normalization ---- */
@@ -856,6 +857,10 @@ async function addTransaction(){
   btn.disabled=false;btn.textContent='Add';
 }
 
+/* ---- Transaction filters ---- */
+function txSetPlatform(val){TX_FILTER.platform=val;renderMonths();}
+function txSetSource(val){TX_FILTER.source=val;renderMonths();}
+
 /* ---- Transaction management (admin only) ---- */
 function txEditStart(id){
   TX_EDIT[id]=true;
@@ -1108,16 +1113,70 @@ function renderMonths(){
 
   if(monthTxs.length){
     var isAdmin=currentRole==='admin';
-    html+='<div class="divider"></div>';
-    html+='<p class="sec-label" style="margin-bottom:.625rem">Transactions ('+monthTxs.length+')</p>';
+
+    // Collect available platforms for this month
+    var monthPlatforms=['all'];
     monthTxs.forEach(function(tx){
+      var pl=normalizePlatform(tx.platform);
+      if(monthPlatforms.indexOf(pl)===-1)monthPlatforms.push(pl);
+    });
+    var hasManual=monthTxs.some(function(tx){return tx.source!=='scraper';});
+    var hasAuto=monthTxs.some(function(tx){return tx.source==='scraper';});
+
+    // Apply filters
+    var filtered=monthTxs.filter(function(tx){
+      var plMatch=TX_FILTER.platform==='all'||normalizePlatform(tx.platform)===TX_FILTER.platform;
+      var srcMatch=TX_FILTER.source==='all'
+        ||(TX_FILTER.source==='auto'&&tx.source==='scraper')
+        ||(TX_FILTER.source==='manual'&&tx.source!=='scraper');
+      return plMatch&&srcMatch;
+    });
+
+    html+='<div class="divider"></div>';
+
+    // Filter bar
+    html+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.625rem;flex-wrap:wrap;gap:8px">';
+    html+='<p class="sec-label" style="margin:0">Transactions ('+filtered.length+(filtered.length!==monthTxs.length?'/'+monthTxs.length:'')+')</p>';
+    html+='<div style="display:flex;gap:6px;flex-wrap:wrap">';
+
+    // Platform filter pills
+    monthPlatforms.forEach(function(pl){
+      var act=TX_FILTER.platform===pl;
+      html+='<button onclick="txSetPlatform(\''+pl+'\')" style="'
+        +'font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;cursor:pointer;font-family:inherit;transition:background .15s,color .15s;'
+        +(act
+          ?'background:var(--text);color:var(--bg);border:1px solid var(--text);'
+          :'background:transparent;color:var(--text2);border:1px solid var(--border2);')
+        +'">'+(pl==='all'?'All':pl)+'</button>';
+    });
+
+    // Source filter pills (only show if both types exist)
+    if(hasManual&&hasAuto){
+      html+='<div style="width:1px;height:20px;background:var(--border2);margin:0 2px;align-self:center"></div>';
+      ['all','auto','manual'].forEach(function(src){
+        var act=TX_FILTER.source===src;
+        html+='<button onclick="txSetSource(\''+src+'\')" style="'
+          +'font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;cursor:pointer;font-family:inherit;transition:background .15s,color .15s;'
+          +(act
+            ?'background:var(--text);color:var(--bg);border:1px solid var(--text);'
+            :'background:transparent;color:var(--text2);border:1px solid var(--border2);')
+          +'">'+src+'</button>';
+      });
+    }
+
+    html+='</div></div>';
+
+    if(!filtered.length){
+      html+='<div style="text-align:center;padding:1rem;color:var(--text3);font-size:13px">No transactions match the filter</div>';
+    }
+
+    filtered.forEach(function(tx){
       var isEditing=!!TX_EDIT[tx.id];
       var plLabel=normalizePlatform(tx.platform);
       var plIdx=S.platforms.indexOf(plLabel);
       var plColor=PLATFORM_COLORS[(plIdx>=0?plIdx:0)%PLATFORM_COLORS.length];
 
       if(isEditing){
-        // Edit mode
         var plOptions=S.platforms.map(function(p){
           return '<option value="'+p.toLowerCase()+'"'+(p.toLowerCase()===tx.platform?' selected':'')+'>'+p+'</option>';
         }).join('');
@@ -1138,7 +1197,6 @@ function renderMonths(){
           +'</div>'
           +'</div>';
       }else{
-        // View mode
         html+='<div class="tx-item">'
           +'<div class="tx-row">'
           +'<div class="tx-left">'

@@ -74,7 +74,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-seri
 .field label{font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.06em;text-transform:uppercase}
 .field input,.field select,.field textarea{width:100%;padding:9px 11px;border:1px solid var(--border2);border-radius:9px;font-size:14px;color:var(--text);background:var(--card2);font-family:inherit;outline:none;transition:border-color .15s;-webkit-appearance:none}
 .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--blue)}
-.field textarea{font-size:12px;font-family:monospace;resize:vertical}
 .sub-hint{font-size:11px;color:var(--text3);margin-top:2px}
 .hint{font-size:12px;color:var(--text2);line-height:1.55;margin-bottom:.875rem}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -120,12 +119,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-seri
 .chart-legend{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:.875rem}
 .legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)}
 .legend-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
-.method-tabs{display:flex;margin-bottom:.875rem;border:1px solid var(--border2);border-radius:9px;overflow:hidden}
-.method-tab{flex:1;font-size:12px;font-weight:500;padding:7px 12px;background:transparent;border:none;cursor:pointer;color:var(--text2);font-family:inherit;text-align:center;transition:background .15s,color .15s}
-.method-tab.act{background:var(--card2);color:var(--text)}
-.csv-link{font-size:12px;font-family:monospace;word-break:break-all;background:var(--card2);padding:.625rem .875rem;border-radius:8px;margin-bottom:.75rem;color:var(--text2);display:block;line-height:1.5;border:1px solid var(--border)}
-.sync-status{font-size:11px;margin-top:.625rem;min-height:16px}
-.sync-ok{color:var(--green-text)}.sync-err{color:var(--red)}.sync-info{color:var(--text3)}
 .sec-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:.875rem}
 .sec-row .sec-label{margin:0}
 .divider{height:1px;background:var(--border);margin:1rem 0}
@@ -134,6 +127,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-seri
 .pl-name{font-size:13px;color:var(--text)}
 .pl-add-row{display:flex;gap:8px;margin-top:.75rem}
 .pl-add-row .field{flex:1}
+.loading-row{display:flex;align-items:center;gap:8px;color:var(--text3);font-size:13px;padding:.5rem 0}
+.spinner{width:14px;height:14px;border:2px solid var(--border2);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.tx-item{display:flex;align-items:center;justify-content:space-between;padding:.5rem .75rem;background:var(--card2);border:1px solid var(--border);border-radius:9px;margin-bottom:5px}
+.tx-left{display:flex;align-items:center;gap:8px}
+.tx-pl{font-size:11px;font-weight:700;padding:2px 8px;border-radius:12px;background:var(--card);color:var(--text2)}
+.tx-amt{font-size:13px;font-weight:600}
+.tx-date{font-size:11px;color:var(--text3)}
 @media(max-width:540px){
   .tabs-desktop{display:none}
   .tabs-mobile{display:flex}
@@ -232,42 +233,52 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-seri
   <div class="card">
     <div class="sec-row">
       <div class="sec-label">Monthly Revenue</div>
-      <button class="btn-outline" style="font-size:11px;padding:5px 11px" onclick="addMonth()">+ Month</button>
+      <div style="display:flex;gap:8px;align-items:center">
+        <span id="revLoadStatus" style="font-size:11px;color:var(--text3)"></span>
+        <button class="btn-outline" style="font-size:11px;padding:5px 11px" onclick="refreshRevenue()">↻ Refresh</button>
+      </div>
     </div>
     <div class="chart-legend" id="chartLegend"></div>
     <div class="chart-wrap"><div id="chartContainer"></div></div>
     <div class="mtab-row" id="mTabs"></div>
     <div id="mView"></div>
   </div>
+
+  <!-- Manual transaction entry -->
+  <div class="card" id="addTxCard">
+    <div class="sec-row">
+      <div class="sec-label">Add Transaction</div>
+      <span style="font-size:11px;color:var(--text3)">Telegram / PayPal manual entry</span>
+    </div>
+    <div class="add-row">
+      <div class="field">
+        <label>Platform</label>
+        <select id="txPl"></select>
+      </div>
+      <div class="field">
+        <label>Amount (USD)</label>
+        <input id="txAmt" class="num" placeholder="50.00">
+      </div>
+      <div class="field">
+        <label>Date</label>
+        <input type="date" id="txDate">
+      </div>
+      <button class="btn" id="txAddBtn" onclick="addTransaction()" style="align-self:flex-end;padding:9px 16px">Add</button>
+    </div>
+    <div id="txStatus" style="font-size:11px;margin-top:.5rem;min-height:16px"></div>
+  </div>
 </div>
 
 <!-- SETTINGS -->
 <div class="tab-page" id="tab-settings">
   <div class="card">
-    <div class="sec-label">Google Sheets Sync</div>
-    <div class="method-tabs">
-      <button class="method-tab act" id="mTab1" onclick="switchMethod(1)">Auto (URL)</button>
-      <button class="method-tab" id="mTab2" onclick="switchMethod(2)">Manual (paste CSV)</button>
+    <div class="sec-row">
+      <div class="sec-label">Revenue Data Source</div>
     </div>
-    <div id="method1">
-      <div style="display:flex;gap:8px;align-items:flex-end;margin-bottom:.5rem">
-        <div class="field" style="flex:1">
-          <label>Google Sheets URL</label>
-          <input id="sheetsUrl" placeholder="https://docs.google.com/spreadsheets/d/…">
-        </div>
-        <button class="btn-blue" id="syncBtn" onclick="syncAuto()">Sync</button>
-      </div>
-      <div class="sync-status" id="syncStatus1"></div>
-    </div>
-    <div id="method2" style="display:none">
-      <p class="hint">Open this URL in your browser, select all (Cmd+A), copy, paste below:</p>
-      <code class="csv-link" id="csvLink">Enter your Sheets URL in Auto tab first.</code>
-      <div class="field" style="margin-bottom:.75rem">
-        <label>Paste CSV here</label>
-        <textarea id="csvPaste" rows="5" placeholder="month_name,fanvue,tg,paypal,vExp,vlExp…"></textarea>
-      </div>
-      <button class="btn" onclick="syncManual()">Apply</button>
-      <div class="sync-status" id="syncStatus2"></div>
+    <p class="hint">Revenue is read directly from Supabase (<code style="font-size:11px;background:var(--card2);padding:1px 5px;border-radius:4px">transactions</code> + <code style="font-size:11px;background:var(--card2);padding:1px 5px;border-radius:4px">expenses</code>). Fanvue transactions are written automatically by the scraper at 09:00 Kyiv. Telegram and PayPal can be added manually in the Revenue tab.</p>
+    <div style="display:flex;gap:8px;align-items:center;margin-top:.75rem">
+      <button class="btn-blue" onclick="refreshRevenue()">↻ Refresh now</button>
+      <span id="lastRefreshLabel" style="font-size:11px;color:var(--text3)"></span>
     </div>
   </div>
 
@@ -287,7 +298,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-seri
   <div class="card">
     <div class="sec-label">Info</div>
     <p id="infoCard" style="font-size:12px;color:var(--text2);line-height:1.8">
-      Real-time sync via Supabase &bull; Revenue from Google Sheets<br>
+      Real-time sync via Supabase &bull; Revenue from transactions table<br>
       <span style="color:var(--text3)">Revolut reference: 1 USD = 0.8547 EUR</span><br>
       <span id="wiseRateLine" style="color:var(--text3)">Wise mid-market: loading…</span>
     </p>
@@ -323,10 +334,16 @@ var SUPA_URL='https://bhrwrrosvmjuprkpjush.supabase.co';
 var SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJocndycm9zdm1qdXBya3BqdXNoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MDY1NzEsImV4cCI6MjA5Mzk4MjU3MX0.wRbNiKXdNzSceaqKb1hr0e5rM1AbDuCRQTE9E0ZaX3Y';
 var db=supabase.createClient(SUPA_URL,SUPA_KEY);
 
+/* ---- Entity IDs ---- */
+var MODEL_ID='7461a252-076f-4e15-9bc9-6557863d9432';
+var VALERII_ID='38f3b0ad-648e-4cd7-abc6-573049b7092e';
+var VLADISLAV_ID='cc1482e8-5832-42d1-b65a-bf307400b694';
+
 /* ---- Globals ---- */
-var WISE_RATE=0.855; // fallback: ~1/1.17
+var WISE_RATE=0.855;
 var PLATFORM_COLORS=['#5b8ff0','#a78bfa','#fb923c','#34d399','#f87171','#fbbf24','#60a5fa','#c084fc'];
 var DEFAULT_PLATFORMS=['Fanvue','Telegram','PayPal'];
+var MONTH_NAMES=['January','February','March','April','May','June','July','August','September','October','November','December'];
 
 /* ---- Utils ---- */
 function pn(v){var s=String(v==null?0:v).replace(/[$€£\s]/g,'').replace(/[,]/,'.');if(s==='-'||s==='')return 0;return parseFloat(s)||0;}
@@ -336,17 +353,35 @@ function fu(n){return '$'+Math.abs(n).toFixed(2);}
 function g(id){return document.getElementById(id);}
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,5);}
 function slug(p){return p.toLowerCase().replace(/[^a-z0-9]/g,'_');}
+function fdate(d){if(!d)return'';var p=d.split('-');return p[2]+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+p[1]-1];}
 
 /* ---- State ---- */
-var DEFAULT_MONTHS=[
-  {id:'mar26',name:'March 26',revenues:{Fanvue:415.46,Telegram:21.91,PayPal:76},vExp:203,vlExp:0},
-  {id:'apr26',name:'April 26',revenues:{Fanvue:621.51,Telegram:141.9,PayPal:422.85},vExp:72,vlExp:15.99},
-  {id:'may26',name:'May 26',revenues:{Fanvue:350.74,Telegram:0,PayPal:170.64},vExp:0,vlExp:15.99}
-];
-var S={months:JSON.parse(JSON.stringify(DEFAULT_MONTHS)),ws:[],am:2,platforms:DEFAULT_PLATFORMS.slice()};
+var S={months:[],ws:[],am:0,platforms:DEFAULT_PLATFORMS.slice()};
 var EXP={};
-var activeMethod=1;
 var currentTab='dashboard';
+
+/* ---- Platform normalization ---- */
+// Maps DB platform values (any case) to canonical S.platforms names
+function normalizePlatform(raw){
+  if(!raw)return'Other';
+  var lower=raw.toLowerCase().trim();
+  for(var i=0;i<S.platforms.length;i++){
+    if(S.platforms[i].toLowerCase()===lower)return S.platforms[i];
+  }
+  // common aliases
+  if(lower==='tg'||lower==='telegram')return'Telegram';
+  if(lower==='fanvue')return'Fanvue';
+  if(lower==='paypal')return'PayPal';
+  return raw;
+}
+
+/* ---- Month key helpers ---- */
+// key = 'YYYY-MM', returns e.g. "March '26"
+function monthKeyToName(key){
+  var parts=key.split('-');
+  return MONTH_NAMES[parseInt(parts[1],10)-1]+" '"+parts[0].slice(2);
+}
+function dateToMonthKey(d){return d?d.slice(0,7):null;}
 
 /* ---- Theme ---- */
 function toggleTheme(){
@@ -400,11 +435,13 @@ function savePlatforms(){
   try{localStorage.setItem('ft6_platforms',JSON.stringify(S.platforms));}catch(e){}
 }
 function renderPlatformSelect(){
-  var sel=g('nPl');if(!sel)return;
-  var cur=sel.value;
-  sel.innerHTML=S.platforms.map(function(p){
-    return '<option'+(p===cur?' selected':'')+'>'+p+'</option>';
-  }).join('');
+  [g('nPl'),g('txPl')].forEach(function(sel){
+    if(!sel)return;
+    var cur=sel.value;
+    sel.innerHTML=S.platforms.map(function(p){
+      return '<option'+(p===cur?' selected':'')+'>'+p+'</option>';
+    }).join('');
+  });
 }
 function renderPlatformSettings(){
   var el=g('platformList');if(!el)return;
@@ -422,37 +459,133 @@ function addPlatform(){
   var name=(input.value||'').trim();
   if(!name||S.platforms.indexOf(name)!==-1)return;
   S.platforms.push(name);
-  S.months.forEach(function(m){m.revenues=m.revenues||{};if(m.revenues[name]===undefined)m.revenues[name]=0;});
-  savePlatforms();saveLocal();
+  savePlatforms();
   input.value='';
   renderPlatformSettings();renderPlatformSelect();renderChartLegend();renderMonths();
 }
 function removePlatform(i){
   if(S.platforms.length<=1)return;
-  var name=S.platforms[i];
   S.platforms.splice(i,1);
-  S.months.forEach(function(m){if(m.revenues)delete m.revenues[name];});
-  savePlatforms();saveLocal();
+  savePlatforms();
   renderPlatformSettings();renderPlatformSelect();renderChartLegend();renderMonths();renderBal();
 }
 
-/* ---- DB helpers ---- */
-function dbToLocal(row){
-  return{id:row.id,pl:row.platform,usd:parseFloat(row.usd)||0,
-    eur:parseFloat(row.eur)||0,vE:parseFloat(row.v_eur)||0,vlE:parseFloat(row.vl_eur)||0,
-    date:row.request_date,rd:row.received_date,st:row.status==='ok'?'ok':'pend'};
+/* ---- Load revenue data from Supabase ---- */
+async function loadRevenueData(){
+  var statusEl=g('revLoadStatus');
+  if(statusEl)statusEl.innerHTML='<span style="display:inline-flex;align-items:center;gap:5px"><span class="spinner"></span>Loading…</span>';
+
+  var results=await Promise.all([
+    db.from('transactions')
+      .select('amount,platform,transaction_date')
+      .eq('model_id',MODEL_ID)
+      .order('transaction_date',{ascending:true}),
+    db.from('expenses')
+      .select('amount,partner_id,expense_date')
+      .eq('model_id',MODEL_ID)
+      .order('expense_date',{ascending:true})
+  ]);
+
+  var txRes=results[0],expRes=results[1];
+
+  if(txRes.error)console.error('transactions error:',txRes.error);
+  if(expRes.error)console.error('expenses error:',expRes.error);
+
+  var monthMap={};
+
+  function ensureMonth(key){
+    if(!monthMap[key]){
+      monthMap[key]={revenues:{},vExp:0,vlExp:0};
+      S.platforms.forEach(function(p){monthMap[key].revenues[p]=0;});
+    }
+  }
+
+  (txRes.data||[]).forEach(function(tx){
+    var key=dateToMonthKey(tx.transaction_date);
+    if(!key)return;
+    ensureMonth(key);
+    var pl=normalizePlatform(tx.platform);
+    if(monthMap[key].revenues[pl]===undefined)monthMap[key].revenues[pl]=0;
+    monthMap[key].revenues[pl]+=parseFloat(tx.amount)||0;
+  });
+
+  (expRes.data||[]).forEach(function(exp){
+    var key=dateToMonthKey(exp.expense_date);
+    if(!key)return;
+    ensureMonth(key);
+    var amt=parseFloat(exp.amount)||0;
+    if(exp.partner_id===VALERII_ID)monthMap[key].vExp+=amt;
+    else if(exp.partner_id===VLADISLAV_ID)monthMap[key].vlExp+=amt;
+  });
+
+  var newMonths=Object.keys(monthMap).sort().map(function(key){
+    var data=monthMap[key];
+    S.platforms.forEach(function(p){
+      if(data.revenues[p]===undefined)data.revenues[p]=0;
+      else data.revenues[p]=r2(data.revenues[p]);
+    });
+    return{id:key,name:monthKeyToName(key),revenues:data.revenues,vExp:r2(data.vExp),vlExp:r2(data.vlExp)};
+  });
+
+  if(newMonths.length>0){
+    S.months=newMonths;
+    var savedAm=parseInt(localStorage.getItem('ft6_am')||'');
+    if(!isNaN(savedAm)&&savedAm<S.months.length)S.am=savedAm;
+    else S.am=S.months.length-1;
+  }
+
+  var now=new Date().toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+  localStorage.setItem('lastRevRefresh',now);
+  if(statusEl)statusEl.textContent='';
+  var lrl=g('lastRefreshLabel');if(lrl)lrl.textContent='Last refresh: '+now;
 }
+
+/* ---- Load withdrawals (joins withdrawal_splits) ---- */
 async function loadWithdrawals(){
-  var res=await db.from('withdrawals').select('*').order('request_date',{ascending:false});
-  if(res.error){console.error(res.error);return;}
-  S.ws=(res.data||[]).map(dbToLocal);
+  var results=await Promise.all([
+    db.from('withdrawals').select('*').order('request_date',{ascending:false}),
+    db.from('withdrawal_splits').select('*')
+  ]);
+
+  var wRes=results[0],splitsRes=results[1];
+  if(wRes.error){console.error(wRes.error);return;}
+
+  // Build splits map: withdrawal_id -> {vE, vlE}
+  var splitsMap={};
+  (splitsRes.data||[]).forEach(function(s){
+    if(!splitsMap[s.withdrawal_id])splitsMap[s.withdrawal_id]={};
+    var amt=parseFloat(s.eur_amount)||0;
+    if(s.partner_id===VALERII_ID)splitsMap[s.withdrawal_id].vE=amt;
+    else if(s.partner_id===VLADISLAV_ID)splitsMap[s.withdrawal_id].vlE=amt;
+  });
+
+  S.ws=(wRes.data||[]).map(function(row){
+    var sp=splitsMap[row.id]||{};
+    // prefer withdrawal_splits; fall back to v_eur/vl_eur columns for backward compat
+    return{
+      id:row.id,pl:row.platform,
+      usd:parseFloat(row.usd)||0,
+      eur:parseFloat(row.eur)||0,
+      vE:sp.vE!=null?sp.vE:(parseFloat(row.v_eur)||0),
+      vlE:sp.vlE!=null?sp.vlE:(parseFloat(row.vl_eur)||0),
+      date:row.request_date,rd:row.received_date,
+      st:row.status==='ok'?'ok':'pend'
+    };
+  });
   renderAll();
 }
 
 /* ---- Real-time ---- */
 function setupRealtime(){
-  db.channel('withdrawals-live')
+  db.channel('app-live')
     .on('postgres_changes',{event:'*',schema:'public',table:'withdrawals'},function(){loadWithdrawals();})
+    .on('postgres_changes',{event:'*',schema:'public',table:'withdrawal_splits'},function(){loadWithdrawals();})
+    .on('postgres_changes',{event:'*',schema:'public',table:'transactions'},async function(){
+      await loadRevenueData();renderAll();
+    })
+    .on('postgres_changes',{event:'*',schema:'public',table:'expenses'},async function(){
+      await loadRevenueData();renderAll();
+    })
     .subscribe(function(status){
       var dot=g('liveDot'),lbl=g('liveStatus');
       if(status==='SUBSCRIBED'){dot.className='live-dot on';lbl.textContent='live';}
@@ -461,120 +594,92 @@ function setupRealtime(){
     });
 }
 
-/* ---- CRUD ---- */
+/* ---- CRUD: withdrawals ---- */
 async function addW(){
   var usd=pn(g('nUSD').value);
   if(!usd||usd<=0){g('nUSD').focus();return;}
   var date=g('nDate').value||new Date().toISOString().slice(0,10);
   var btn=g('addBtn');btn.disabled=true;btn.textContent='Adding…';
-  var res=await db.from('withdrawals').insert({platform:g('nPl').value,usd:r2(usd),request_date:date,eur:0,v_eur:0,vl_eur:0,status:'pending'});
+  var res=await db.from('withdrawals').insert({
+    platform:g('nPl').value,usd:r2(usd),request_date:date,
+    eur:0,v_eur:0,vl_eur:0,status:'pending'
+  });
   if(res.error)alert('Error: '+res.error.message);
   else g('nUSD').value='';
   btn.disabled=false;btn.textContent='Add';
 }
+
 async function confirmW(id){
   var eur=pn(g('e_'+id).value);
   if(!eur||eur<=0){g('e_'+id).focus();return;}
   var vG=pn(g('sv_'+id).value),vlG=pn(g('svl_'+id).value);
   if(Math.abs(vG+vlG-eur)>0.02){alert('Valerii + Vladislav must equal '+eur.toFixed(2)+' EUR');return;}
-  var res=await db.from('withdrawals').update({eur:r2(eur),v_eur:r2(vG),vl_eur:r2(vlG),status:'ok',received_date:new Date().toISOString().slice(0,10)}).eq('id',id);
-  if(res.error)alert('Error: '+res.error.message);
-  else EXP[id]=false;
+  var today=new Date().toISOString().slice(0,10);
+
+  // 1. Update withdrawals (keep v_eur/vl_eur for backward compat)
+  var res=await db.from('withdrawals').update({
+    eur:r2(eur),v_eur:r2(vG),vl_eur:r2(vlG),
+    status:'ok',received_date:today
+  }).eq('id',id);
+  if(res.error){alert('Error: '+res.error.message);return;}
+
+  // 2. Write per-partner splits (delete + re-insert to avoid unique constraint issues)
+  await db.from('withdrawal_splits').delete().eq('withdrawal_id',id);
+  var splitsRes=await db.from('withdrawal_splits').insert([
+    {withdrawal_id:id,partner_id:VALERII_ID,eur_amount:r2(vG)},
+    {withdrawal_id:id,partner_id:VLADISLAV_ID,eur_amount:r2(vlG)}
+  ]);
+  if(splitsRes.error)console.error('splits write error:',splitsRes.error);
+
+  EXP[id]=false;
 }
+
 async function delW(id){
   if(!confirm('Delete this withdrawal?'))return;
+  await db.from('withdrawal_splits').delete().eq('withdrawal_id',id);
   var res=await db.from('withdrawals').delete().eq('id',id);
   if(res.error)alert('Error: '+res.error.message);
 }
+
 async function resetAll(){
   if(!confirm('Delete ALL withdrawal history from the database?'))return;
+  await db.from('withdrawal_splits').delete().neq('id','00000000-0000-0000-0000-000000000000');
   var res=await db.from('withdrawals').delete().neq('id','00000000-0000-0000-0000-000000000000');
   if(res.error)alert('Error: '+res.error.message);
 }
 
-/* ---- Google Sheets sync ---- */
-function switchMethod(n){
-  activeMethod=n;
-  g('method1').style.display=n===1?'block':'none';
-  g('method2').style.display=n===2?'block':'none';
-  g('mTab1').className='method-tab'+(n===1?' act':'');
-  g('mTab2').className='method-tab'+(n===2?' act':'');
-  if(n===2)updateCsvLink();
-}
-function extractId(url){var m=url.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);return m?m[1]:null;}
-function updateCsvLink(){
-  var url=(g('sheetsUrl').value||'').trim(),id=extractId(url);
-  g('csvLink').textContent=id?'https://docs.google.com/spreadsheets/d/'+id+'/gviz/tq?tqx=out:csv&sheet=Data':'Enter your Sheets URL in Auto tab first.';
-}
-g('sheetsUrl').addEventListener('input',function(){if(activeMethod===2)updateCsvLink();});
-function parseCSVLine(line){
-  var res=[],cur='',inQ=false;
-  for(var i=0;i<line.length;i++){
-    var c=line[i];
-    if(c==='"'){if(inQ&&line[i+1]==='"'){cur+='"';i++;}else inQ=!inQ;}
-    else if(c===','&&!inQ){res.push(cur);cur='';}
-    else cur+=c;
-  }
-  res.push(cur);return res;
-}
-function applyCSV(csv){
-  var lines=csv.split('\n').map(function(l){return l.trim();}).filter(Boolean);
-  if(lines.length<2)throw new Error('CSV is empty or missing rows');
-  var updated=0;
-  // CSV cols 1,2,3 map to first 3 platforms
-  var pl0=S.platforms[0]||'Fanvue',pl1=S.platforms[1]||'Telegram',pl2=S.platforms[2]||'PayPal';
-  for(var i=1;i<lines.length;i++){
-    var cols=parseCSVLine(lines[i]);
-    if(cols.length<6)continue;
-    var idx=i-1,nm=(cols[0]||'').replace(/"/g,'').trim();
-    if(idx<S.months.length){
-      if(nm)S.months[idx].name=nm;
-      S.months[idx].revenues=S.months[idx].revenues||{};
-      S.months[idx].revenues[pl0]=pn(cols[1]);
-      S.months[idx].revenues[pl1]=pn(cols[2]);
-      S.months[idx].revenues[pl2]=pn(cols[3]);
-      S.months[idx].vExp=pn(cols[4]);S.months[idx].vlExp=pn(cols[5]);
-    }else{
-      var rev={};rev[pl0]=pn(cols[1]);rev[pl1]=pn(cols[2]);rev[pl2]=pn(cols[3]);
-      S.months.push({id:'m'+uid(),name:nm||('Month '+(idx+1)),revenues:rev,vExp:pn(cols[4]),vlExp:pn(cols[5])});
-    }
-    updated++;
-  }
-  saveLocal();return updated;
-}
-function setStatus(elId,type,msg){g(elId).innerHTML='<span class="sync-'+type+'">'+msg+'</span>';}
-function syncAuto(){
-  var url=(g('sheetsUrl').value||'').trim();
-  if(!url){setStatus('syncStatus1','err','Please enter a Google Sheets URL.');return;}
-  var id=extractId(url);
-  if(!id){setStatus('syncStatus1','err','Could not find spreadsheet ID.');return;}
-  localStorage.setItem('sheetsUrl',url);
-  var csvUrl='https://docs.google.com/spreadsheets/d/'+id+'/gviz/tq?tqx=out:csv&sheet=Data';
-  var btn=g('syncBtn');btn.disabled=true;btn.textContent='Syncing…';
-  setStatus('syncStatus1','info','Fetching…');
-  function tryFetch(u,cb){fetch(u).then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.text();}).then(cb).catch(function(){cb(null);});}
-  tryFetch(csvUrl,function(csv){
-    if(csv&&!csv.includes('<html'))finish(csv);
-    else tryFetch('https://corsproxy.io/?'+encodeURIComponent(csvUrl),function(csv2){
-      if(csv2&&!csv2.includes('<html'))finish(csv2);
-      else{btn.disabled=false;btn.textContent='Sync';setStatus('syncStatus1','err','Auto-sync failed. Use Manual tab instead.');}
-    });
+/* ---- CRUD: manual transactions (TG/PayPal) ---- */
+async function addTransaction(){
+  var amt=pn(g('txAmt').value);
+  if(!amt||amt<=0){g('txAmt').focus();return;}
+  var date=g('txDate').value||new Date().toISOString().slice(0,10);
+  var pl=g('txPl').value;
+  var btn=g('txAddBtn');btn.disabled=true;btn.textContent='Adding…';
+  var statusEl=g('txStatus');statusEl.textContent='';
+
+  var res=await db.from('transactions').insert({
+    model_id:MODEL_ID,
+    platform:pl.toLowerCase(),
+    amount:r2(amt),
+    transaction_date:date
   });
-  function finish(csv){
-    try{var n=applyCSV(csv);var now=new Date().toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
-      setStatus('syncStatus1','ok','✓ Synced '+n+' month'+(n!==1?'s':'')+' — '+now);
-      localStorage.setItem('lastSync',now);renderAll();}
-    catch(e){setStatus('syncStatus1','err','Parse error: '+e.message);}
-    btn.disabled=false;btn.textContent='Sync';
+
+  if(res.error){
+    statusEl.innerHTML='<span style="color:var(--red)">Error: '+res.error.message+'</span>';
+  }else{
+    g('txAmt').value='';
+    statusEl.innerHTML='<span style="color:var(--green-text)">✓ Added '+fu(amt)+' ('+pl+') for '+fdate(date)+'</span>';
+    await loadRevenueData();renderAll();
+    setTimeout(function(){statusEl.textContent='';},3000);
   }
+  btn.disabled=false;btn.textContent='Add';
 }
-function syncManual(){
-  var csv=(g('csvPaste').value||'').trim();
-  if(!csv){setStatus('syncStatus2','err','Paste CSV content first.');return;}
-  try{var n=applyCSV(csv);var now=new Date().toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
-    setStatus('syncStatus2','ok','✓ Applied '+n+' month'+(n!==1?'s':'')+' — '+now);
-    localStorage.setItem('lastSync',now);renderAll();}
-  catch(e){setStatus('syncStatus2','err','Error: '+e.message);}
+
+/* ---- Refresh revenue ---- */
+async function refreshRevenue(){
+  await loadRevenueData();
+  renderAll();
+  if(currentTab==='revenue')renderChart();
 }
 
 /* ---- Calculations ---- */
@@ -586,8 +691,8 @@ function totalVlSh(){return S.months.reduce(function(s,m){return s+mVlSh(m);},0)
 function okWs(){return S.ws.filter(function(w){return w.st==='ok'&&w.eur>0;});}
 function totalVEUR(){return okWs().reduce(function(s,w){return s+w.vE;},0);}
 function totalVlEUR(){return okWs().reduce(function(s,w){return s+w.vlE;},0);}
-function totalVUSD(){return okWs().reduce(function(s,w){return s+w.usd*(w.vE/w.eur);},0);}
-function totalVlUSD(){return okWs().reduce(function(s,w){return s+w.usd*(w.vlE/w.eur);},0);}
+function totalVUSD(){return okWs().reduce(function(s,w){return s+w.usd*(w.eur>0?w.vE/w.eur:0);},0);}
+function totalVlUSD(){return okWs().reduce(function(s,w){return s+w.usd*(w.eur>0?w.vlE/w.eur:0);},0);}
 function vRem(){return r2(totalVSh()-totalVUSD());}
 function vlRem(){return r2(totalVlSh()-totalVlUSD());}
 function vRatio(){var vs=totalVSh(),t=vs+totalVlSh();return t>0?vs/t:0.5;}
@@ -622,23 +727,10 @@ function updateVl(id){
   var vl=r2(Math.max(0,Math.min(eur,pn(g('svl_'+id).value))));
   g('svl_'+id).value=vl.toFixed(2);g('sv_'+id).value=r2(eur-vl).toFixed(2);
 }
-function setMonth(i){S.am=i;saveLocal();renderMonths();}
-function mChange(){
-  var m=S.months[S.am]||S.months[0];
-  m.revenues=m.revenues||{};
-  S.platforms.forEach(function(p){var el=g('mf_'+slug(p));if(el)m.revenues[p]=pn(el.value);});
-  ['vExp','vlExp'].forEach(function(f){var el=g('mf_'+f);if(el)m[f]=pn(el.value);});
-  renderMCalc();saveLocal();renderChart();
-}
-function addMonth(){
-  var name=prompt('Month name (e.g. June 26)');if(!name)return;
-  var rev={};S.platforms.forEach(function(p){rev[p]=0;});
-  S.months.push({id:'m'+uid(),name:name,revenues:rev,vExp:0,vlExp:0});
-  S.am=S.months.length-1;saveLocal();renderAll();
-}
-function fdate(d){
-  if(!d)return'';var p=d.split('-');
-  return p[2]+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+p[1]-1];
+function setMonth(i){
+  S.am=i;
+  localStorage.setItem('ft6_am',String(i));
+  renderMonths();
 }
 
 /* ---- Render: Dashboard ---- */
@@ -657,15 +749,11 @@ function renderBal(){
     g('bVPct').textContent='V '+(vf*100).toFixed(1)+'%';
     g('bVlPct').textContent='Vl '+((1-vf)*100).toFixed(1)+'%';
     g('bDiff').textContent=diff>0.05?'Gap: '+fe(diff):'';
-    // split hint
     var hint=g('splitHint');
     if(hint){
-      if(diff<5){
-        hint.innerHTML='<span style="color:var(--green-text)">✓ Splits are balanced</span>';
-      }else{
-        var behind=vE<vlE?'Valerii':'Vladislav';
-        hint.innerHTML='<span style="color:var(--yellow)">Next withdrawal should favor '+behind+' to balance the split (gap: '+fe(diff)+')</span>';
-      }
+      if(diff<5){hint.innerHTML='<span style="color:var(--green-text)">✓ Splits are balanced</span>';}
+      else{var behind=vE<vlE?'Valerii':'Vladislav';
+        hint.innerHTML='<span style="color:var(--yellow)">Next withdrawal should favor '+behind+' to balance the split (gap: '+fe(diff)+')</span>';}
     }
   }else{
     g('barV').style.flex='1';g('barVl').style.flex='1';
@@ -675,8 +763,7 @@ function renderBal(){
 
   var totalRev=r2(S.months.reduce(function(s,m){return s+mTot(m);},0));
   var totalW=r2(S.ws.filter(function(w){return w.st==='ok';}).reduce(function(s,w){return s+w.usd;},0));
-  var tLoss=0;
-  var oks=okWs(),tU=0,tEur=0;
+  var tLoss=0,oks=okWs(),tU=0,tEur=0;
   oks.forEach(function(w){var l=r2(expectedEur(w.usd)-w.eur);if(l>0)tLoss+=l;tU+=w.usd;tEur+=w.eur;});
   tLoss=r2(tLoss);
   var avgRate=tU>0?(tEur/tU).toFixed(4):null;
@@ -702,7 +789,7 @@ function renderChartLegend(){
 function renderChart(){
   var container=g('chartContainer');if(!container)return;
   var months=S.months;
-  if(!months.length){container.innerHTML='';return;}
+  if(!months.length){container.innerHTML='<p style="color:var(--text3);font-size:13px;padding:.5rem 0">No data yet</p>';return;}
   var W=Math.max(300,container.clientWidth||600);
   var H=160,PL=44,PR=8,PT=14,PB=28;
   var cW=W-PL-PR,cH=H-PT-PB,n=months.length;
@@ -722,9 +809,7 @@ function renderChart(){
   months.forEach(function(m,i){
     var x=PL+gap+i*(barW+gap);
     var base=PT+cH;
-    var segs=S.platforms.map(function(p,pi){
-      return{v:(m.revenues||{})[p]||0,c:PLATFORM_COLORS[pi%PLATFORM_COLORS.length]};
-    });
+    var segs=S.platforms.map(function(p,pi){return{v:(m.revenues||{})[p]||0,c:PLATFORM_COLORS[pi%PLATFORM_COLORS.length]};});
     var tot=mTot(m);
     var yOff=0;
     segs.forEach(function(s,si){
@@ -750,35 +835,46 @@ function renderChart(){
   container.innerHTML=sv.join('');
 }
 
-/* ---- Render: Monthly revenue tab ---- */
-function renderMCalc(){
-  var m=S.months[S.am]||S.months[0];
+/* ---- Render: Monthly revenue (read-only from Supabase) ---- */
+function renderMonths(){
+  if(!S.months.length){
+    g('mTabs').innerHTML='';
+    g('mView').innerHTML='<div class="loading-row"><div class="spinner"></div><span>Loading revenue data…</span></div>';
+    return;
+  }
+
+  g('mTabs').innerHTML=S.months.map(function(m,i){
+    return '<button class="mtab'+(i===S.am?' act':'')+'\" onclick="setMonth('+i+')">'+m.name+'</button>';
+  }).join('');
+
+  var m=S.months[S.am]||S.months[S.months.length-1];
+  if(!m){g('mView').innerHTML='';return;}
+
   var tot=r2(mTot(m)),vSh=r2(mVSh(m)),vlSh=r2(mVlSh(m));
-  var el=g('mCalc');if(!el)return;
-  el.innerHTML='<div class="divider"></div><div class="stats-row">'
+
+  var revBoxes=S.platforms.map(function(p,pi){
+    var val=(m.revenues||{})[p]||0;
+    return '<div class="stat-box">'
+      +'<p class="stat-lbl">'+p+'</p>'
+      +'<p class="stat-val" style="color:'+PLATFORM_COLORS[pi%PLATFORM_COLORS.length]+'">'+fu(val)+'</p>'
+      +'</div>';
+  }).join('');
+
+  g('mView').innerHTML=
+    '<p class="sec-label" style="margin-bottom:.625rem">Revenue</p>'
+    +'<div class="stats-row" style="margin-bottom:1rem">'+revBoxes+'</div>'
+    +'<p class="sec-label" style="margin-bottom:.625rem">Expenses</p>'
+    +'<div class="stats-row" style="margin-bottom:.5rem">'
+    +'<div class="stat-box"><p class="stat-lbl">Valerii</p><p class="stat-val blue">'+fu(m.vExp)+'</p></div>'
+    +'<div class="stat-box"><p class="stat-lbl">Vladislav</p><p class="stat-val green">'+fu(m.vlExp)+'</p></div>'
+    +'</div>'
+    +'<div class="divider"></div>'
+    +'<div class="stats-row" style="margin-bottom:0">'
     +'<div class="stat-box"><p class="stat-lbl">Total</p><p class="stat-val">'+fu(tot)+'</p></div>'
     +'<div class="stat-box"><p class="stat-lbl">Valerii\'s share</p><p class="stat-val blue">'+fu(vSh)+'</p></div>'
     +'<div class="stat-box"><p class="stat-lbl">Vladislav\'s share</p><p class="stat-val green">'+fu(vlSh)+'</p></div>'
     +'</div>';
-}
-function renderMonths(){
-  g('mTabs').innerHTML=S.months.map(function(m,i){
-    return '<button class="mtab'+(i===S.am?' act':'')+'" onclick="setMonth('+i+')">'+m.name+'</button>';
-  }).join('');
-  var m=S.months[S.am]||S.months[0];
-  var revFields=S.platforms.map(function(p){
-    var val=(m.revenues||{})[p]||0;
-    return '<div class="field"><label>'+p+'</label><input class="num" id="mf_'+slug(p)+'" value="'+val+'" oninput="mChange()"></div>';
-  }).join('');
-  g('mView').innerHTML='<p class="sec-label" style="margin-bottom:.625rem">Revenue (USD)</p>'
-    +'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-bottom:1rem">'
-    +revFields+'</div>'
-    +'<p class="sec-label" style="margin-bottom:.625rem">Expenses (USD)</p>'
-    +'<div class="g2" style="margin-bottom:.5rem">'
-    +'<div class="field"><label>Valerii</label><input class="num" id="mf_vExp" value="'+m.vExp+'" oninput="mChange()"></div>'
-    +'<div class="field"><label>Vladislav</label><input class="num" id="mf_vlExp" value="'+m.vlExp+'" oninput="mChange()"></div>'
-    +'</div><div id="mCalc"></div>';
-  renderMCalc();
+
   if(currentTab==='revenue')renderChart();
 }
 
@@ -854,11 +950,6 @@ function renderAll(){
   renderPlatformSettings();renderPlatformSelect();
 }
 
-/* ---- Local storage ---- */
-function saveLocal(){
-  try{localStorage.setItem('ft6',JSON.stringify({months:S.months,am:S.am}));}catch(e){}
-}
-
 /* ---- Numeric input filter ---- */
 document.addEventListener('keydown',function(e){
   if(!e.target.classList||!e.target.classList.contains('num'))return;
@@ -869,37 +960,31 @@ window.addEventListener('resize',function(){if(currentTab==='revenue')renderChar
 
 /* ---- Init ---- */
 async function init(){
-  // load platforms
+  // Load platforms
   try{
     var savedPl=localStorage.getItem('ft6_platforms');
     if(savedPl)S.platforms=JSON.parse(savedPl);
   }catch(e){}
-  // load months + UI state
-  try{
-    var sv=localStorage.getItem('ft6');
-    if(sv){var p=JSON.parse(sv);S.am=p.am!=null?p.am:2;
-      if(p.months)p.months.forEach(function(pm){
-        // migrate old format (fanvue/tg/paypal fields) to revenues object
-        if(!pm.revenues){
-          pm.revenues={};
-          if(pm.fanvue!=null)pm.revenues['Fanvue']=pm.fanvue;
-          if(pm.tg!=null)pm.revenues['Telegram']=pm.tg;
-          if(pm.paypal!=null)pm.revenues['PayPal']=pm.paypal;
-        }
-        var d=S.months.find(function(d){return d.id===pm.id;});
-        if(d)Object.assign(d,pm);else S.months.push(pm);
-      });}
-  }catch(e){}
-  var savedUrl=localStorage.getItem('sheetsUrl')||'';
-  if(savedUrl)g('sheetsUrl').value=savedUrl;
-  var lastSync=localStorage.getItem('lastSync');
-  if(lastSync)setStatus('syncStatus1','ok','Last synced: '+lastSync);
+
+  // Restore active month index
+  var savedAm=parseInt(localStorage.getItem('ft6_am')||'');
+  if(!isNaN(savedAm))S.am=savedAm;
+
   g('nDate').value=new Date().toISOString().slice(0,10);
+  g('txDate').value=new Date().toISOString().slice(0,10);
+
+  // Restore last refresh time label
+  var lastRefresh=localStorage.getItem('lastRevRefresh');
+  var lrl=g('lastRefreshLabel');if(lrl&&lastRefresh)lrl.textContent='Last refresh: '+lastRefresh;
+
   renderAll();
   fetchWiseRate();
-  await loadWithdrawals();
+
+  // Load all data from Supabase in parallel
+  await Promise.all([loadRevenueData(),loadWithdrawals()]);
+  renderAll();
+
   setupRealtime();
-  if(savedUrl)setTimeout(syncAuto,800);
 }
 init();
 </script>

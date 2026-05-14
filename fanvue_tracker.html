@@ -594,9 +594,14 @@ var MODELS=[];   // [{id, name}] - full list for multi-model support later
 
 async function loadModels(){
   var res=await db.from('models').select('id,name').order('created_at',{ascending:true});
-  if(res.error||!res.data||!res.data.length){console.error('loadModels:',res.error);return;}
+  if(res.error||!res.data||!res.data.length){
+    console.error('loadModels failed:',res.error);
+    // Fallback to known model ID if DB query fails
+    if(!MODEL_ID)MODEL_ID='7461a252-076f-4e15-9bc9-6557863d9432';
+    return;
+  }
   MODELS=res.data;
-  MODEL_ID=res.data[0].id; // primary model - all existing MODEL_ID refs work unchanged
+  MODEL_ID=res.data[0].id;
 }
 
 /* ---- Partners (loaded from DB after auth) ---- */

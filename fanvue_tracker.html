@@ -166,6 +166,27 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-seri
   .partner-row{grid-template-columns:1fr}
 }
 
+/* ---- Fanvue connection ---- */
+.fanvue-connected{display:flex;align-items:center;gap:10px;padding:.75rem 1rem;background:var(--green-bg);border:1px solid rgba(61,184,112,.2);border-radius:12px;margin-bottom:.75rem}
+.fanvue-disconnected{display:flex;align-items:center;gap:10px;padding:.75rem 1rem;background:var(--card2);border:1px solid var(--border2);border-radius:12px;margin-bottom:.75rem}
+.fanvue-status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.fanvue-status-dot.on{background:var(--green);box-shadow:0 0 6px var(--green)}
+.fanvue-status-dot.off{background:var(--text3)}
+.btn-connect{background:var(--blue);color:#fff;border:none;padding:8px 16px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:opacity .15s}
+.btn-connect:hover{opacity:.85}
+.btn-connect:disabled{opacity:.4;cursor:not-allowed}
+.btn-disconnect{background:transparent;color:var(--red);border:1px solid var(--red-bg);padding:7px 14px;border-radius:9px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;transition:background .15s}
+.btn-disconnect:hover{background:var(--red-bg)}
+/* Onboarding banner */
+.onboarding-banner{background:var(--blue-bg);border:1px solid rgba(91,143,240,.2);border-radius:16px;padding:1.5rem;margin-bottom:1rem}
+.onboarding-banner h3{font-size:15px;font-weight:600;margin-bottom:.375rem}
+.onboarding-banner p{font-size:13px;color:var(--text2);margin-bottom:1rem;line-height:1.55}
+/* Toast */
+.toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);padding:10px 20px;border-radius:12px;font-size:13px;font-weight:500;z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;box-shadow:var(--shadow)}
+.toast.show{opacity:1}
+.toast.success{background:var(--green);color:#fff}
+.toast.error{background:var(--red);color:#fff}
+
 /* ---- Auth overlay ---- */
 #authOverlay{
   position:fixed;inset:0;z-index:999;
@@ -250,6 +271,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-seri
 </div>
 
 <div class="app">
+<!-- Toast notification -->
+<div id="toast" class="toast"></div>
+
+<!-- Onboarding banner (shown when Fanvue not connected) -->
+<div id="onboardingBanner" style="display:none">
+  <div class="onboarding-banner">
+    <h3>Connect your Fanvue account</h3>
+    <p>Link your Fanvue account to automatically sync earnings data. Takes 30 seconds.</p>
+    <button class="btn-connect" onclick="connectFanvue()">Connect Fanvue →</button>
+  </div>
+</div>
 
 <header class="header">
   <div>
@@ -412,13 +444,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-seri
 
 <!-- SETTINGS -->
 <div class="tab-page" id="tab-settings">
+  <!-- Fanvue Connection -->
   <div class="card">
-    <div class="sec-row">
-      <div class="sec-label">Revenue Data Source</div>
+    <div class="sec-label" style="margin-bottom:.875rem">Fanvue Account</div>
+    <div id="fanvueStatusBlock">
+      <!-- populated by renderFanvueStatus() -->
     </div>
-    <p class="hint">Revenue is read directly from Supabase (<code style="font-size:11px;background:var(--card2);padding:1px 5px;border-radius:4px">transactions</code> + <code style="font-size:11px;background:var(--card2);padding:1px 5px;border-radius:4px">expenses</code>). Fanvue transactions are written automatically by the scraper at 09:00 Kyiv. Telegram and PayPal can be added manually in the Revenue tab.</p>
-    <div style="display:flex;gap:8px;align-items:center;margin-top:.75rem">
-      <button class="btn-blue" onclick="refreshRevenue()">↻ Refresh now</button>
+    <div id="lastRefreshRow" style="display:flex;gap:8px;align-items:center;margin-top:.5rem">
+      <button class="btn-outline" style="font-size:11px;padding:5px 11px" onclick="refreshRevenue()">↻ Refresh data</button>
       <span id="lastRefreshLabel" style="font-size:11px;color:var(--text3)"></span>
     </div>
   </div>
@@ -541,12 +574,14 @@ async function login(){
   btn.disabled=false;btn.textContent='Sign in';
   showApp(res.data.user,roleData);
   await Promise.all([loadPartners(),loadModels()]);
+  handleCallbackParams();
   init();
+  loadFanvueConnection();
 }
 
 async function logout(){
   await db.auth.signOut();
-  PARTNERS=[];MODELS=[];MODEL_ID='';
+  PARTNERS=[];MODELS=[];MODEL_ID='';FANVUE_CONNECTION=null;
   showLogin();
   S={months:[],ws:[],txs:[],exps:[],am:0,platforms:DEFAULT_PLATFORMS.slice()};
   renderAll();
@@ -584,7 +619,105 @@ function renderPartnerCards(){
   if(n1)n1.textContent=P1().name;
 }
 
-/* ---- Globals ---- */
+/* ---- Fanvue Connection ---- */
+var FANVUE_CONNECTION=null; // loaded after auth: {fanvue_username, connected_at, token_valid} | null
+var EDGE_URL=SUPA_URL+'/functions/v1';
+
+async function loadFanvueConnection(){
+  // Read from fanvue_connection_status view (no tokens exposed)
+  var res=await db.from('fanvue_connection_status').select('*').eq('user_id',currentUser.id).maybeSingle();
+  FANVUE_CONNECTION=(res.data&&res.data.fanvue_creator_id)?res.data:null;
+  renderFanvueStatus();
+  renderOnboardingBanner();
+}
+
+function renderFanvueStatus(){
+  var el=g('fanvueStatusBlock');if(!el)return;
+  if(FANVUE_CONNECTION){
+    var name=FANVUE_CONNECTION.fanvue_username||'Connected';
+    var since=FANVUE_CONNECTION.connected_at?fdate(FANVUE_CONNECTION.connected_at.slice(0,10)):'';
+    el.innerHTML='<div class="fanvue-connected">'
+      +'<div class="fanvue-status-dot on"></div>'
+      +'<div style="flex:1;min-width:0">'
+      +'<div style="font-size:13px;font-weight:600">@'+name+'</div>'
+      +(since?'<div style="font-size:11px;color:var(--green-text)">Connected '+since+'</div>':'')
+      +'</div>'
+      +'<button class="btn-disconnect" onclick="disconnectFanvue()">Disconnect</button>'
+      +'</div>';
+  }else{
+    el.innerHTML='<div class="fanvue-disconnected">'
+      +'<div class="fanvue-status-dot off"></div>'
+      +'<div style="flex:1;font-size:13px;color:var(--text2)">Not connected</div>'
+      +'<button class="btn-connect" id="connectBtn" onclick="connectFanvue()">Connect Fanvue</button>'
+      +'</div>';
+  }
+}
+
+function renderOnboardingBanner(){
+  var banner=g('onboardingBanner');if(!banner)return;
+  // Show banner on dashboard if not connected
+  banner.style.display=(!FANVUE_CONNECTION&&currentTab==='dashboard')?'block':'none';
+}
+
+async function connectFanvue(){
+  var btn=g('connectBtn');
+  if(btn){btn.disabled=true;btn.textContent='Connecting…';}
+  try{
+    // Get Supabase JWT for the Edge Function
+    var sessionRes=await db.auth.getSession();
+    var jwt=sessionRes.data&&sessionRes.data.session&&sessionRes.data.session.access_token;
+    if(!jwt){showToast('Not logged in','error');return;}
+
+    var res=await fetch(EDGE_URL+'/fanvue-oauth-start',{
+      method:'POST',
+      headers:{'Authorization':'Bearer '+jwt,'Content-Type':'application/json'}
+    });
+    var data=await res.json();
+    if(data.url){
+      window.location.href=data.url;
+    }else{
+      showToast(data.error||'Failed to start OAuth','error');
+      if(btn){btn.disabled=false;btn.textContent='Connect Fanvue';}
+    }
+  }catch(err){
+    showToast('Connection error','error');
+    if(btn){btn.disabled=false;btn.textContent='Connect Fanvue';}
+  }
+}
+
+async function disconnectFanvue(){
+  if(!confirm('Disconnect your Fanvue account? Revenue data already stored will remain.'))return;
+  // Delete via service_role would need Edge Function - for now just clear local state
+  // TODO: add fanvue-disconnect Edge Function
+  showToast('To fully disconnect, contact support.','error');
+}
+
+function showToast(msg,type){
+  var t=g('toast');if(!t)return;
+  t.textContent=msg;
+  t.className='toast '+(type||'success')+' show';
+  setTimeout(function(){t.classList.remove('show');},3000);
+}
+
+function handleCallbackParams(){
+  var params=new URLSearchParams(window.location.search);
+  if(params.get('fanvue_connected')==='1'){
+    showToast('Fanvue connected successfully!','success');
+    loadFanvueConnection();
+    // Clean URL
+    history.replaceState({},'',window.location.pathname);
+  }else if(params.get('fanvue_error')){
+    var errors={
+      access_denied:'Authorization cancelled.',
+      invalid_state:'Security check failed. Please try again.',
+      token_exchange_failed:'Failed to get access token. Please try again.',
+      state_expired:'Connection timed out. Please try again.',
+    };
+    var msg=errors[params.get('fanvue_error')]||'Connection failed. Please try again.';
+    showToast(msg,'error');
+    history.replaceState({},'',window.location.pathname);
+  }
+}
 var WISE_RATE=0.855;
 var PLATFORM_COLORS=['#5b8ff0','#a78bfa','#fb923c','#34d399','#f87171','#fbbf24','#60a5fa','#c084fc'];
 var DEFAULT_PLATFORMS=['Fanvue','Telegram','PayPal'];
@@ -656,6 +789,7 @@ function showTab(name,btn,isMobile){
     var mb=g('mob-'+name);if(mb)mb.classList.add('act');
   }
   if(name==='revenue')setTimeout(renderChart,50);
+  renderOnboardingBanner();
 }
 
 /* ---- Wise rate ---- */
@@ -1496,7 +1630,9 @@ async function init(){
     if(roleData){
       showApp(session.user,roleData);
       await Promise.all([loadPartners(),loadModels()]);
+      handleCallbackParams();
       init();
+      loadFanvueConnection();
       return;
     }
     // Session exists but no role — sign out and show login

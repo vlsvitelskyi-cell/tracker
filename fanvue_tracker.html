@@ -148,7 +148,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-seri
 .btn-save:hover{opacity:.85}
 .btn-cancel{font-size:12px;padding:7px 12px;background:transparent;border:1px solid var(--border2);color:var(--text2);border-radius:8px;cursor:pointer;font-family:inherit;transition:background .15s}
 .btn-cancel:hover{background:var(--card2)}
-@media(max-width:540px){
+.exp-item{display:flex;align-items:center;justify-content:space-between;padding:.5rem .75rem;background:var(--card2);border:1px solid var(--border);border-radius:9px;margin-bottom:5px}
+.exp-left{display:flex;align-items:center;gap:8px;min-width:0}
+.exp-who{font-size:11px;font-weight:700;padding:2px 8px;border-radius:12px;flex-shrink:0}
+.exp-who.p0{background:var(--blue-bg);color:var(--blue-text)}
+.exp-who.p1{background:var(--green-bg);color:var(--green-text)}
+.exp-amt{font-size:13px;font-weight:600;flex-shrink:0}
+.exp-desc{font-size:11px;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.exp-date{font-size:11px;color:var(--text3);flex-shrink:0}
   .tabs-desktop{display:none}
   .tabs-mobile{display:flex}
   body{padding-bottom:90px}
@@ -372,6 +379,35 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-seri
     </div>
     <div id="txStatus" style="font-size:11px;margin-top:.5rem;min-height:16px"></div>
   </div>
+
+  <!-- Expenses -->
+  <div class="card" id="expensesCard">
+    <div class="sec-row" style="margin-bottom:.875rem">
+      <div class="sec-label" style="margin:0">Expenses</div>
+      <span style="font-size:11px;color:var(--text3)">Affects split calculation</span>
+    </div>
+    <div class="add-row" style="margin-bottom:.75rem">
+      <div class="field">
+        <label>Who</label>
+        <select id="expPartner"></select>
+      </div>
+      <div class="field">
+        <label>Amount (USD)</label>
+        <input id="expAmt" class="num" placeholder="0.00">
+      </div>
+      <div class="field">
+        <label>Date</label>
+        <input type="date" id="expDate">
+      </div>
+      <button class="btn" id="expAddBtn" onclick="addExpense()" style="align-self:flex-end;padding:9px 16px">Add</button>
+    </div>
+    <div class="field" style="margin-bottom:.75rem">
+      <label>Description (optional)</label>
+      <input id="expDesc" placeholder="Ads, content, tools…" style="width:100%;padding:9px 11px;border:1px solid var(--border2);border-radius:9px;font-size:14px;color:var(--text);background:var(--card2);font-family:inherit;outline:none" onfocus="this.style.borderColor='var(--blue)'" onblur="this.style.borderColor='var(--border2)'">
+    </div>
+    <div id="expStatus" style="font-size:11px;margin-bottom:.5rem;min-height:16px"></div>
+    <div id="expList"></div>
+  </div>
 </div>
 
 <!-- SETTINGS -->
@@ -504,20 +540,28 @@ async function login(){
 
   btn.disabled=false;btn.textContent='Sign in';
   showApp(res.data.user,roleData);
-  await loadPartners();
+  await Promise.all([loadPartners(),loadModels()]);
   init();
 }
 
 async function logout(){
   await db.auth.signOut();
-  PARTNERS=[];
+  PARTNERS=[];MODELS=[];MODEL_ID='';
   showLogin();
-  S={months:[],ws:[],txs:[],am:0,platforms:DEFAULT_PLATFORMS.slice()};
+  S={months:[],ws:[],txs:[],exps:[],am:0,platforms:DEFAULT_PLATFORMS.slice()};
   renderAll();
 }
 
-/* ---- Entity IDs ---- */
-var MODEL_ID='7461a252-076f-4e15-9bc9-6557863d9432'; // TODO: load from DB for multi-model support
+/* ---- Entity IDs (loaded from DB after auth) ---- */
+var MODEL_ID=''; // loaded via loadModels() - empty until auth completes
+var MODELS=[];   // [{id, name}] - full list for multi-model support later
+
+async function loadModels(){
+  var res=await db.from('models').select('id,name').order('created_at',{ascending:true});
+  if(res.error||!res.data||!res.data.length){console.error('loadModels:',res.error);return;}
+  MODELS=res.data;
+  MODEL_ID=res.data[0].id; // primary model - all existing MODEL_ID refs work unchanged
+}
 
 /* ---- Partners (loaded from DB after auth) ---- */
 var PARTNERS=[]; // [{id, name, color:'blue'|'green'}]
@@ -530,6 +574,7 @@ async function loadPartners(){
   if(res.error||!res.data||!res.data.length){console.error('loadPartners:',res.error);return;}
   PARTNERS=res.data.map(function(p,i){return{id:p.id,name:p.name,color:i===0?'blue':'green'};});
   renderPartnerCards();
+  renderPartnerSelect();
 }
 
 function renderPartnerCards(){
@@ -556,7 +601,7 @@ function slug(p){return p.toLowerCase().replace(/[^a-z0-9]/g,'_');}
 function fdate(d){if(!d)return'';var p=d.split('-');return p[2]+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+p[1]-1];}
 
 /* ---- State ---- */
-var S={months:[],ws:[],txs:[],am:0,platforms:DEFAULT_PLATFORMS.slice()};
+var S={months:[],ws:[],txs:[],exps:[],am:0,platforms:DEFAULT_PLATFORMS.slice()};
 var EXP={};
 var TX_EDIT={};  // id -> true when in edit mode
 var TX_FILTER={platform:'all',source:'all'}; // active filters
@@ -677,7 +722,7 @@ async function loadRevenueData(){
       .eq('model_id',MODEL_ID)
       .order('date',{ascending:true}),
     db.from('expenses')
-      .select('amount_usd,partner_id,date')
+      .select('id,amount_usd,partner_id,date,description')
       .order('date',{ascending:true})
   ]);
 
@@ -691,7 +736,10 @@ async function loadRevenueData(){
     return{id:tx.id,amount:parseFloat(tx.amount_usd)||0,platform:tx.platform,date:tx.date,source:tx.source||'manual'};
   });
 
-  var monthMap={};
+  // Store raw expenses for Expenses UI
+  S.exps=(expRes.data||[]).map(function(exp){
+    return{id:exp.id,amount:parseFloat(exp.amount_usd)||0,partner_id:exp.partner_id,date:exp.date,description:exp.description||''};
+  });
 
   function ensureMonth(key){
     if(!monthMap[key]){
@@ -926,6 +974,87 @@ async function txSave(id){
   TX_EDIT[id]=false;
   await loadRevenueData();renderAll();
 }
+/* ---- Expenses UI ---- */
+function renderPartnerSelect(){
+  var sel=g('expPartner');
+  if(!sel||!PARTNERS.length)return;
+  sel.innerHTML=PARTNERS.map(function(p){
+    return '<option value="'+p.id+'">'+p.name+'</option>';
+  }).join('');
+}
+
+async function addExpense(){
+  var amt=pn(g('expAmt').value);
+  if(!amt||amt<=0){g('expAmt').focus();return;}
+  var partnerId=g('expPartner').value;
+  if(!partnerId)return;
+  var date=g('expDate').value||new Date().toISOString().slice(0,10);
+  var desc=(g('expDesc').value||'').trim();
+  var btn=g('expAddBtn'),statusEl=g('expStatus');
+  btn.disabled=true;btn.textContent='Adding…';statusEl.textContent='';
+
+  var res=await db.from('expenses').insert({
+    partner_id:partnerId,amount_usd:r2(amt),date:date,description:desc||null
+  });
+
+  if(res.error){
+    statusEl.innerHTML='<span style="color:var(--red)">Error: '+res.error.message+'</span>';
+  }else{
+    var pName=(PARTNERS.find(function(p){return p.id===partnerId;})||{name:'partner'}).name;
+    g('expAmt').value='';g('expDesc').value='';
+    statusEl.innerHTML='<span style="color:var(--green-text)">✓ Added '+fu(amt)+' for '+pName+'</span>';
+    await loadRevenueData();renderAll();
+    setTimeout(function(){statusEl.textContent='';},3000);
+  }
+  btn.disabled=false;btn.textContent='Add';
+}
+
+async function deleteExpense(id){
+  if(!confirm('Delete this expense?'))return;
+  var res=await db.from('expenses').delete().eq('id',id);
+  if(res.error){alert('Error: '+res.error.message);return;}
+  await loadRevenueData();renderAll();
+}
+
+function renderExpenses(){
+  // Init partner select if empty
+  var sel=g('expPartner');
+  if(sel&&!sel.options.length)renderPartnerSelect();
+
+  var el=g('expList');if(!el)return;
+
+  // Show expenses for currently selected month
+  var m=S.months[S.am]||S.months[S.months.length-1];
+  var monthKey=m?m.id:null;
+  var filtered=monthKey
+    ?S.exps.filter(function(e){return e.date&&e.date.slice(0,7)===monthKey;})
+    :[];
+  filtered=filtered.slice().sort(function(a,b){return b.date<a.date?-1:b.date>a.date?1:0;});
+
+  if(!filtered.length){
+    el.innerHTML='<div style="text-align:center;padding:.75rem 0;color:var(--text3);font-size:13px">No expenses this month</div>';
+    return;
+  }
+
+  var isAdmin=currentRole==='admin';
+  el.innerHTML=filtered.map(function(exp){
+    var p=PARTNERS.find(function(x){return x.id===exp.partner_id;})||{name:'?'};
+    var pIdx=PARTNERS.findIndex(function(x){return x.id===exp.partner_id;});
+    var cls=pIdx===0?'p0':'p1';
+    return '<div class="exp-item">'
+      +'<div class="exp-left">'
+      +'<span class="exp-who '+cls+'">'+p.name+'</span>'
+      +'<span class="exp-amt">'+fu(exp.amount)+'</span>'
+      +(exp.description?'<span class="exp-desc">'+exp.description+'</span>':'')
+      +'</div>'
+      +'<div style="display:flex;align-items:center;gap:8px;flex-shrink:0">'
+      +'<span class="exp-date">'+fdate(exp.date)+'</span>'
+      +(isAdmin?'<button class="btn-del" onclick="deleteExpense(\''+exp.id+'\')">×</button>':'')
+      +'</div>'
+      +'</div>';
+  }).join('');
+}
+
 async function refreshRevenue(){
   await loadRevenueData();
   renderAll();
@@ -1309,7 +1438,7 @@ function renderList(){
 
 function renderAll(){
   renderBal();renderChartLegend();renderMonths();renderList();
-  renderPlatformSettings();renderPlatformSelect();
+  renderPlatformSettings();renderPlatformSelect();renderExpenses();
 }
 
 /* ---- Numeric input filter ---- */
@@ -1334,6 +1463,8 @@ async function init(){
 
   g('nDate').value=new Date().toISOString().slice(0,10);
   g('txDate').value=new Date().toISOString().slice(0,10);
+  g('expDate').value=new Date().toISOString().slice(0,10);
+  renderPartnerSelect();
 
   // Restore last refresh time label
   var lastRefresh=localStorage.getItem('lastRevRefresh');
@@ -1364,7 +1495,7 @@ async function init(){
     var roleData=await loadUserRole(session.user.id);
     if(roleData){
       showApp(session.user,roleData);
-      await loadPartners();
+      await Promise.all([loadPartners(),loadModels()]);
       init();
       return;
     }

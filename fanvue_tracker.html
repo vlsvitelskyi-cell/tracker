@@ -156,6 +156,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-seri
 .exp-amt{font-size:13px;font-weight:600;flex-shrink:0}
 .exp-desc{font-size:11px;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .exp-date{font-size:11px;color:var(--text3);flex-shrink:0}
+@media(max-width:768px){
   .tabs-desktop{display:none}
   .tabs-mobile{display:flex}
   body{padding-bottom:90px}
@@ -624,8 +625,10 @@ var FANVUE_CONNECTION=null; // loaded after auth: {fanvue_username, connected_at
 var EDGE_URL=SUPA_URL+'/functions/v1';
 
 async function loadFanvueConnection(){
+  if(!currentUser)return;
   // Read from fanvue_connection_status view (no tokens exposed)
   var res=await db.from('fanvue_connection_status').select('*').eq('user_id',currentUser.id).maybeSingle();
+  if(res.error)console.error('loadFanvueConnection error:',res.error);
   FANVUE_CONNECTION=(res.data&&res.data.fanvue_creator_id)?res.data:null;
   renderFanvueStatus();
   renderOnboardingBanner();

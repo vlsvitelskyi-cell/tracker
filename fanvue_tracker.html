@@ -883,6 +883,8 @@ async function loadRevenueData(){
     return{id:exp.id,amount:parseFloat(exp.amount_usd)||0,partner_id:exp.partner_id,date:exp.date,description:exp.description||''};
   });
 
+  var monthMap={};
+
   function ensureMonth(key){
     if(!monthMap[key]){
       monthMap[key]={revenues:{},vExp:0,vlExp:0};

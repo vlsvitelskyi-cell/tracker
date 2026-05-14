@@ -280,13 +280,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-seri
 <div class="tab-page act" id="tab-dashboard">
   <div class="partner-row">
     <div class="partner-card blue">
-      <div class="partner-name">Valerii</div>
+      <div class="partner-name" id="partnerName0">—</div>
       <div class="partner-eur" id="bV">€0.00</div>
       <div class="partner-rem-lbl">Remaining to withdraw</div>
       <div class="partner-rem" id="vRemEl">$0.00</div>
     </div>
     <div class="partner-card green">
-      <div class="partner-name">Vladislav</div>
+      <div class="partner-name" id="partnerName1">—</div>
       <div class="partner-eur" id="bVl">€0.00</div>
       <div class="partner-rem-lbl">Remaining to withdraw</div>
       <div class="partner-rem" id="vlRemEl">$0.00</div>
@@ -504,21 +504,40 @@ async function login(){
 
   btn.disabled=false;btn.textContent='Sign in';
   showApp(res.data.user,roleData);
+  await loadPartners();
   init();
 }
 
 async function logout(){
   await db.auth.signOut();
+  PARTNERS=[];
   showLogin();
-  // Reset state
-  S={months:[],ws:[],am:0,platforms:DEFAULT_PLATFORMS.slice()};
+  S={months:[],ws:[],txs:[],am:0,platforms:DEFAULT_PLATFORMS.slice()};
   renderAll();
 }
 
 /* ---- Entity IDs ---- */
-var MODEL_ID='7461a252-076f-4e15-9bc9-6557863d9432';
-var VALERII_ID='38f3b0ad-648e-4cd7-abc6-573049b7092e';
-var VLADISLAV_ID='cc1482e8-5832-42d1-b65a-bf307400b694';
+var MODEL_ID='7461a252-076f-4e15-9bc9-6557863d9432'; // TODO: load from DB for multi-model support
+
+/* ---- Partners (loaded from DB after auth) ---- */
+var PARTNERS=[]; // [{id, name, color:'blue'|'green'}]
+// Convenience accessors — safe to use after loadPartners()
+function P0(){return PARTNERS[0]||{id:'',name:'Partner 1'};}
+function P1(){return PARTNERS[1]||{id:'',name:'Partner 2'};}
+
+async function loadPartners(){
+  var res=await db.from('partners').select('id,name').order('created_at',{ascending:true});
+  if(res.error||!res.data||!res.data.length){console.error('loadPartners:',res.error);return;}
+  PARTNERS=res.data.map(function(p,i){return{id:p.id,name:p.name,color:i===0?'blue':'green'};});
+  renderPartnerCards();
+}
+
+function renderPartnerCards(){
+  // Update partner card names in Dashboard
+  var n0=g('partnerName0'),n1=g('partnerName1');
+  if(n0)n0.textContent=P0().name;
+  if(n1)n1.textContent=P1().name;
+}
 
 /* ---- Globals ---- */
 var WISE_RATE=0.855;
@@ -695,8 +714,8 @@ async function loadRevenueData(){
     if(!key)return;
     ensureMonth(key);
     var amt=parseFloat(exp.amount_usd)||0;
-    if(exp.partner_id===VALERII_ID)monthMap[key].vExp+=amt;
-    else if(exp.partner_id===VLADISLAV_ID)monthMap[key].vlExp+=amt;
+    if(exp.partner_id===P0().id)monthMap[key].vExp+=amt;
+    else if(exp.partner_id===P1().id)monthMap[key].vlExp+=amt;
   });
 
   var newMonths=Object.keys(monthMap).sort().map(function(key){
@@ -736,8 +755,8 @@ async function loadWithdrawals(){
   (splitsRes.data||[]).forEach(function(s){
     if(!splitsMap[s.withdrawal_id])splitsMap[s.withdrawal_id]={};
     var amt=parseFloat(s.eur_amount)||0;
-    if(s.partner_id===VALERII_ID)splitsMap[s.withdrawal_id].vE=amt;
-    else if(s.partner_id===VLADISLAV_ID)splitsMap[s.withdrawal_id].vlE=amt;
+    if(s.partner_id===P0().id)splitsMap[s.withdrawal_id].vE=amt;
+    else if(s.partner_id===P1().id)splitsMap[s.withdrawal_id].vlE=amt;
   });
 
   S.ws=(wRes.data||[]).map(function(row){
@@ -794,7 +813,7 @@ async function confirmW(id){
   var eur=pn(g('e_'+id).value);
   if(!eur||eur<=0){g('e_'+id).focus();return;}
   var vG=pn(g('sv_'+id).value),vlG=pn(g('svl_'+id).value);
-  if(Math.abs(vG+vlG-eur)>0.02){alert('Valerii + Vladislav must equal '+eur.toFixed(2)+' EUR');return;}
+  if(Math.abs(vG+vlG-eur)>0.02){alert(P0().name+' + '+P1().name+' must equal '+eur.toFixed(2)+' EUR');return;}
   var today=new Date().toISOString().slice(0,10);
 
   // 1. Update withdrawals (keep v_eur/vl_eur for backward compat)
@@ -807,8 +826,8 @@ async function confirmW(id){
   // 2. Write per-partner splits (delete + re-insert to avoid unique constraint issues)
   await db.from('withdrawal_splits').delete().eq('withdrawal_id',id);
   var splitsRes=await db.from('withdrawal_splits').insert([
-    {withdrawal_id:id,partner_id:VALERII_ID,eur_amount:r2(vG)},
-    {withdrawal_id:id,partner_id:VLADISLAV_ID,eur_amount:r2(vlG)}
+    {withdrawal_id:id,partner_id:P0().id,eur_amount:r2(vG)},
+    {withdrawal_id:id,partner_id:P1().id,eur_amount:r2(vlG)}
   ]);
   if(splitsRes.error)console.error('splits write error:',splitsRes.error);
 
@@ -977,13 +996,13 @@ function renderBal(){
   if(tot>0.01){
     var vf=vE/tot;
     g('barV').style.flex=vf.toFixed(3);g('barVl').style.flex=(1-vf).toFixed(3);
-    g('bVPct').textContent='V '+(vf*100).toFixed(1)+'%';
-    g('bVlPct').textContent='Vl '+((1-vf)*100).toFixed(1)+'%';
+    g('bVPct').textContent=P0().name+' '+(vf*100).toFixed(1)+'%';
+    g('bVlPct').textContent=P1().name+' '+((1-vf)*100).toFixed(1)+'%';
     g('bDiff').textContent=diff>0.05?'Gap: '+fe(diff):'';
     var hint=g('splitHint');
     if(hint){
       if(diff<5){hint.innerHTML='<span style="color:var(--green-text)">✓ Splits are balanced</span>';}
-      else{var behind=vE<vlE?'Valerii':'Vladislav';
+      else{var behind=vE<vlE?P0().name:P1().name;
         hint.innerHTML='<span style="color:var(--yellow)">Next withdrawal should favor '+behind+' to balance the split (gap: '+fe(diff)+')</span>';}
     }
   }else{
@@ -1002,8 +1021,8 @@ function renderBal(){
   g('dashStats').innerHTML=
     '<div class="stat-box"><p class="stat-lbl">Total revenue</p><p class="stat-val">'+fu(totalRev)+'</p></div>'
     +'<div class="stat-box"><p class="stat-lbl">Total withdrawn</p><p class="stat-val">'+fu(totalW)+'</p></div>'
-    +'<div class="stat-box"><p class="stat-lbl">Valerii share</p><p class="stat-val blue">'+fu(r2(totalVSh()))+'</p></div>'
-    +'<div class="stat-box"><p class="stat-lbl">Vladislav share</p><p class="stat-val green">'+fu(r2(totalVlSh()))+'</p></div>'
+    +'<div class="stat-box"><p class="stat-lbl">'+P0().name+'\'s share</p><p class="stat-val blue">'+fu(r2(totalVSh()))+'</p></div>'
+    +'<div class="stat-box"><p class="stat-lbl">'+P1().name+'\'s share</p><p class="stat-val green">'+fu(r2(totalVlSh()))+'</p></div>'
     +(avgRate?'<div class="stat-box"><p class="stat-lbl">Avg rate</p><p class="stat-val">'+avgRate+'</p></div>':'')
     +(tLoss>0?'<div class="stat-box"><p class="stat-lbl">FX loss</p><p class="stat-val red">'+fe(tLoss)+'</p></div>':'');
 }
@@ -1096,14 +1115,14 @@ function renderMonths(){
     +'<div class="stats-row" style="margin-bottom:1rem">'+revBoxes+'</div>'
     +'<p class="sec-label" style="margin-bottom:.625rem">Expenses</p>'
     +'<div class="stats-row" style="margin-bottom:.5rem">'
-    +'<div class="stat-box"><p class="stat-lbl">Valerii</p><p class="stat-val blue">'+fu(m.vExp)+'</p></div>'
-    +'<div class="stat-box"><p class="stat-lbl">Vladislav</p><p class="stat-val green">'+fu(m.vlExp)+'</p></div>'
+    +'<div class="stat-box"><p class="stat-lbl">'+P0().name+'</p><p class="stat-val blue">'+fu(m.vExp)+'</p></div>'
+    +'<div class="stat-box"><p class="stat-lbl">'+P1().name+'</p><p class="stat-val green">'+fu(m.vlExp)+'</p></div>'
     +'</div>'
     +'<div class="divider"></div>'
     +'<div class="stats-row" style="margin-bottom:0">'
     +'<div class="stat-box"><p class="stat-lbl">Total</p><p class="stat-val">'+fu(tot)+'</p></div>'
-    +'<div class="stat-box"><p class="stat-lbl">Valerii\'s share</p><p class="stat-val blue">'+fu(vSh)+'</p></div>'
-    +'<div class="stat-box"><p class="stat-lbl">Vladislav\'s share</p><p class="stat-val green">'+fu(vlSh)+'</p></div>'
+    +'<div class="stat-box"><p class="stat-lbl">'+P0().name+'\'s share</p><p class="stat-val blue">'+fu(vSh)+'</p></div>'
+    +'<div class="stat-box"><p class="stat-lbl">'+P1().name+'\'s share</p><p class="stat-val green">'+fu(vlSh)+'</p></div>'
     +'</div>';
 
   // Transaction list for selected month (admin sees edit/delete)
@@ -1251,8 +1270,8 @@ function renderList(){
           +'<p class="sub-hint" id="rh_'+w.id+'">Wise expected: '+fe(expE)+'</p></div><div></div></div>'
           +'<p class="sec-label" style="margin-bottom:.625rem">Split</p>'
           +'<div class="g2" style="margin-bottom:.875rem">'
-          +'<div class="field"><label>Valerii (EUR)</label><input class="num" id="sv_'+w.id+'" placeholder="0.00" oninput="updateV(\''+w.id+'\')"></div>'
-          +'<div class="field"><label>Vladislav (EUR)</label><input class="num" id="svl_'+w.id+'" placeholder="0.00" oninput="updateVl(\''+w.id+'\')"></div>'
+          +'<div class="field"><label>'+P0().name+' (EUR)</label><input class="num" id="sv_'+w.id+'" placeholder="0.00" oninput="updateV(\''+w.id+'\')"></div>'
+          +'<div class="field"><label>'+P1().name+' (EUR)</label><input class="num" id="svl_'+w.id+'" placeholder="0.00" oninput="updateVl(\''+w.id+'\')"></div>'
           +'</div>'
           +'<p class="hint" style="margin-bottom:.75rem">Enter EUR received — split fills automatically. Adjust if needed.</p>'
           +'<button class="btn" onclick="confirmW(\''+w.id+'\')">Confirm receipt</button></div>';
@@ -1280,7 +1299,7 @@ function renderList(){
         +'</div>'
         +'<div class="w-row2">'
         +'<div class="w-row2-left">'+fdate(w.date)+(w.rd?' → '+fdate(w.rd):'')+' · '+rate+(loss>0?' · <span style="color:var(--red)">loss: '+fe(loss)+'</span>':'')+'</div>'
-        +'<div class="w-row2-right"><span class="badge badge-v">Valerii '+fe(w.vE)+'</span><span class="badge badge-vl">Vladislav '+fe(w.vlE)+'</span></div>'
+        +'<div class="w-row2-right"><span class="badge badge-v">'+P0().name+' '+fe(w.vE)+'</span><span class="badge badge-vl">'+P1().name+' '+fe(w.vlE)+'</span></div>'
         +'</div>'
         +'</div>';
     });
@@ -1345,6 +1364,7 @@ async function init(){
     var roleData=await loadUserRole(session.user.id);
     if(roleData){
       showApp(session.user,roleData);
+      await loadPartners();
       init();
       return;
     }

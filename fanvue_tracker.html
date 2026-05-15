@@ -2365,7 +2365,7 @@ async function syncFullHistory(){
         var sessionRes=await db.auth.getSession();
     var jwt=sessionRes.data&&sessionRes.data.session&&sessionRes.data.session.access_token;
     if(!jwt){st.innerHTML='<span style="color:var(--red)">Not logged in</span>';btn.disabled=false;return;}
-    var res=await fetch(EDGE_URL+'/fanvue-sync',{
+    var res=await fetch(EDGE_URL+'/fanvue-sync?full=1',{
       method:'POST',
       headers:{'Authorization':'Bearer '+jwt,'Content-Type':'application/json'},
       body:JSON.stringify({model_id:MODEL_ID})

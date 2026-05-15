@@ -1053,24 +1053,24 @@ body{
 
       <!-- ============ SETTINGS ============ -->
       <div class="tab-page" id="tab-settings">
+
+        <!-- Fanvue Account card -->
         <div class="card">
           <div class="sec-label">Fanvue Account</div>
           <div id="fanvueStatusBlock"></div>
           <div id="lastRefreshRow" style="display:flex;gap:8px;align-items:center;margin-top:8px">
             <button class="btn-outline" style="font-size:11px;padding:5px 11px" onclick="refreshRevenue()">↻ Refresh data</button>
           </div>
-                <div class="card">
+        </div>
+
+        <!-- Sync card -->
+        <div class="card">
           <div class="sec-label">Sync</div>
           <button class="btn" id="syncBtn" onclick="syncFullHistory()" style="font-size:13px;padding:9px 18px">Sync full history</button>
           <div id="syncStatus" style="font-size:12px;margin-top:10px;min-height:18px"></div>
         </div>
 
-        </div>
-        </div>
-
-        <div class="card">
-          <div class="sec-row">
-            <div class="sec-label" style="margin:0">Platforms</div>
+        <!-- Platforms card -->
         <div class="card">
           <div class="sec-row">
             <div class="sec-label" style="margin:0">Platforms</div>
@@ -1084,6 +1084,7 @@ body{
           </div>
         </div>
 
+        <!-- Info card -->
         <div class="card">
           <div class="sec-label">Info</div>
           <p id="infoCard" style="font-size:12px;color:var(--text2);line-height:1.9">
@@ -1092,6 +1093,7 @@ body{
             <span id="wiseRateLine" style="color:var(--text3)">Wise mid-market: loading…</span>
           </p>
         </div>
+
       </div><!-- end tab-settings -->
 
     </div><!-- end page-content -->

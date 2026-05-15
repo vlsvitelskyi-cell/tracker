@@ -1059,8 +1059,18 @@ body{
           <div id="lastRefreshRow" style="display:flex;gap:8px;align-items:center;margin-top:8px">
             <button class="btn-outline" style="font-size:11px;padding:5px 11px" onclick="refreshRevenue()">↻ Refresh data</button>
           </div>
+                <div class="card">
+          <div class="sec-label">Sync</div>
+          <button class="btn" id="syncBtn" onclick="syncFullHistory()" style="font-size:13px;padding:9px 18px">Sync full history</button>
+          <div id="syncStatus" style="font-size:12px;margin-top:10px;min-height:18px"></div>
         </div>
 
+        </div>
+        </div>
+
+        <div class="card">
+          <div class="sec-row">
+            <div class="sec-label" style="margin:0">Platforms</div>
         <div class="card">
           <div class="sec-row">
             <div class="sec-label" style="margin:0">Platforms</div>
@@ -2345,6 +2355,39 @@ async function init(){
 
   showLogin();
 })();
+/* ---- Sync full history ---- */
+async function syncFullHistory(){
+  var btn=g('syncBtn'),st=g('syncStatus');
+  btn.disabled=true;
+  st.innerHTML='<span style="display:inline-flex;align-items:center;gap:6px"><span class="spinner"></span>Syncing…</span>';
+
+  try{
+    var res=await fetch(EDGE_URL+'/fanvue-sync',{
+      method:'POST',
+      headers:{'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json'}
+    });
+    var data=await res.json();
+    if(res.ok){
+      var msg=data.message||(data.count!=null?'Synced '+data.count+' transactions':'Synced successfully');
+      st.innerHTML='<span style="color:var(--green-text)">✓ '+msg+'</span>';
+    }else{
+      st.innerHTML='<span style="color:var(--red)">Error: '+(data.error||res.statusText)+'</span>';
+    }
+  }catch(e){
+    st.innerHTML='<span style="color:var(--red)">Connection error</span>';
+  }
+
+  var secs=60;
+  var timer=setInterval(function(){
+    secs--;
+    btn.textContent='Sync full history ('+secs+'s)';
+    if(secs<=0){
+      clearInterval(timer);
+      btn.disabled=false;
+      btn.textContent='Sync full history';
+    }
+  },1000);
+}
 </script>
 </body>
 </html>

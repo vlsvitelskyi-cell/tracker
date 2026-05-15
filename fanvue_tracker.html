@@ -2362,9 +2362,13 @@ async function syncFullHistory(){
   st.innerHTML='<span style="display:inline-flex;align-items:center;gap:6px"><span class="spinner"></span>Syncing…</span>';
 
   try{
+        var sessionRes=await db.auth.getSession();
+    var jwt=sessionRes.data&&sessionRes.data.session&&sessionRes.data.session.access_token;
+    if(!jwt){st.innerHTML='<span style="color:var(--red)">Not logged in</span>';btn.disabled=false;return;}
     var res=await fetch(EDGE_URL+'/fanvue-sync',{
       method:'POST',
-      headers:{'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json'}
+      headers:{'Authorization':'Bearer '+jwt,'Content-Type':'application/json'},
+      body:JSON.stringify({model_id:MODEL_ID})
     });
     var data=await res.json();
     if(res.ok){

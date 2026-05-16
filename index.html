@@ -1,6 +1,934 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta http-equiv="refresh" content="0; url=/fanvue_tracker.html">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Payout Manager — Financial OS for Fanvue agencies</title>
+<meta name="description" content="Financial OS for Fanvue agencies. Partner splits, per-model profitability, real-time sync.">
+<meta property="og:title" content="Payout Manager — Financial OS for Fanvue agencies">
+<meta property="og:description" content="Honest partner splits, per-model profitability, and withdrawal history. Built for agencies that run on Fanvue.">
+<meta property="og:url" content="https://payoutmanager.app">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ── Reset ─────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;font-size:16px}
+body{
+  font-family:'Figtree',system-ui,sans-serif;
+  background:#0B0D13;
+  color:#EEF0F8;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+
+/* ── Tokens ─────────────────────────────────────── */
+:root{
+  --bg:#0B0D13;
+  --bg2:#10131C;
+  --card:#161B27;
+  --card2:#1C2235;
+  --border:rgba(255,255,255,0.07);
+  --border2:rgba(255,255,255,0.12);
+  --indigo:#6366F1;
+  --indigo-l:#818CF8;
+  --indigo-dim:rgba(99,102,241,0.14);
+  --indigo-glow:rgba(99,102,241,0.3);
+  --text:#EEF0F8;
+  --text2:#94A3B8;
+  --text3:#5A6680;
+  --green:#10B981;
+  --green-dim:rgba(16,185,129,0.13);
+  --red:#EF4444;
+  --shadow:0 24px 64px rgba(0,0,0,0.55);
+}
+
+/* ── Util ───────────────────────────────────────── */
+.container{max-width:1100px;margin:0 auto;padding:0 28px}
+
+/* ── Nav ────────────────────────────────────────── */
+.nav{
+  position:fixed;top:0;left:0;right:0;z-index:200;
+  padding:0 28px;
+  border-bottom:1px solid transparent;
+  transition:background .25s,border-color .25s,backdrop-filter .25s;
+}
+.nav.stuck{
+  background:rgba(11,13,19,0.82);
+  backdrop-filter:blur(18px);
+  -webkit-backdrop-filter:blur(18px);
+  border-color:var(--border);
+}
+.nav-inner{
+  max-width:1100px;margin:0 auto;
+  height:66px;
+  display:flex;align-items:center;justify-content:space-between;
+  gap:24px;
+}
+.nav-logo{
+  display:flex;align-items:center;gap:9px;
+  text-decoration:none;color:var(--text);
+  font-family:'Syne',sans-serif;font-weight:700;font-size:16px;
+  letter-spacing:-.01em;flex-shrink:0;
+}
+.nav-logo-icon{
+  width:30px;height:30px;
+  background:var(--indigo-dim);
+  border:1px solid rgba(99,102,241,.2);
+  border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--indigo-l);
+  flex-shrink:0;
+}
+.nav-actions{display:flex;align-items:center;gap:10px}
+.nav-link{
+  text-decoration:none;color:var(--text2);font-size:14px;font-weight:500;
+  padding:7px 12px;border-radius:7px;
+  transition:color .15s,background .15s;
+}
+.nav-link:hover{color:var(--text);background:rgba(255,255,255,.04)}
+.btn-nav{
+  display:inline-flex;align-items:center;gap:5px;
+  background:var(--indigo);color:#fff;
+  padding:8px 18px;border-radius:8px;
+  font-size:14px;font-weight:600;text-decoration:none;
+  font-family:'Figtree',sans-serif;
+  transition:opacity .15s,box-shadow .15s;
+  white-space:nowrap;
+}
+.btn-nav:hover{opacity:.88;box-shadow:0 0 20px var(--indigo-glow)}
+
+/* ── Buttons ────────────────────────────────────── */
+.btn-primary{
+  display:inline-flex;align-items:center;gap:7px;
+  background:var(--indigo);color:#fff;
+  padding:14px 28px;border-radius:10px;
+  font-size:15px;font-weight:600;font-family:'Figtree',sans-serif;
+  text-decoration:none;border:none;cursor:pointer;
+  transition:opacity .15s,box-shadow .2s,transform .1s;
+  box-shadow:0 0 0 0 rgba(99,102,241,0);
+}
+.btn-primary:hover{
+  opacity:.9;
+  box-shadow:0 0 32px var(--indigo-glow);
+}
+.btn-primary:active{transform:scale(.98)}
+
+.btn-ghost{
+  display:inline-flex;align-items:center;gap:7px;
+  background:transparent;color:var(--text2);
+  padding:14px 24px;border-radius:10px;
+  font-size:15px;font-weight:600;font-family:'Figtree',sans-serif;
+  text-decoration:none;border:1px solid var(--border2);
+  transition:color .15s,border-color .15s,background .15s;
+}
+.btn-ghost:hover{
+  color:var(--text);
+  border-color:rgba(255,255,255,.22);
+  background:rgba(255,255,255,.035);
+}
+
+/* ── Hero ───────────────────────────────────────── */
+.hero{padding:148px 28px 88px}
+.hero-inner{
+  max-width:1100px;margin:0 auto;
+  display:grid;grid-template-columns:1fr 1.05fr;
+  gap:64px;align-items:center;
+}
+.hero-eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--indigo-l);
+  background:var(--indigo-dim);border:1px solid rgba(99,102,241,.22);
+  padding:5px 13px;border-radius:20px;margin-bottom:24px;
+}
+.eyebrow-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:var(--indigo-l);
+  animation:ep 2.4s ease-in-out infinite;
+}
+@keyframes ep{0%,100%{opacity:1}50%{opacity:.35}}
+
+h1.hero-headline{
+  font-family:'Syne',sans-serif;
+  font-size:clamp(40px,5.2vw,64px);
+  font-weight:800;
+  line-height:1.08;
+  letter-spacing:-.035em;
+  color:var(--text);
+  margin-bottom:22px;
+}
+h1.hero-headline .hi{color:var(--indigo-l)}
+
+.hero-sub{
+  font-size:17px;color:var(--text2);line-height:1.75;
+  margin-bottom:34px;max-width:490px;
+}
+.hero-cta{
+  display:flex;flex-wrap:wrap;align-items:center;gap:12px;
+  margin-bottom:22px;
+}
+.hero-meta{font-size:12px;color:var(--text3);letter-spacing:.01em}
+
+/* ── Dashboard Mock ─────────────────────────────── */
+.mock-wrap{position:relative}
+.mock-bg-glow{
+  position:absolute;
+  top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  width:440px;height:280px;
+  background:radial-gradient(ellipse, rgba(99,102,241,.18) 0%, transparent 70%);
+  pointer-events:none;z-index:0;
+}
+.mock{
+  position:relative;z-index:1;
+  background:var(--card);
+  border:1px solid var(--border2);
+  border-radius:16px;
+  overflow:hidden;
+  box-shadow:var(--shadow),0 0 0 1px rgba(255,255,255,.03);
+  font-size:12.5px;
+}
+
+/* mock — header */
+.mock-hd{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:13px 18px;
+  background:rgba(255,255,255,.018);
+  border-bottom:1px solid var(--border);
+}
+.mock-hd-logo{
+  font-family:'Syne',sans-serif;font-size:12px;font-weight:700;
+  color:var(--text);display:flex;align-items:center;gap:6px;
+}
+.mock-hd-logo-dot{
+  width:8px;height:8px;border-radius:2px;background:var(--indigo);
+}
+.mock-hd-right{display:flex;align-items:center;gap:12px}
+.mock-hd-date{font-size:11px;color:var(--text3)}
+.mock-sync{
+  display:flex;align-items:center;gap:5px;
+  font-size:10px;font-weight:700;letter-spacing:.03em;color:var(--green);
+}
+.sync-dot{
+  width:6px;height:6px;border-radius:50%;background:var(--green);
+  animation:sdp 2s ease-in-out infinite;
+}
+@keyframes sdp{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* mock — partners */
+.mock-partners{
+  display:grid;grid-template-columns:1fr 1fr;
+  border-bottom:1px solid var(--border);
+}
+.mock-partner{padding:14px 18px}
+.mock-partner:first-child{border-right:1px solid var(--border)}
+.mock-pname{
+  font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--text3);margin-bottom:5px;
+}
+.mock-pbal{
+  font-family:'Syne',sans-serif;
+  font-size:22px;font-weight:700;
+  letter-spacing:-.04em;color:var(--text);
+  margin-bottom:3px;line-height:1;
+}
+.mock-prem{font-size:10px;color:var(--text3)}
+.mock-prem em{font-style:normal;color:var(--indigo-l);font-weight:600}
+
+/* mock — stats */
+.mock-stats{
+  padding:11px 18px;
+  border-bottom:1px solid var(--border);
+}
+.mock-stat{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:3px 0;
+}
+.mock-slabel{font-size:11px;color:var(--text3)}
+.mock-sval{
+  font-size:11px;font-weight:600;color:var(--text);
+  display:flex;align-items:center;gap:6px;
+}
+.mock-sval.green{color:var(--green)}
+.trend-pill{
+  font-size:9px;font-weight:700;
+  padding:1px 6px;border-radius:9px;
+  background:var(--green-dim);color:var(--green);
+}
+
+/* mock — transactions */
+.mock-txs{padding:11px 18px 14px}
+.mock-txs-head{
+  font-size:9px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--text3);margin-bottom:8px;
+}
+.mock-tx{
+  display:flex;align-items:center;gap:9px;
+  padding:5px 0;
+  border-bottom:1px solid rgba(255,255,255,.035);
+}
+.mock-tx:last-child{border-bottom:none}
+.mock-tx-dot{
+  width:5px;height:5px;border-radius:50%;
+  background:var(--green);flex-shrink:0;
+}
+.mock-tx-desc{flex:1;font-size:11px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mock-tx-amt{font-size:11px;font-weight:700;color:var(--green);flex-shrink:0}
+.mock-tx-date{font-size:10px;color:var(--text3);flex-shrink:0;min-width:94px;text-align:right}
+
+.new-tx{animation:tx-in .38s cubic-bezier(.22,1,.36,1) both}
+@keyframes tx-in{
+  from{opacity:0;transform:translateY(-7px)}
+  to{opacity:1;transform:none}
+}
+
+/* ── Sections ───────────────────────────────────── */
+.section{padding:100px 28px}
+.section.alt{background:var(--bg2)}
+
+.s-label{
+  font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--indigo-l);margin-bottom:10px;
+}
+.s-title{
+  font-family:'Syne',sans-serif;
+  font-size:clamp(28px,3.8vw,44px);font-weight:800;
+  letter-spacing:-.03em;color:var(--text);
+  margin-bottom:14px;line-height:1.12;
+}
+.s-sub{font-size:16px;color:var(--text2);line-height:1.75;max-width:520px}
+.s-head{margin-bottom:56px}
+
+/* ── Features ───────────────────────────────────── */
+.feat-grid{
+  max-width:1100px;margin:0 auto;
+}
+.feat-cards{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  border:1px solid var(--border2);
+  border-radius:16px;overflow:hidden;
+  background:var(--border);
+  gap:1px;
+}
+.feat-card{
+  background:var(--card);
+  padding:32px 28px;
+  transition:background .2s;
+}
+.feat-card:hover{background:var(--card2)}
+.feat-icon{
+  width:42px;height:42px;
+  background:var(--indigo-dim);
+  border:1px solid rgba(99,102,241,.18);
+  border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--indigo-l);margin-bottom:20px;
+}
+.feat-title{
+  font-family:'Syne',sans-serif;font-size:16px;font-weight:700;
+  color:var(--text);margin-bottom:9px;letter-spacing:-.01em;
+}
+.feat-text{font-size:13.5px;color:var(--text2);line-height:1.72}
+
+/* ── Why ────────────────────────────────────────── */
+.why-grid{
+  max-width:1100px;margin:0 auto;
+}
+.why-cols{
+  display:grid;grid-template-columns:1fr 1fr;
+  border:1px solid var(--border2);
+  border-radius:16px;overflow:hidden;
+  background:var(--border);
+  gap:1px;
+}
+.why-col{
+  background:var(--card);
+  padding:28px 32px 32px;
+}
+.why-col-hd{
+  font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  margin-bottom:20px;display:flex;align-items:center;gap:8px;
+}
+.why-col.bad .why-col-hd{color:var(--text3)}
+.why-col.good .why-col-hd{color:var(--green)}
+
+.why-row{
+  display:flex;align-items:flex-start;gap:10px;
+  padding:11px 0;
+  border-bottom:1px solid rgba(255,255,255,.04);
+  font-size:13.5px;line-height:1.5;
+}
+.why-row:last-child{border-bottom:none;padding-bottom:0}
+.why-ic{flex-shrink:0;margin-top:1px}
+.why-col.bad .why-row{color:var(--text3)}
+.why-col.bad .why-ic{color:#EF4444;opacity:.6}
+.why-col.good .why-row{color:var(--text2)}
+.why-col.good .why-ic{color:var(--green)}
+
+/* ── Pricing ────────────────────────────────────── */
+.pricing-center{
+  max-width:1100px;margin:0 auto;
+}
+.pricing-card-outer{
+  display:flex;justify-content:center;
+}
+.pricing-card{
+  background:var(--card);
+  border:1px solid var(--border2);
+  border-radius:20px;
+  padding:40px 40px 36px;
+  width:100%;max-width:420px;
+  position:relative;overflow:hidden;
+}
+.pricing-card::before{
+  content:'';position:absolute;top:-80px;right:-80px;
+  width:240px;height:240px;
+  background:radial-gradient(circle, rgba(99,102,241,.13) 0%, transparent 65%);
+  pointer-events:none;
+}
+.pricing-tier{
+  font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--indigo-l);margin-bottom:10px;
+}
+.pricing-price{
+  font-family:'Syne',sans-serif;
+  font-size:48px;font-weight:800;letter-spacing:-.05em;
+  color:var(--text);line-height:1;margin-bottom:5px;
+}
+.pricing-price sup{
+  font-size:24px;vertical-align:super;letter-spacing:0;margin-right:1px;
+}
+.pricing-per{font-size:13px;color:var(--text3);margin-bottom:28px}
+.pricing-div{height:1px;background:var(--border);margin-bottom:24px}
+
+.pricing-list{list-style:none;margin-bottom:30px}
+.pricing-list li{
+  display:flex;align-items:center;gap:10px;
+  font-size:14px;color:var(--text2);
+  padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04);
+}
+.pricing-list li:last-child{border-bottom:none}
+.pricing-list li svg{color:var(--green);flex-shrink:0}
+
+.pricing-note{font-size:11px;color:var(--text3);text-align:center;margin-top:14px}
+.pricing-footnote{font-size:11px;color:var(--text3);text-align:center;margin-top:6px}
+
+/* ── FAQ ────────────────────────────────────────── */
+.faq-inner{max-width:680px;margin:0 auto}
+.faq-head{margin-bottom:44px}
+.faq-item{border-bottom:1px solid var(--border)}
+.faq-item:first-of-type{border-top:1px solid var(--border)}
+.faq-q{
+  width:100%;background:none;border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:space-between;
+  gap:16px;padding:22px 0;
+  font-family:'Figtree',sans-serif;
+  font-size:15px;font-weight:600;color:var(--text);
+  text-align:left;transition:color .15s;
+}
+.faq-q:hover{color:var(--indigo-l)}
+.faq-q-icon{
+  flex-shrink:0;color:var(--text3);
+  transition:transform .28s,color .15s;
+}
+.faq-item.open .faq-q-icon{transform:rotate(45deg);color:var(--indigo-l)}
+.faq-a{
+  font-size:14.5px;color:var(--text2);line-height:1.78;
+  overflow:hidden;max-height:0;
+  transition:max-height .32s ease,padding-bottom .32s;
+  padding-bottom:0;
+}
+.faq-item.open .faq-a{max-height:320px;padding-bottom:22px}
+
+/* ── Footer ─────────────────────────────────────── */
+.footer{
+  background:var(--bg2);
+  border-top:1px solid var(--border);
+  padding:36px 28px;
+}
+.footer-inner{
+  max-width:1100px;margin:0 auto;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:16px;
+}
+.footer-left{}
+.footer-wordmark{
+  font-family:'Syne',sans-serif;font-weight:700;font-size:14px;
+  color:var(--text);margin-bottom:3px;
+}
+.footer-tagline{font-size:12px;color:var(--text3)}
+.footer-right{display:flex;flex-wrap:wrap;align-items:center;gap:20px}
+.footer-right a{font-size:12px;color:var(--text3);text-decoration:none;transition:color .15s}
+.footer-right a:hover{color:var(--text2)}
+.footer-copy{font-size:12px;color:var(--text3)}
+
+/* ── Scroll-reveal ───────────────────────────────── */
+.reveal{
+  opacity:0;transform:translateY(22px);
+  transition:opacity .55s ease,transform .55s ease;
+}
+.reveal.in{opacity:1;transform:none}
+.rd1{transition-delay:.07s}
+.rd2{transition-delay:.15s}
+.rd3{transition-delay:.23s}
+
+/* ── Responsive ──────────────────────────────────── */
+@media(max-width:900px){
+  .hero-inner{grid-template-columns:1fr;gap:48px}
+  .hero{padding:120px 20px 64px}
+  .hero-sub{max-width:100%}
+  .feat-cards{grid-template-columns:1fr}
+  .why-cols{grid-template-columns:1fr}
+  .nav{padding:0 20px}
+  .section{padding:72px 20px}
+  .hero-inner{text-align:left}
+  .mock-bg-glow{width:320px;height:220px}
+}
+@media(max-width:600px){
+  .nav-link{display:none}
+  .hero-cta{flex-direction:column;align-items:flex-start}
+  .btn-primary,.btn-ghost{width:100%;justify-content:center}
+  .pricing-card{padding:28px 24px 24px}
+  .why-col{padding:22px 22px 26px}
+  .footer-inner{flex-direction:column;align-items:flex-start}
+}
+</style>
 </head>
+<body>
+
+<!-- ═══════════════════════════════════════ NAV -->
+<nav class="nav" id="mainNav">
+  <div class="nav-inner">
+    <a class="nav-logo" href="/">
+      <span class="nav-logo-icon">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M8 2v2M8 12v2M2 8h2M12 8h2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          <circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M4.1 4.1l1.4 1.4M10.5 10.5l1.4 1.4M4.1 11.9l1.4-1.4M10.5 5.5l1.4-1.4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" opacity=".55"/>
+        </svg>
+      </span>
+      Payout Manager
+    </a>
+    <div class="nav-actions">
+      <a href="https://payoutmanager.app/fanvue_tracker.html" class="nav-link">Sign in</a>
+      <a href="https://payoutmanager.app/fanvue_tracker.html?signup=1" class="btn-nav">Get started →</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════ HERO -->
+<section class="hero">
+  <div class="hero-inner">
+
+    <!-- Text -->
+    <div class="hero-text">
+      <div class="hero-eyebrow reveal">
+        <span class="eyebrow-dot"></span>
+        Built for Fanvue agencies
+      </div>
+      <h1 class="hero-headline reveal rd1">
+        The financial<br>
+        <span class="hi">OS</span> for Fanvue<br>
+        agencies
+      </h1>
+      <p class="hero-sub reveal rd2">
+        Honest partner splits, per-model profitability, and withdrawal history — all in one place.
+        Built for agencies that run on Fanvue.
+      </p>
+      <div class="hero-cta reveal rd3">
+        <a href="https://payoutmanager.app/fanvue_tracker.html?signup=1" class="btn-primary">
+          Get started free →
+        </a>
+        <a href="#features" class="btn-ghost">See how it works</a>
+      </div>
+      <p class="hero-meta reveal rd3">
+        $29/mo per model &nbsp;·&nbsp; No setup fee &nbsp;·&nbsp; Available on Fanvue App Store
+      </p>
+    </div>
+
+    <!-- Dashboard Mock -->
+    <div class="mock-wrap reveal rd2">
+      <div class="mock-bg-glow"></div>
+      <div class="mock" id="dashMock">
+
+        <div class="mock-hd">
+          <div class="mock-hd-logo">
+            <div class="mock-hd-logo-dot"></div>
+            Payout Manager
+          </div>
+          <div class="mock-hd-right">
+            <span class="mock-hd-date">May 2026</span>
+            <span class="mock-sync">
+              <span class="sync-dot"></span>
+              Live sync
+            </span>
+          </div>
+        </div>
+
+        <div class="mock-partners">
+          <div class="mock-partner">
+            <div class="mock-pname">Alex</div>
+            <div class="mock-pbal">$4,218.50</div>
+            <div class="mock-prem">Remaining: <em>$3,100.00</em></div>
+          </div>
+          <div class="mock-partner">
+            <div class="mock-pname">Morgan</div>
+            <div class="mock-pbal">$2,812.33</div>
+            <div class="mock-prem">Remaining: <em>$2,100.00</em></div>
+          </div>
+        </div>
+
+        <div class="mock-stats">
+          <div class="mock-stat">
+            <span class="mock-slabel">Revenue this month</span>
+            <span class="mock-sval">$12,450.20 <span class="trend-pill">↑ +18%</span></span>
+          </div>
+          <div class="mock-stat">
+            <span class="mock-slabel">Expenses</span>
+            <span class="mock-sval">$1,840.00</span>
+          </div>
+          <div class="mock-stat">
+            <span class="mock-slabel">Net profit</span>
+            <span class="mock-sval green">$10,610.20</span>
+          </div>
+        </div>
+
+        <div class="mock-txs">
+          <div class="mock-txs-head">Recent transactions</div>
+          <div id="mockTxList">
+            <div class="mock-tx">
+              <div class="mock-tx-dot"></div>
+              <div class="mock-tx-desc">New subscriber · Sofia</div>
+              <div class="mock-tx-amt">+$24.99</div>
+              <div class="mock-tx-date">May 16, 2:41 PM</div>
+            </div>
+            <div class="mock-tx">
+              <div class="mock-tx-dot"></div>
+              <div class="mock-tx-desc">Tip received · Luna</div>
+              <div class="mock-tx-amt">+$50.00</div>
+              <div class="mock-tx-date">May 16, 1:15 PM</div>
+            </div>
+            <div class="mock-tx">
+              <div class="mock-tx-dot"></div>
+              <div class="mock-tx-desc">New subscriber · Mia</div>
+              <div class="mock-tx-amt">+$19.99</div>
+              <div class="mock-tx-date">May 15, 11:30 AM</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ FEATURES -->
+<section class="section alt" id="features">
+  <div class="feat-grid container">
+    <div class="s-head">
+      <div class="s-label reveal">How it works</div>
+      <h2 class="s-title reveal rd1">Everything your agency<br>actually needs</h2>
+      <p class="s-sub reveal rd2">No spreadsheets, no arguments, no missed payouts. Just clean data and automatic splits.</p>
+    </div>
+    <div class="feat-cards">
+      <div class="feat-card reveal">
+        <div class="feat-icon">
+          <!-- Split / pie icon -->
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M10 2v8l5.657 5.657" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="feat-title">Honest partner splits</div>
+        <div class="feat-text">Set per-model split percentages between co-owners. When splits change, historical payouts stay calculated at the old rate. No disputes, no spreadsheets.</div>
+      </div>
+      <div class="feat-card reveal rd1">
+        <div class="feat-icon">
+          <!-- Profiles icon -->
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <circle cx="7.5" cy="6.5" r="2.5" stroke="currentColor" stroke-width="1.5"/>
+            <circle cx="13.5" cy="8" r="2" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M2 17c0-3 2.5-4.5 5.5-4.5S13 14 13 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M13.5 12c1.5 0 3.5.8 3.5 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="feat-title">Per-model profitability</div>
+        <div class="feat-text">Track revenue, expenses, and net profit for each creator separately. See which models are growing and which need attention — all in one dashboard.</div>
+      </div>
+      <div class="feat-card reveal rd2">
+        <div class="feat-icon">
+          <!-- Lightning icon -->
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M11.5 2L5 11h7l-3.5 7 8.5-9h-7l3.5-7z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="feat-title">Real-time Fanvue sync</div>
+        <div class="feat-text">Connects directly via Fanvue OAuth. Earnings sync automatically through webhooks — no manual entry, no CSV imports. Just connect and go.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ WHY -->
+<section class="section" id="why">
+  <div class="why-grid container">
+    <div class="s-head">
+      <div class="s-label reveal">Differentiation</div>
+      <h2 class="s-title reveal rd1">Built for agency owners,<br>not solo creators</h2>
+    </div>
+    <div class="why-cols reveal rd2">
+
+      <!-- Without -->
+      <div class="why-col bad">
+        <div class="why-col-hd">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <circle cx="7" cy="7" r="6.25" stroke="currentColor" stroke-width="1.25"/>
+            <path d="M4.5 4.5l5 5M9.5 4.5l-5 5" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/>
+          </svg>
+          Without Payout Manager
+        </div>
+        <div class="why-row">
+          <span class="why-ic">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 2v4.5M6.5 9.5V11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </span>
+          Split calculations in Google Sheets
+        </div>
+        <div class="why-row">
+          <span class="why-ic">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 2v4.5M6.5 9.5V11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </span>
+          "Who got paid what?" arguments
+        </div>
+        <div class="why-row">
+          <span class="why-ic">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 2v4.5M6.5 9.5V11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </span>
+          One Fanvue dashboard for all models
+        </div>
+        <div class="why-row">
+          <span class="why-ic">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 2v4.5M6.5 9.5V11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </span>
+          Manual CSV exports
+        </div>
+      </div>
+
+      <!-- With -->
+      <div class="why-col good">
+        <div class="why-col-hd">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <circle cx="7" cy="7" r="6.25" stroke="currentColor" stroke-width="1.25"/>
+            <path d="M4 7l2.5 2.5L10 4.5" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          With Payout Manager
+        </div>
+        <div class="why-row">
+          <span class="why-ic">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2.5 6.5l3 3 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          Automatic per-model split tracking
+        </div>
+        <div class="why-row">
+          <span class="why-ic">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2.5 6.5l3 3 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          Full withdrawal history with FX rates
+        </div>
+        <div class="why-row">
+          <span class="why-ic">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2.5 6.5l3 3 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          Per-model revenue and profit view
+        </div>
+        <div class="why-row">
+          <span class="why-ic">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2.5 6.5l3 3 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          Real-time webhook sync
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ PRICING -->
+<section class="section alt" id="pricing">
+  <div class="pricing-center container">
+    <div class="s-head" style="text-align:center">
+      <div class="s-label reveal" style="justify-content:center;display:flex">Pricing</div>
+      <h2 class="s-title reveal rd1">Simple pricing</h2>
+      <p class="s-sub reveal rd2" style="margin:0 auto">Pay only for the models you track. No flat agency fee, no per-user seats.</p>
+    </div>
+    <div class="pricing-card-outer reveal rd2">
+      <div class="pricing-card">
+        <div class="pricing-tier">Per model</div>
+        <div class="pricing-price"><sup>$</sup>29–39</div>
+        <div class="pricing-per">/ month per connected creator</div>
+        <div class="pricing-div"></div>
+        <ul class="pricing-list">
+          <li>
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M3 7.5l3 3 6-6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Unlimited agency partners
+          </li>
+          <li>
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M3 7.5l3 3 6-6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Real-time Fanvue sync
+          </li>
+          <li>
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M3 7.5l3 3 6-6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Full withdrawal history
+          </li>
+          <li>
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M3 7.5l3 3 6-6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            FX loss tracking
+          </li>
+          <li>
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M3 7.5l3 3 6-6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Per-model revenue splits
+          </li>
+        </ul>
+        <a href="https://payoutmanager.app/fanvue_tracker.html?signup=1"
+           class="btn-primary"
+           style="width:100%;justify-content:center">
+          Get started free →
+        </a>
+        <p class="pricing-note">Billed through Fanvue App Store</p>
+        <p class="pricing-footnote">Pricing is set by Fanvue App Store and may vary by region.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ FAQ -->
+<section class="section" id="faq">
+  <div class="faq-inner">
+    <div class="faq-head">
+      <div class="s-label reveal">FAQ</div>
+      <h2 class="s-title reveal rd1">Common questions</h2>
+    </div>
+
+    <div class="faq-item reveal">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        Do I need a separate subscription for each model?
+        <svg class="faq-q-icon" width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <path d="M9 3v12M3 9h12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <div class="faq-a">
+        Yes — pricing is per connected Fanvue creator account. This keeps billing transparent: each model's revenue pays for its own tracking.
+      </div>
+    </div>
+
+    <div class="faq-item reveal rd1">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        Is my Fanvue data secure?
+        <svg class="faq-q-icon" width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <path d="M9 3v12M3 9h12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <div class="faq-a">
+        Payout Manager connects via official Fanvue OAuth. We never store your Fanvue password. Access tokens are encrypted and used only to sync earnings data.
+      </div>
+    </div>
+
+    <div class="faq-item reveal rd2">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        Does it work if I have multiple agency partners?
+        <svg class="faq-q-icon" width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <path d="M9 3v12M3 9h12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <div class="faq-a">
+        That's exactly what it's built for. Invite co-owners as partners, set split percentages per model, and track who's owed what — all automatically.
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ FOOTER -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-left">
+      <div class="footer-wordmark">Payout Manager</div>
+      <div class="footer-tagline">Built for Fanvue agencies</div>
+    </div>
+    <div class="footer-right">
+      <a href="/privacy.html">Privacy Policy</a>
+      <a href="/terms.html">Terms of Service</a>
+      <span class="footer-copy">© 2026 Payout Manager</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* ── Nav scroll ─────────────────────────── */
+(function(){
+  var nav=document.getElementById('mainNav');
+  function checkScroll(){nav.classList.toggle('stuck',window.scrollY>8);}
+  window.addEventListener('scroll',checkScroll,{passive:true});
+  checkScroll();
+})();
+
+/* ── Scroll-reveal ──────────────────────── */
+(function(){
+  var io=new IntersectionObserver(function(entries){
+    entries.forEach(function(e){if(e.isIntersecting)e.target.classList.add('in');});
+  },{threshold:0.1,rootMargin:'0px 0px -36px 0px'});
+  document.querySelectorAll('.reveal').forEach(function(el){io.observe(el);});
+})();
+
+/* ── FAQ accordion ──────────────────────── */
+function toggleFaq(btn){
+  var item=btn.closest('.faq-item');
+  var open=item.classList.contains('open');
+  document.querySelectorAll('.faq-item').forEach(function(i){i.classList.remove('open');});
+  if(!open)item.classList.add('open');
+}
+
+/* ── Dashboard mock live animation ─────── */
+(function(){
+  var pool=[
+    {desc:'PPV purchase · Sofia',   amt:'+$39.99', date:'May 16, 3:12 PM'},
+    {desc:'Tip received · Luna',     amt:'+$150.00',date:'May 16, 2:58 PM'},
+    {desc:'New subscriber · Mia',   amt:'+$19.99', date:'May 16, 2:44 PM'},
+    {desc:'Tip received · Sofia',    amt:'+$75.00', date:'May 16, 2:31 PM'},
+    {desc:'Renewal · Luna',          amt:'+$24.99', date:'May 16, 2:10 PM'},
+    {desc:'PPV purchase · Mia',      amt:'+$29.99', date:'May 16, 1:50 PM'},
+    {desc:'New subscriber · Luna',  amt:'+$24.99', date:'May 16, 1:33 PM'},
+    {desc:'Tip received · Mia',      amt:'+$20.00', date:'May 16, 1:00 PM'},
+  ];
+  var idx=0;
+  var MAX=4;
+
+  function addTx(){
+    var list=document.getElementById('mockTxList');
+    if(!list)return;
+    var tx=pool[idx%pool.length];
+    idx++;
+
+    var row=document.createElement('div');
+    row.className='mock-tx new-tx';
+    row.innerHTML=
+      '<div class="mock-tx-dot"></div>'
+      +'<div class="mock-tx-desc">'+tx.desc+'</div>'
+      +'<div class="mock-tx-amt">'+tx.amt+'</div>'
+      +'<div class="mock-tx-date">'+tx.date+'</div>';
+
+    list.insertBefore(row,list.firstChild);
+
+    var rows=list.querySelectorAll('.mock-tx');
+    if(rows.length>MAX)list.removeChild(rows[rows.length-1]);
+  }
+
+  setInterval(addTx,3000);
+})();
+</script>
+</body>
 </html>

@@ -2032,7 +2032,7 @@ async function createAndConnectModel(){
   var st=g('addModelStatus'),btn=g('addModelBtn');
   if(!name){g('addModelName').focus();return;}
   btn.disabled=true;btn.textContent='Creating…';st.textContent='';
-  var res=await db.from('models').insert({name:name}).select('id,name').single();
+  var res=await db.from('models').insert({name:name,agency_id:_agencyId}).select('id,name').single();
   if(res.error){
     st.innerHTML='<span style="color:var(--red)">'+res.error.message+'</span>';
     btn.disabled=false;btn.textContent='Create';return;

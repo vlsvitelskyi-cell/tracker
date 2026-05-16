@@ -325,10 +325,15 @@ body{
 ============================================================ */
 .recent-tx-row{
   display:flex;align-items:center;justify-content:space-between;
-  padding:10px 0;
+  padding:10px 0 10px 12px;
   border-bottom:1px solid var(--border);
+  position:relative;
 }
 .recent-tx-row:last-child{border-bottom:none}
+.recent-tx-accent{
+  position:absolute;left:0;top:10px;bottom:10px;
+  width:3px;border-radius:2px;
+}
 .recent-tx-left{display:flex;align-items:center;gap:10px}
 .recent-tx-type{
   font-size:11px;font-weight:700;padding:2px 8px;
@@ -337,38 +342,169 @@ body{
 }
 .recent-tx-date{font-size:11px;color:var(--text3)}
 .recent-tx-amt{
-  font-size:14px;font-weight:700;color:var(--text);
+  font-size:14px;font-weight:700;
   font-variant-numeric:tabular-nums;
 }
+.recent-tx-amt.pos{color:var(--green-text)}
+.recent-tx-amt.neg{color:var(--red)}
 
 /* ============================================================
    SECTION LABELS
 ============================================================ */
 .sec-label{
-  font-size:10px;font-weight:700;color:var(--text3);
-  letter-spacing:.1em;text-transform:uppercase;margin-bottom:14px;
+  font-size:11px;font-weight:700;color:var(--text3);
+  letter-spacing:.08em;text-transform:uppercase;margin-bottom:16px;
 }
 .sec-row{
   display:flex;justify-content:space-between;align-items:center;
-  margin-bottom:14px;
+  margin-bottom:16px;
 }
 .sec-row .sec-label{margin:0}
 .divider{height:1px;background:var(--border);margin:16px 0}
 
 /* ============================================================
+   SETTINGS SECTIONS
+============================================================ */
+.settings-section{margin-bottom:32px}
+.settings-section-title{
+  font-size:10px;font-weight:700;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--text3);
+  margin-bottom:12px;padding-left:2px;
+}
+.settings-section > .card{margin-bottom:0}
+.settings-section > .card + .card{margin-top:2px}
+
+/* ============================================================
+   EMPTY STATE
+============================================================ */
+.empty-state{text-align:center;padding:60px 20px}
+.empty-state-icon{font-size:40px;margin-bottom:16px}
+.empty-state-title{font-size:18px;font-weight:700;color:var(--text);margin-bottom:8px}
+.empty-state-sub{font-size:14px;color:var(--text2);margin-bottom:24px}
+
+/* ============================================================
+   PARTNER AVATAR (for partner list rows)
+============================================================ */
+.partner-avatar{
+  width:36px;height:36px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;
+}
+.partner-avatar.blue{background:var(--blue-bg);color:var(--blue-text)}
+.partner-avatar.green{background:var(--green-bg);color:var(--green-text)}
+.partner-avatar.gray{background:var(--card2);color:var(--text3)}
+.partner-list-row{
+  display:flex;align-items:center;
+  padding:10px 0;border-bottom:1px solid var(--border);gap:10px;font-size:13px;
+}
+.partner-list-row:last-child{border-bottom:none}
+.partner-list-info{flex:1;min-width:0}
+.partner-list-name{font-weight:600;font-size:13px}
+.partner-list-email{font-size:11px;color:var(--text3);margin-top:2px}
+.partner-list-actions{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.split-inline-edit{display:flex;align-items:center;gap:6px;margin-top:6px}
+.split-inline-edit input{
+  width:70px;padding:5px 8px;font-size:13px;
+  border:1px solid var(--blue);border-radius:7px;
+  background:var(--bg2);color:var(--text);font-family:inherit;outline:none;
+}
+
+/* ============================================================
+   TREND BADGE (dashboard stats)
+============================================================ */
+.trend-badge{
+  display:inline-flex;align-items:center;
+  font-size:10px;font-weight:700;
+  padding:2px 6px;border-radius:10px;margin-left:4px;
+}
+.trend-up{background:var(--green-bg);color:var(--green-text)}
+.trend-down{background:var(--red-bg);color:var(--red)}
+
+/* ============================================================
+   BULK ACTION BAR (floating)
+============================================================ */
+.bulk-bar{
+  position:fixed;bottom:90px;left:50%;transform:translateX(-50%);
+  background:var(--card);border:1px solid var(--border2);
+  border-radius:14px;padding:10px 16px;
+  display:flex;align-items:center;gap:12px;
+  box-shadow:var(--shadow);z-index:200;
+  white-space:nowrap;
+}
+.bulk-bar-count{font-size:13px;font-weight:600;color:var(--text2)}
+.tx-check{
+  width:15px;height:15px;cursor:pointer;flex-shrink:0;
+  accent-color:var(--blue);
+}
+
+/* ============================================================
+   EXPENSE CATEGORY BADGE
+============================================================ */
+.exp-cat-badge{
+  font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;
+  background:var(--yellow-bg);color:var(--yellow);flex-shrink:0;
+}
+.exp-cat-badge.cat-marketing{background:var(--blue-bg);color:var(--blue-text)}
+.exp-cat-badge.cat-software{background:rgba(168,85,247,.15);color:#c084fc}
+.exp-cat-badge.cat-equipment{background:var(--yellow-bg);color:var(--yellow)}
+.exp-cat-badge.cat-other{background:var(--card2);color:var(--text3)}
+
+/* ============================================================
+   SORT CONTROLS
+============================================================ */
+.sort-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.sort-lbl{font-size:11px;color:var(--text3);font-weight:600}
+.sort-btn{
+  font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;cursor:pointer;
+  font-family:inherit;transition:background .13s,color .13s;
+  background:transparent;color:var(--text2);border:1px solid var(--border2);
+}
+.sort-btn.act{background:var(--card2);color:var(--text);border-color:var(--border2)}
+.sort-btn:hover:not(.act){background:var(--card2)}
+
+/* ============================================================
+   WITHDRAWAL CONFIRM MODAL
+============================================================ */
+.w-confirm-modal{
+  position:fixed;inset:0;z-index:500;
+  background:rgba(0,0,0,.65);
+  display:none;align-items:center;justify-content:center;padding:1.5rem;
+}
+.w-confirm-modal.open{display:flex}
+.w-confirm-box{
+  width:100%;max-width:340px;
+  background:var(--card);border:1px solid var(--border2);
+  border-radius:20px;padding:28px 24px;
+  box-shadow:0 24px 80px rgba(0,0,0,.5);
+}
+.w-confirm-title{font-size:15px;font-weight:700;margin-bottom:4px}
+.w-confirm-body{font-size:13px;color:var(--text2);line-height:1.8;margin-bottom:20px}
+.w-confirm-body strong{color:var(--text)}
+.w-confirm-actions{display:flex;gap:8px;justify-content:flex-end}
+
+/* ============================================================
+   WITHDRAWAL HISTORY (done items) — larger
+============================================================ */
+.w-done-eur{font-size:22px;font-weight:700;letter-spacing:-.03em;color:var(--green-text);font-variant-numeric:tabular-nums}
+.w-done-usd{font-size:12px;color:var(--text3);margin-top:1px}
+.badge-confirmed{background:var(--green-bg);color:var(--green-text)}
+.badge-pending-w{background:var(--yellow-bg);color:var(--yellow)}
+
+/* ============================================================
    FORM ELEMENTS
 ============================================================ */
-.field{display:flex;flex-direction:column;gap:6px}
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.field:last-child{margin-bottom:0}
 .field label{
-  font-size:10px;font-weight:700;color:var(--text3);
-  letter-spacing:.08em;text-transform:uppercase;
+  font-size:11px;font-weight:600;color:var(--text3);
+  letter-spacing:.06em;text-transform:uppercase;
 }
 .field input,.field select,.field textarea{
-  width:100%;padding:9px 12px;
-  border:1px solid var(--border2);border-radius:9px;
-  font-size:13px;color:var(--text);background:var(--card2);
+  width:100%;padding:10px 13px;
+  border:1px solid var(--border);border-radius:8px;
+  font-size:14px;color:var(--text);background:var(--bg2);
   font-family:inherit;outline:none;
-  transition:border-color .13s;-webkit-appearance:none;
+  transition:border-color .15s;-webkit-appearance:none;
 }
 .field input:focus,.field select:focus,.field textarea:focus{
   border-color:var(--blue);
@@ -378,22 +514,30 @@ body{
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
 .add-row{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap}
-.add-row .field{flex:1;min-width:90px}
+.add-row .field{flex:1;min-width:90px;margin-bottom:0}
 
 /* ============================================================
    BUTTONS
 ============================================================ */
 .btn{
-  background:var(--text);color:var(--bg);border:none;
-  padding:9px 20px;border-radius:9px;
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--card2);color:var(--text);
+  border:1px solid var(--border);
+  padding:9px 18px;border-radius:9px;
   font-size:13px;font-weight:600;cursor:pointer;
-  font-family:inherit;transition:opacity .13s;white-space:nowrap;
+  font-family:inherit;transition:background .15s,color .15s;white-space:nowrap;
 }
-.btn:hover{opacity:.82}.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn:hover{background:var(--border2)}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn-primary{
+  background:var(--blue);color:#fff;border-color:var(--blue);
+}
+.btn-primary:hover{opacity:.88;background:var(--blue)}
 
 /* Alias kept for JS-generated HTML */
 .btn-blue{
-  background:var(--blue);color:#fff;border:none;
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--blue);color:#fff;border:1px solid var(--blue);
   padding:9px 18px;border-radius:9px;
   font-size:13px;font-weight:600;cursor:pointer;
   font-family:inherit;transition:opacity .13s;white-space:nowrap;
@@ -831,6 +975,9 @@ body{
     <div style="text-align:center;margin-top:12px">
       <button onclick="forgotPassword()" style="background:none;border:none;color:var(--text3);font-size:12px;cursor:pointer;font-family:inherit">Forgot password?</button>
     </div>
+    <div id="resendRow" style="display:none;text-align:center;margin-top:8px">
+      <button id="resendBtn" onclick="resendConfirmation()" style="background:none;border:none;color:var(--blue-text);font-size:12px;cursor:pointer;font-family:inherit">Resend confirmation email</button>
+    </div>
   </div>
 </div>
 
@@ -1084,7 +1231,7 @@ body{
               <label>Date</label>
               <input type="date" id="txDate">
             </div>
-            <button class="btn" id="txAddBtn" onclick="addTransaction()" style="align-self:flex-end;padding:9px 16px">Add</button>
+            <button class="btn" id="txAddBtn" onclick="addTransaction()" style="align-self:flex-end">Add</button>
           </div>
           <div id="txStatus" style="font-size:11px;margin-top:8px;min-height:16px"></div>
         </div>
@@ -1107,11 +1254,11 @@ body{
 
         <!-- Add expense form -->
         <div class="card" id="expensesCard">
-          <div class="sec-row" style="margin-bottom:20px">
+          <div class="sec-row">
             <div class="sec-label" style="margin:0">Add Expense</div>
             <span style="font-size:11px;color:var(--text3)">Affects split calculation</span>
           </div>
-          <div class="add-row" style="margin-bottom:12px">
+          <div class="add-row" style="margin-bottom:14px">
             <div class="field">
               <label>Who</label>
               <select id="expPartner"></select>
@@ -1124,13 +1271,23 @@ body{
               <label>Date</label>
               <input type="date" id="expDate">
             </div>
-            <button class="btn" id="expAddBtn" onclick="addExpense()" style="align-self:flex-end;padding:9px 16px">Add</button>
+            <button class="btn" id="expAddBtn" onclick="addExpense()" style="align-self:flex-end">Add</button>
           </div>
-          <div class="field" style="margin-bottom:12px">
-            <label>Description (optional)</label>
-            <input id="expDesc" placeholder="Ads, content, tools…"
-              style="width:100%;padding:9px 12px;border:1px solid var(--border2);border-radius:9px;font-size:13px;color:var(--text);background:var(--card2);font-family:inherit;outline:none;transition:border-color .13s"
-              onfocus="this.style.borderColor='var(--blue)'" onblur="this.style.borderColor='var(--border2)'">
+          <div class="g2">
+            <div class="field">
+              <label>Category</label>
+              <select id="expCat">
+                <option value="">— None —</option>
+                <option value="Marketing">Marketing</option>
+                <option value="Software">Software</option>
+                <option value="Equipment">Equipment</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Description (optional)</label>
+              <input id="expDesc" placeholder="Ads, content, tools…">
+            </div>
           </div>
           <div id="expStatus" style="font-size:11px;margin-bottom:8px;min-height:16px"></div>
         </div>
@@ -1160,10 +1317,14 @@ body{
               <input id="nUSD" class="num" placeholder="200">
             </div>
             <div class="field">
+              <label>FX Rate (USD→EUR)</label>
+              <input id="nFxRate" class="num" placeholder="0.0000">
+            </div>
+            <div class="field">
               <label>Date</label>
               <input type="date" id="nDate">
             </div>
-            <button class="btn" id="addBtn" onclick="addW()" style="align-self:flex-end;padding:9px 16px">Add</button>
+            <button class="btn btn-primary" id="addBtn" onclick="addW()" style="align-self:flex-end">Add</button>
           </div>
         </div>
         <div id="wList"></div>
@@ -1175,82 +1336,96 @@ body{
       <!-- ============ SETTINGS ============ -->
       <div class="tab-page" id="tab-settings">
 
-        <!-- Agency card (admin only) -->
-        <div class="card" id="agencyCard" style="display:none">
-          <div class="sec-label">Agency</div>
-          <div class="field" style="margin-bottom:10px">
-            <label>Agency name</label>
-            <input id="agencyNameInput" placeholder="My Agency" maxlength="60">
-          </div>
-          <button class="btn" onclick="saveAgencyName()" id="saveAgencyBtn" style="font-size:13px;padding:9px 18px">Save</button>
-          <div id="agencyNameStatus" style="font-size:12px;margin-top:8px;min-height:16px"></div>
-        </div>
-
-        <!-- Subscription banner (Settings) -->
+        <!-- Subscription banner -->
         <div id="subBannerSettings"></div>
 
-        <!-- Partners card -->
-        <div class="card" id="partnersCard" style="display:none">
-          <div class="sec-label">Partners</div>
-          <div id="partnersList" style="margin-bottom:4px"></div>
+        <!-- SECTION: AGENCY -->
+        <div class="settings-section" id="agencyCard" style="display:none">
+          <div class="settings-section-title">Agency</div>
+          <div class="card">
+            <div class="sec-label">Agency name</div>
+            <div class="field">
+              <label>Name</label>
+              <input id="agencyNameInput" placeholder="My Agency" maxlength="60">
+            </div>
+            <button class="btn btn-primary" onclick="saveAgencyName()" id="saveAgencyBtn">Save changes</button>
+            <div id="agencyNameStatus" style="font-size:12px;margin-top:8px;min-height:16px"></div>
+          </div>
+        </div>
+
+        <!-- SECTION: TEAM -->
+        <div class="settings-section" id="partnersCard" style="display:none">
+          <div class="settings-section-title">Team</div>
+          <div class="card">
+            <div class="sec-label">Partners</div>
+            <div id="partnersList"></div>
+          </div>
           <!-- Invite form (admin only) -->
-          <div id="invitePartnerForm" style="display:none;margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
-            <div class="sec-label" style="font-size:11px;margin-bottom:10px">Invite new partner</div>
-            <div class="field" style="margin-bottom:8px">
+          <div class="card" id="invitePartnerForm" style="display:none;margin-top:2px">
+            <div class="sec-label">Invite new partner</div>
+            <div class="field">
               <label>Name</label>
               <input id="inviteName" placeholder="Partner name">
             </div>
-            <div class="field" style="margin-bottom:8px">
+            <div class="field">
               <label>Email</label>
               <input id="inviteEmail" type="email" placeholder="partner@example.com">
             </div>
-            <div class="field" style="margin-bottom:10px">
+            <div class="field">
               <label>Split % <span id="splitRemaining" class="split-remaining"></span></label>
               <input id="inviteSplit" type="number" min="1" max="100" placeholder="50" oninput="updateSplitRemaining()">
             </div>
-            <button class="btn" onclick="invitePartner()" style="font-size:13px;padding:9px 18px">Send invite</button>
+            <button class="btn btn-primary" onclick="invitePartner()">Send invite</button>
             <div id="inviteStatus" style="font-size:12px;margin-top:8px;min-height:16px"></div>
           </div>
         </div>
 
-        <!-- Fanvue Account card -->
-        <div class="card">
-          <div class="sec-label">Fanvue Account</div>
-          <div id="fanvueStatusBlock"></div>
-          <div id="lastRefreshRow" style="display:flex;gap:8px;align-items:center;margin-top:8px">
-            <button class="btn-outline" style="font-size:11px;padding:5px 11px" onclick="refreshRevenue()">↻ Refresh data</button>
-          </div>
-        </div>
-
-        <!-- Sync card -->
-        <div class="card">
-          <div class="sec-label">Sync</div>
-          <button class="btn" id="syncBtn" onclick="syncFullHistory()" style="font-size:13px;padding:9px 18px">Sync full history</button>
-          <div id="syncStatus" style="font-size:12px;margin-top:10px;min-height:18px"></div>
-        </div>
-
-        <!-- Platforms card -->
-        <div class="card">
-          <div class="sec-row">
-            <div class="sec-label" style="margin:0">Platforms</div>
-          </div>
-          <div style="margin-bottom:12px" id="platformList"></div>
-          <div class="pl-add-row">
-            <div class="field">
-              <input id="newPlatform" placeholder="Platform name…" onkeydown="if(event.key==='Enter')addPlatform()">
+        <!-- SECTION: INTEGRATIONS -->
+        <div class="settings-section">
+          <div class="settings-section-title">Integrations</div>
+          <div class="card">
+            <div class="sec-label">Fanvue Account</div>
+            <div id="fanvueStatusBlock"></div>
+            <div id="lastRefreshRow" style="margin-top:8px">
+              <button class="btn" onclick="refreshRevenue()">↻ Refresh data</button>
             </div>
-            <button class="btn-outline" onclick="addPlatform()" style="align-self:flex-end">Add</button>
+          </div>
+          <div class="card" style="margin-top:2px">
+            <div class="sec-label">Sync</div>
+            <p style="font-size:13px;color:var(--text2);margin-bottom:14px">Pull full transaction history from Fanvue.</p>
+            <button class="btn" id="syncBtn" onclick="syncFullHistory()">Sync full history</button>
+            <div id="syncStatus" style="font-size:12px;margin-top:10px;min-height:18px"></div>
           </div>
         </div>
 
-        <!-- Info card -->
-        <div class="card">
-          <div class="sec-label">Info</div>
-          <p id="infoCard" style="font-size:12px;color:var(--text2);line-height:1.9">
-            Real-time sync via Supabase &bull; Revenue from transactions table<br>
-            <span style="color:var(--text3)">Revolut reference: 1 USD = 0.8547 EUR</span><br>
-            <span id="wiseRateLine" style="color:var(--text3)">Wise mid-market: loading…</span>
-          </p>
+        <!-- SECTION: PREFERENCES -->
+        <div class="settings-section">
+          <div class="settings-section-title">Preferences</div>
+          <div class="card">
+            <div class="sec-row">
+              <div class="sec-label" style="margin:0">Platforms</div>
+            </div>
+            <div id="platformList" style="margin-bottom:14px"></div>
+            <div class="pl-add-row">
+              <div class="field" style="margin-bottom:0">
+                <input id="newPlatform" placeholder="Platform name…" onkeydown="if(event.key==='Enter')addPlatform()">
+              </div>
+              <button class="btn" onclick="addPlatform()" style="align-self:flex-end">Add</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION: ABOUT -->
+        <div class="settings-section">
+          <div class="settings-section-title">About</div>
+          <div class="card">
+            <div class="sec-label">Rates &amp; Info</div>
+            <p id="infoCard" style="font-size:13px;color:var(--text2);line-height:2">
+              Real-time sync via Supabase<br>
+              <span style="color:var(--text3);font-size:12px">Revolut reference: 1 USD = 0.8547 EUR</span><br>
+              <span id="wiseRateLine" style="color:var(--text3);font-size:12px">Wise mid-market: loading…</span>
+            </p>
+          </div>
         </div>
 
       </div><!-- end tab-settings -->
@@ -1258,6 +1433,25 @@ body{
     </div><!-- end page-content -->
   </main><!-- end main-area -->
 </div><!-- end layout -->
+
+<!-- BULK ACTION BAR -->
+<div id="bulkBar" class="bulk-bar" style="display:none">
+  <span class="bulk-bar-count" id="bulkCount">0 selected</span>
+  <button class="btn" style="color:var(--red);border-color:var(--red-bg)" onclick="deleteBulkTx()">Delete selected ×</button>
+  <button class="btn-ghost-sm" onclick="clearBulkSelection()">Cancel</button>
+</div>
+
+<!-- WITHDRAWAL CONFIRM MODAL -->
+<div id="wConfirmModal" class="w-confirm-modal">
+  <div class="w-confirm-box">
+    <div class="w-confirm-title">Record withdrawal?</div>
+    <div class="w-confirm-body" id="wConfirmBody"></div>
+    <div class="w-confirm-actions">
+      <button class="btn" onclick="wConfirmCancel()">Cancel</button>
+      <button class="btn btn-primary" onclick="wConfirmSubmit()">Confirm</button>
+    </div>
+  </div>
+</div>
 
 <!-- MOBILE BOTTOM NAV -->
 <nav class="tabs-mobile">
@@ -1405,6 +1599,29 @@ async function signup(){
   err.style.color='var(--green-text)';
   err.textContent='Check your email and click the confirmation link to activate your account.';
   btn.disabled=false;btn.textContent='Create account';
+  g('resendRow').style.display='block';
+}
+
+var _resendCooldown=null;
+async function resendConfirmation(){
+  var email=(g('authEmail').value||'').trim();
+  var btn=g('resendBtn'),err=g('authErr');
+  if(!email){err.style.color='var(--red)';err.textContent='Enter your email first.';return;}
+  btn.disabled=true;
+  await db.auth.resend({type:'signup',email:email});
+  err.style.color='var(--green-text)';err.textContent='Confirmation email resent.';
+  var secs=60;
+  btn.textContent='Resend in '+secs+'s';
+  clearInterval(_resendCooldown);
+  _resendCooldown=setInterval(function(){
+    secs--;
+    if(secs<=0){
+      clearInterval(_resendCooldown);
+      btn.disabled=false;btn.textContent='Resend confirmation email';
+    }else{
+      btn.textContent='Resend in '+secs+'s';
+    }
+  },1000);
 }
 
 async function forgotPassword(){
@@ -1538,29 +1755,102 @@ async function saveAgencyName(){
   btn.disabled=false;btn.textContent='Save';
 }
 
+var _splitEditing={};
+
 async function loadPartnersList(){
   var el=g('partnersList');if(!el)return;
-  var res=await db.from('partners').select('id,name,split_pct,status,invited_email').order('created_at',{ascending:true});
+  var res=await db.from('partners').select('id,name,split_pct,status,invited_email,user_id').order('created_at',{ascending:true});
   if(res.error||!res.data){el.innerHTML='<p style="font-size:12px;color:var(--text3)">No partners yet.</p>';return;}
   var rows=res.data;
   _partnersSplitTotal=0;
   rows.forEach(function(p){if(p.status==='active')_partnersSplitTotal+=(p.split_pct||0);});
-  var h='';
-  if(!rows.length){h='<p style="font-size:12px;color:var(--text3)">No partners yet.</p>';}
-  rows.forEach(function(p){
+  if(!rows.length){el.innerHTML='<p style="font-size:12px;color:var(--text3)">No partners yet.</p>';updateSplitRemaining();return;}
+  var isAdmin=currentRole==='admin';
+  var h=rows.map(function(p,i){
     var active=p.status==='active';
-    h+='<div class="partner-list-row">'
-      +'<div><div style="font-weight:600">'+p.name+'</div>'
-      +(p.invited_email?'<div style="font-size:11px;color:var(--text3)">'+p.invited_email+'</div>':'')
+    var inactive=p.status==='inactive';
+    var avatarColor=i===0?'blue':i===1?'green':'gray';
+    var initials=p.name.split(' ').map(function(w){return w[0]||'';}).join('').toUpperCase().slice(0,2)||'?';
+    var statusBadge=active
+      ?'<span class="badge badge-ok">Active</span>'
+      :inactive
+        ?'<span class="badge" style="background:var(--card2);color:var(--text3)">Inactive</span>'
+        :'<span class="badge badge-pend">Invite sent</span>';
+    var editing=!!_splitEditing[p.id];
+    var otherTotal=_partnersSplitTotal-(active?p.split_pct||0:0);
+    return '<div class="partner-list-row">'
+      +'<div class="partner-avatar '+avatarColor+'">'+initials+'</div>'
+      +'<div class="partner-list-info">'
+      +'<div class="partner-list-name">'+p.name+'</div>'
+      +(p.invited_email?'<div class="partner-list-email">'+p.invited_email+'</div>':'')
+      +(editing&&active&&isAdmin
+        ?'<div class="split-inline-edit">'
+          +'<input type="number" id="split_inp_'+p.id+'" value="'+(p.split_pct||0)+'" min="1" max="100">'
+          +'<button class="btn-save" onclick="saveSplit(\''+p.id+'\','+otherTotal+')">Save</button>'
+          +'<button class="btn-cancel" onclick="cancelSplitEdit(\''+p.id+'\')">Cancel</button>'
+          +'</div>'
+        :'')
       +'</div>'
-      +'<div style="display:flex;align-items:center;gap:8px">'
-      +(p.split_pct?'<span style="font-size:12px;color:var(--text2)">'+p.split_pct+'%</span>':'')
-      +'<span class="badge '+(active?'badge-ok':'badge-pend')+'">'+(active?'Active':'Invite sent')+'</span>'
+      +'<div class="partner-list-actions">'
+      +(p.split_pct&&!editing?'<span style="font-size:13px;color:var(--text2);font-weight:600;min-width:36px;text-align:right">'+p.split_pct+'%</span>':'')
+      +statusBadge
+      +(isAdmin&&active&&!editing?'<button class="btn-edit" onclick="editSplitStart(\''+p.id+'\')">Edit split</button>':'')
+      +(isAdmin?'<button class="btn-del" title="Remove" onclick="removePartner(\''+p.id+'\',\''+p.status+'\',\''+p.name+'\')">&times;</button>':'')
       +'</div>'
       +'</div>';
-  });
+  }).join('');
   el.innerHTML=h;
   updateSplitRemaining();
+}
+
+function editSplitStart(partnerId){
+  _splitEditing[partnerId]=true;
+  loadPartnersList();
+}
+
+function cancelSplitEdit(partnerId){
+  _splitEditing[partnerId]=false;
+  loadPartnersList();
+}
+
+async function saveSplit(partnerId,otherTotal){
+  var inp=g('split_inp_'+partnerId);
+  if(!inp)return;
+  var val=parseInt(inp.value)||0;
+  if(val<=0){inp.focus();return;}
+  if(otherTotal+val>100){
+    showToast('Total split would exceed 100%. Available: '+(100-otherTotal)+'%','error');
+    return;
+  }
+  var res=await db.from('partners').update({split_pct:val}).eq('id',partnerId);
+  if(res.error){showToast('Save failed','error');return;}
+  _splitEditing[partnerId]=false;
+  showToast('Split updated','success');
+  await loadPartnersList();
+}
+
+async function removePartner(partnerId,status,name){
+  if(currentRole!=='admin')return;
+  var msg=status==='active'
+    ?'Remove '+name+'? Their account will be deactivated.'
+    :'Cancel invite for '+name+'?';
+  if(!confirm(msg))return;
+  if(status==='pending'){
+    await db.from('partner_invites').delete().eq('partner_id',partnerId);
+    await db.from('partners').delete().eq('id',partnerId);
+  }else{
+    if(_agencyId){
+      var partnerRes=await db.from('partners').select('user_id').eq('id',partnerId).single();
+      if(partnerRes.data&&partnerRes.data.user_id){
+        await db.from('user_roles').delete()
+          .eq('user_id',partnerRes.data.user_id)
+          .eq('agency_id',_agencyId);
+      }
+    }
+    await db.from('partners').update({status:'inactive',split_pct:0}).eq('id',partnerId);
+  }
+  showToast('Partner removed','success');
+  await loadPartnersList();
 }
 
 function updateSplitRemaining(){
@@ -1609,14 +1899,8 @@ async function invitePartner(){
 
 function renderSubBanners(){
   var html='';
-  if(FANVUE_CONNECTION&&!FANVUE_CONNECTION.subscription_active&&_agencyTrialEndsAt){
-    var now=new Date(),trial=new Date(_agencyTrialEndsAt);
-    if(now<trial){
-      var days=Math.ceil((trial-now)/86400000);
-      html='<div class="sub-banner trial">⏳ Trial: <strong>'+days+' day'+(days!==1?'s':'')+' remaining</strong>. Subscribe via <a href="#" style="color:inherit">Fanvue App Store</a> to continue after trial.</div>';
-    }else{
-      html='<div class="sub-banner expired">⚠️ Trial expired. <a href="#" style="color:inherit">Subscribe via Fanvue App Store</a> to continue using Payout Manager.</div>';
-    }
+  if(FANVUE_CONNECTION&&!FANVUE_CONNECTION.subscription_active){
+    html='<div class="sub-banner expired">Subscribe via <a href="#" style="color:inherit;font-weight:600">Fanvue App Store</a> to continue using Payout Manager.</div>';
   }
   var ds=g('subBannerDash'),ss=g('subBannerSettings');
   if(ds)ds.innerHTML=html;
@@ -1834,7 +2118,74 @@ var EXP={};
 var TX_EDIT={};
 var EXP_EDIT={};
 var TX_FILTER={platform:'all',source:'all'};
+var TX_SORT='newest';
 var currentTab='dashboard';
+var _selectedTxs=new Set();
+var _wPending=null;
+
+/* ---- Bulk selection ---- */
+function toggleTxSelect(id,checked){
+  if(checked)_selectedTxs.add(id);
+  else _selectedTxs.delete(id);
+  updateBulkBar();
+}
+function updateBulkBar(){
+  var bar=g('bulkBar');if(!bar)return;
+  if(_selectedTxs.size>0){
+    bar.style.display='flex';
+    g('bulkCount').textContent=_selectedTxs.size+' selected';
+  }else{
+    bar.style.display='none';
+  }
+}
+function clearBulkSelection(){
+  _selectedTxs.clear();
+  updateBulkBar();
+  renderMonths();
+}
+async function deleteBulkTx(){
+  if(!_selectedTxs.size)return;
+  var n=_selectedTxs.size;
+  if(!confirm('Delete '+n+' transaction'+(n>1?'s':'')+'?'))return;
+  var ids=Array.from(_selectedTxs);
+  for(var i=0;i<ids.length;i++){
+    await db.from('transactions').delete().eq('id',ids[i]);
+  }
+  _selectedTxs.clear();
+  updateBulkBar();
+  await loadRevenueData();renderAll();
+}
+
+/* ---- Sort ---- */
+function txSetSort(val){TX_SORT=val;renderMonths();}
+
+/* ---- Expense category helpers ---- */
+function parseExpDesc(raw){
+  if(!raw)return{cat:'',text:''};
+  var m=raw.match(/^\[([^\]]+)\]\s*(.*)/);
+  return m?{cat:m[1],text:m[2]}:{cat:'',text:raw};
+}
+function catClass(cat){
+  var map={Marketing:'cat-marketing',Software:'cat-software',Equipment:'cat-equipment',Other:'cat-other'};
+  return map[cat]||'cat-other';
+}
+
+/* ---- Withdrawal confirm ---- */
+function wConfirmCancel(){
+  _wPending=null;
+  g('wConfirmModal').classList.remove('open');
+}
+async function wConfirmSubmit(){
+  if(!_wPending)return;
+  g('wConfirmModal').classList.remove('open');
+  var btn=g('addBtn');
+  if(btn){btn.disabled=true;btn.textContent='Adding…';}
+  var res=await db.from('withdrawals').insert(_wPending);
+  _wPending=null;
+  if(res.error)alert('Error: '+res.error.message);
+  else g('nUSD').value='';
+  if(btn){btn.disabled=false;btn.textContent='Add';}
+}
 
 /* ---- Platform normalization ---- */
 function normalizePlatform(raw){
@@ -1911,6 +2262,8 @@ async function fetchWiseRate(){
   }catch(e){}
   var el=g('wiseRateLine');
   if(el)el.innerHTML='<span style="color:var(--green-text)">Wise mid-market: 1 USD = '+WISE_RATE.toFixed(4)+' EUR</span>';
+  var fxField=g('nFxRate');
+  if(fxField&&!fxField.value)fxField.value=WISE_RATE.toFixed(4);
 }
 
 /* ---- Platform management ---- */
@@ -2091,15 +2444,24 @@ function setupRealtime(){
 async function addW(){
   var usd=pn(g('nUSD').value);
   if(!usd||usd<=0){g('nUSD').focus();return;}
+  var fxInput=g('nFxRate');
+  var rate=fxInput&&pn(fxInput.value)>0?pn(fxInput.value):WISE_RATE;
   var date=g('nDate').value||new Date().toISOString().slice(0,10);
-  var btn=g('addBtn');btn.disabled=true;btn.textContent='Adding…';
-  var res=await db.from('withdrawals').insert({
-    platform:g('nPl').value,usd:r2(usd),request_date:date,
-    eur:0,v_eur:0,vl_eur:0,status:'pending'
-  });
-  if(res.error)alert('Error: '+res.error.message);
-  else g('nUSD').value='';
-  btn.disabled=false;btn.textContent='Add';
+  var platform=g('nPl').value;
+
+  var expEUR=r2(usd*rate);
+  var ratio=vRatio();
+  var vG=r2(expEUR*ratio);
+  var vlG=r2(expEUR-vG);
+
+  _wPending={platform:platform,usd:r2(usd),request_date:date,eur:0,v_eur:0,vl_eur:0,status:'pending'};
+
+  g('wConfirmBody').innerHTML=
+    'Amount: <strong>'+fu(usd)+'</strong><br>'
+    +'Expected EUR: <strong>'+fe(expEUR)+'</strong><br>'
+    +'Split: '+P0().name+' — '+fe(vG)+' &nbsp;·&nbsp; '+P1().name+' — '+fe(vlG)+'<br>'
+    +'FX rate: 1 USD = '+rate.toFixed(4)+' EUR';
+  g('wConfirmModal').classList.add('open');
 }
 
 async function confirmW(id){
@@ -2232,12 +2594,14 @@ async function addExpense(){
   var partnerId=g('expPartner').value;
   if(!partnerId)return;
   var date=g('expDate').value||new Date().toISOString().slice(0,10);
-  var desc=(g('expDesc').value||'').trim();
+  var cat=(g('expCat')&&g('expCat').value)||'';
+  var rawDesc=(g('expDesc').value||'').trim();
+  var desc=cat?('['+cat+']'+(rawDesc?' '+rawDesc:'')):rawDesc||null;
   var btn=g('expAddBtn'),statusEl=g('expStatus');
   btn.disabled=true;btn.textContent='Adding…';statusEl.textContent='';
 
   var res=await db.from('expenses').insert({
-    partner_id:partnerId,amount_usd:r2(amt),date:date,description:desc||null
+    partner_id:partnerId,amount_usd:r2(amt),date:date,description:desc
   });
 
   if(res.error){
@@ -2245,7 +2609,8 @@ async function addExpense(){
   }else{
     var pName=(PARTNERS.find(function(p){return p.id===partnerId;})||{name:'partner'}).name;
     g('expAmt').value='';g('expDesc').value='';
-    statusEl.innerHTML='<span style="color:var(--green-text)">✓ Added '+fu(amt)+' for '+pName+'</span>';
+    if(g('expCat'))g('expCat').value='';
+    statusEl.innerHTML='<span style="color:var(--green-text)">✓ Added '+fu(amt)+' for '+pName+(cat?' ['+cat+']':'')+'</span>';
     await loadRevenueData();renderAll();
     setTimeout(function(){statusEl.textContent='';},3000);
   }
@@ -2342,11 +2707,14 @@ function renderExpenses(){
         +'</div>'
         +'</div>';
     }
+    var parsed=parseExpDesc(exp.description);
+    var catBadge=parsed.cat?'<span class="exp-cat-badge '+catClass(parsed.cat)+'">'+parsed.cat+'</span>':'';
     return '<div class="exp-item">'
       +'<div class="exp-left">'
       +'<span class="exp-who '+cls+'">'+p.name+'</span>'
       +'<span class="exp-amt">'+fu(exp.amount)+'</span>'
-      +(exp.description?'<span class="exp-desc" title="'+exp.description+'">'+exp.description+'</span>':'')
+      +catBadge
+      +(parsed.text?'<span class="exp-desc" title="'+parsed.text+'">'+parsed.text+'</span>':'')
       +'</div>'
       +'<div style="display:flex;align-items:center;gap:6px;flex-shrink:0">'
       +'<span class="exp-date">'+fdate(exp.date)+'</span>'
@@ -2449,12 +2817,31 @@ function renderBal(){
   tLoss=r2(tLoss);
   var avgRate=tU>0?(tEur/tU).toFixed(4):null;
 
-  /* Current month revenue */
+  /* Current month revenue + trend */
   var curM=S.months[S.months.length-1];
   var curRev=curM?r2(mTot(curM)):0;
+  var prevM=S.months[S.months.length-2];
+  var prevRev=prevM?r2(mTot(prevM)):0;
+  var trendHtml='';
+  if(prevRev>0&&curRev>=0){
+    var trendPct=((curRev-prevRev)/prevRev*100).toFixed(1);
+    var trendUp=parseFloat(trendPct)>=0;
+    trendHtml='<span class="trend-badge '+(trendUp?'trend-up':'trend-down')+'">'+(trendUp?'+':'')+trendPct+'%</span>';
+  }
+
+  /* Empty state if no data connected */
+  if(!MODEL_ID){
+    g('dashStats').innerHTML='<div class="empty-state" style="padding:40px 20px;width:100%">'
+      +'<div class="empty-state-icon">📊</div>'
+      +'<div class="empty-state-title">No data yet</div>'
+      +'<div class="empty-state-sub">Connect your Fanvue account to start tracking revenue</div>'
+      +'<button class="btn btn-primary" onclick="showTab(\'settings\',document.querySelector(\'[data-tab=settings]\'))">Connect Fanvue →</button>'
+      +'</div>';
+    return;
+  }
 
   g('dashStats').innerHTML=
-    '<div class="stat-box"><p class="stat-lbl">This month</p><p class="stat-val">'+fu(curRev)+'</p></div>'
+    '<div class="stat-box"><p class="stat-lbl">This month</p><p class="stat-val">'+fu(curRev)+trendHtml+'</p></div>'
     +'<div class="stat-box"><p class="stat-lbl">Total revenue</p><p class="stat-val">'+fu(totalRev)+'</p></div>'
     +'<div class="stat-box"><p class="stat-lbl">Total withdrawn</p><p class="stat-val">'+fu(totalW)+'</p></div>'
     +'<div class="stat-box"><p class="stat-lbl">'+P0().name+'\'s share</p><p class="stat-val blue">'+fu(r2(totalVSh()))+'</p></div>'
@@ -2470,19 +2857,24 @@ function renderRecentTx(){
     return b.date<a.date?-1:b.date>a.date?1:0;
   }).slice(0,8);
   if(!txs.length){
-    el.innerHTML='<div style="color:var(--text3);font-size:13px;padding:14px 0;text-align:center">No transactions yet</div>';
+    el.innerHTML='<div style="color:var(--text3);font-size:13px;padding:20px 0;text-align:center">No transactions yet</div>';
     return;
   }
   el.innerHTML=txs.map(function(tx){
     var pl=normalizePlatform(tx.platform);
     var plIdx=S.platforms.indexOf(pl);
     var plColor=PLATFORM_COLORS[(plIdx>=0?plIdx:0)%PLATFORM_COLORS.length];
+    var pos=tx.amount>=0;
+    var accentColor=pos?'var(--green)':'var(--red)';
+    var autoTag=tx.source==='scraper'?'<span style="font-size:9px;font-weight:700;padding:1px 5px;border-radius:8px;background:var(--card2);color:var(--text3);margin-left:2px">auto</span>':'';
     return '<div class="recent-tx-row">'
+      +'<div class="recent-tx-accent" style="background:'+accentColor+'"></div>'
       +'<div class="recent-tx-left">'
       +'<span class="recent-tx-type" style="background:'+plColor+'22;color:'+plColor+'">'+pl+'</span>'
+      +autoTag
       +'<span class="recent-tx-date">'+fdate(tx.date)+'</span>'
       +'</div>'
-      +'<span class="recent-tx-amt">'+fu(tx.amount)+'</span>'
+      +'<span class="recent-tx-amt '+(pos?'pos':'neg')+'">'+(pos?'':'-')+fu(Math.abs(tx.amount))+'</span>'
       +'</div>';
   }).join('');
 }
@@ -2587,9 +2979,16 @@ function renderMonths(){
 
   var monthKey=m.id;
   var monthTxs=S.txs.filter(function(tx){return tx.date&&tx.date.slice(0,7)===monthKey;});
-  monthTxs.sort(function(a,b){return b.date<a.date?-1:b.date>a.date?1:0;});
 
-  if(monthTxs.length){
+  if(!monthTxs.length){
+    html+='<div class="divider"></div>'
+      +'<div class="empty-state" style="padding:32px 0">'
+      +'<div class="empty-state-icon" style="font-size:28px;margin-bottom:10px">📋</div>'
+      +'<div class="empty-state-title" style="font-size:15px">No transactions this month</div>'
+      +'<div class="empty-state-sub" style="font-size:13px;margin-bottom:16px">Add a manual entry or sync from Fanvue</div>'
+      +'<button class="btn btn-primary" onclick="g(\'txAmt\').focus();showTab(\'revenue\',document.querySelector(\'[data-tab=revenue]\'))">Add transaction</button>'
+      +'</div>';
+  }else{
     var isAdmin=currentRole==='admin';
 
     var monthPlatforms=['all'];
@@ -2608,36 +3007,42 @@ function renderMonths(){
       return plMatch&&srcMatch;
     });
 
-    html+='<div class="divider"></div>';
-
-    html+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.625rem;flex-wrap:wrap;gap:8px">';
-    html+='<p class="sec-label" style="margin:0">Transactions ('+filtered.length+(filtered.length!==monthTxs.length?'/'+monthTxs.length:'')+')</p>';
-    html+='<div style="display:flex;gap:6px;flex-wrap:wrap">';
-
-    monthPlatforms.forEach(function(pl){
-      var act=TX_FILTER.platform===pl;
-      html+='<button onclick="txSetPlatform(\''+pl+'\')" style="'
-        +'font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;cursor:pointer;font-family:inherit;transition:background .13s,color .13s;'
-        +(act
-          ?'background:var(--text);color:var(--bg);border:1px solid var(--text);'
-          :'background:transparent;color:var(--text2);border:1px solid var(--border2);')
-        +'">'+(pl==='all'?'All':pl)+'</button>';
+    /* Apply sort */
+    filtered.sort(function(a,b){
+      if(TX_SORT==='oldest')return a.date<b.date?-1:a.date>b.date?1:0;
+      if(TX_SORT==='amt_desc')return b.amount-a.amount;
+      if(TX_SORT==='amt_asc')return a.amount-b.amount;
+      return b.date<a.date?-1:b.date>a.date?1:0; /* newest */
     });
 
+    html+='<div class="divider"></div>';
+
+    /* Filter + Sort row */
+    html+='<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;flex-wrap:wrap;gap:8px">';
+    html+='<div>';
+    html+='<p class="sec-label" style="margin:0 0 6px">Transactions ('+filtered.length+(filtered.length!==monthTxs.length?'/'+monthTxs.length:'')+')</p>';
+    html+='<div style="display:flex;gap:5px;flex-wrap:wrap">';
+    monthPlatforms.forEach(function(pl){
+      var act=TX_FILTER.platform===pl;
+      html+='<button class="sort-btn'+(act?' act':'')+'" onclick="txSetPlatform(\''+pl+'\')">'+(pl==='all'?'All':pl)+'</button>';
+    });
     if(hasManual&&hasAuto){
-      html+='<div style="width:1px;height:20px;background:var(--border2);margin:0 2px;align-self:center"></div>';
+      html+='<span style="width:1px;height:20px;background:var(--border2);display:inline-block;margin:0 2px;vertical-align:middle"></span>';
       ['all','auto','manual'].forEach(function(src){
         var act=TX_FILTER.source===src;
-        html+='<button onclick="txSetSource(\''+src+'\')" style="'
-          +'font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;cursor:pointer;font-family:inherit;transition:background .13s,color .13s;'
-          +(act
-            ?'background:var(--text);color:var(--bg);border:1px solid var(--text);'
-            :'background:transparent;color:var(--text2);border:1px solid var(--border2);')
-          +'">'+src+'</button>';
+        html+='<button class="sort-btn'+(act?' act':'')+'" onclick="txSetSource(\''+src+'\')">'+src+'</button>';
       });
     }
-
     html+='</div></div>';
+
+    /* Sort controls */
+    html+='<div class="sort-row" style="margin:0">';
+    html+='<span class="sort-lbl">Sort:</span>';
+    [['newest','Newest'],['oldest','Oldest'],['amt_desc','$ High'],['amt_asc','$ Low']].forEach(function(s){
+      html+='<button class="sort-btn'+(TX_SORT===s[0]?' act':'')+'" onclick="txSetSort(\''+s[0]+'\')">'+s[1]+'</button>';
+    });
+    html+='</div>';
+    html+='</div>';
 
     if(!filtered.length){
       html+='<div style="text-align:center;padding:1rem;color:var(--text3);font-size:13px">No transactions match the filter</div>';
@@ -2648,6 +3053,7 @@ function renderMonths(){
       var plLabel=normalizePlatform(tx.platform);
       var plIdx=S.platforms.indexOf(plLabel);
       var plColor=PLATFORM_COLORS[(plIdx>=0?plIdx:0)%PLATFORM_COLORS.length];
+      var isSelected=_selectedTxs.has(tx.id);
 
       if(isEditing){
         var plOptions=S.platforms.map(function(p){
@@ -2673,6 +3079,8 @@ function renderMonths(){
         html+='<div class="tx-item">'
           +'<div class="tx-row">'
           +'<div class="tx-left">'
+          +(isAdmin?'<input type="checkbox" class="tx-check"'+(isSelected?' checked':'')
+            +' onchange="toggleTxSelect(\''+tx.id+'\',this.checked)" onclick="event.stopPropagation()">':'')
           +'<span class="tx-pl" style="background:'+plColor+'22;color:'+plColor+'">'+plLabel+'</span>'
           +'<span class="tx-amt">'+fu(tx.amount)+'</span>'
           +'<span class="tx-date">'+fdate(tx.date)+'</span>'
@@ -2748,12 +3156,22 @@ function renderList(){
       var loss=r2(expectedEur(w.usd)-w.eur);
       h+='<div class="w-item">'
         +'<div class="w-row1">'
-        +'<div class="w-row1-left"><span class="badge badge-ok">'+w.pl+'</span><span class="w-amt">'+fu(w.usd)+' → '+fe(w.eur)+'</span></div>'
-        +'<button class="btn-del" onclick="delW(\''+w.id+'\')">&times;</button>'
+        +'<div class="w-row1-left" style="align-items:flex-start;flex-direction:column;gap:2px">'
+        +'<div style="display:flex;align-items:center;gap:8px">'
+        +'<span class="badge" style="background:var(--card2);color:var(--text3)">'+w.pl+'</span>'
+        +'<span class="badge badge-confirmed">Confirmed</span>'
+        +(loss>0?'<span class="badge" style="background:var(--red-bg);color:var(--red)">loss '+fe(loss)+'</span>':'')
         +'</div>'
-        +'<div class="w-row2">'
-        +'<div class="w-row2-left">'+fdate(w.date)+(w.rd?' → '+fdate(w.rd):'')+' · '+rate+(loss>0?' · <span style="color:var(--red)">loss: '+fe(loss)+'</span>':'')+'</div>'
-        +'<div class="w-row2-right"><span class="badge badge-v">'+P0().name+' '+fe(w.vE)+'</span><span class="badge badge-vl">'+P1().name+' '+fe(w.vlE)+'</span></div>'
+        +'<div class="w-done-eur">'+fe(w.eur)+'</div>'
+        +'<div class="w-done-usd">'+fu(w.usd)+' &nbsp;·&nbsp; rate '+rate+'&nbsp;·&nbsp;'+fdate(w.date)+(w.rd?' → '+fdate(w.rd):'')+'</div>'
+        +'</div>'
+        +'<div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0">'
+        +'<button class="btn-del" onclick="delW(\''+w.id+'\')">&times;</button>'
+        +'<div style="display:flex;gap:5px">'
+        +'<span class="badge badge-v">'+P0().name+' '+fe(w.vE)+'</span>'
+        +'<span class="badge badge-vl">'+P1().name+' '+fe(w.vlE)+'</span>'
+        +'</div>'
+        +'</div>'
         +'</div>'
         +'</div>';
     });

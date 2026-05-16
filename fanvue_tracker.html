@@ -265,8 +265,10 @@ body{
 }
 .partner-card.blue .partner-eur{color:var(--blue-text)}
 .partner-card.green .partner-eur{color:var(--green-text)}
+.partner-rem-row{display:flex;gap:16px;margin-top:8px}
+.partner-rem-row>div{flex:1}
 .partner-rem-lbl{font-size:10px;color:var(--text3);margin-bottom:3px}
-.partner-rem{font-size:14px;font-weight:600;font-variant-numeric:tabular-nums}
+.partner-rem{font-size:13px;font-weight:600;font-variant-numeric:tabular-nums}
 
 /* ============================================================
    STATS ROW (used by JS renderBal)
@@ -1170,14 +1172,30 @@ body{
           <div class="partner-card blue">
             <div class="partner-name" id="partnerName0">—</div>
             <div class="partner-eur" id="bV">€0.00</div>
-            <div class="partner-rem-lbl">Remaining to withdraw</div>
-            <div class="partner-rem" id="vRemEl">$0.00</div>
+            <div class="partner-rem-row">
+              <div>
+                <div class="partner-rem-lbl">Already withdrawn</div>
+                <div class="partner-rem" id="vWithdrawnEl">$0.00</div>
+              </div>
+              <div>
+                <div class="partner-rem-lbl">Remaining</div>
+                <div class="partner-rem" id="vRemEl">$0.00</div>
+              </div>
+            </div>
           </div>
           <div class="partner-card green">
             <div class="partner-name" id="partnerName1">—</div>
             <div class="partner-eur" id="bVl">€0.00</div>
-            <div class="partner-rem-lbl">Remaining to withdraw</div>
-            <div class="partner-rem" id="vlRemEl">$0.00</div>
+            <div class="partner-rem-row">
+              <div>
+                <div class="partner-rem-lbl">Already withdrawn</div>
+                <div class="partner-rem" id="vlWithdrawnEl">$0.00</div>
+              </div>
+              <div>
+                <div class="partner-rem-lbl">Remaining</div>
+                <div class="partner-rem" id="vlRemEl">$0.00</div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -1288,6 +1306,10 @@ body{
               <select id="expPartner"></select>
             </div>
             <div class="field">
+              <label>Model</label>
+              <select id="expModel"></select>
+            </div>
+            <div class="field">
               <label>Amount (USD)</label>
               <input id="expAmt" class="num" placeholder="0.00">
             </div>
@@ -1332,6 +1354,10 @@ body{
         <div class="card">
           <div class="sec-label">New Withdrawal Request</div>
           <div class="add-row">
+            <div class="field">
+              <label>Model</label>
+              <select id="wModel"></select>
+            </div>
             <div class="field">
               <label>Platform</label>
               <select id="nPl"></select>
@@ -1439,6 +1465,15 @@ body{
         <!-- SECTION: PREFERENCES -->
         <div class="settings-section">
           <div class="settings-section-title">Preferences</div>
+          <div class="card" style="margin-bottom:2px">
+            <div class="sec-label">Display currency</div>
+            <div style="display:flex;gap:6px;margin-bottom:10px">
+              <button id="curBtnUSD" class="sort-btn" onclick="setDisplayCurrency('USD')">USD $</button>
+              <button id="curBtnEUR" class="sort-btn" onclick="setDisplayCurrency('EUR')">EUR €</button>
+              <button id="curBtnGBP" class="sort-btn" onclick="setDisplayCurrency('GBP')">GBP £</button>
+            </div>
+            <p style="font-size:12px;color:var(--text3)">Exchange rates update automatically via Wise API.</p>
+          </div>
           <div class="card">
             <div class="sec-row">
               <div class="sec-label" style="margin:0">Platforms</div>
@@ -1760,6 +1795,8 @@ async function selectModel(modelId){
   ACTIVE_MODEL_ID=modelId;
   renderModelSwitcher();
   renderModelSplitSection();
+  renderExpModelSelect();
+  renderWModelSelect();
   await Promise.all([loadRevenueData(),loadWithdrawals()]);
   renderAll();
 }
@@ -1787,13 +1824,32 @@ async function createAndConnectModel(){
     st.innerHTML='<span style="color:var(--red)">'+res.error.message+'</span>';
     btn.disabled=false;btn.textContent='Create';return;
   }
-  ALL_MODELS.push({id:res.data.id,name:res.data.name,connected:false});
-  ACTIVE_MODEL_ID=res.data.id;
+  var newModelId=res.data.id;
+  ALL_MODELS.push({id:newModelId,name:res.data.name,connected:false});
+  ACTIVE_MODEL_ID=newModelId;
   closeAddModelModal();
   renderModelSwitcher();
-  renderModelSplitSection();
-  await loadRevenueData();renderAll();
-  btn.disabled=false;btn.textContent='Create';
+  btn.textContent='Connecting…';
+  var sessionRes=await db.auth.getSession();
+  var jwt=sessionRes.data&&sessionRes.data.session&&sessionRes.data.session.access_token;
+  if(!jwt){showToast('Not logged in','error');btn.disabled=false;btn.textContent='Create';return;}
+  try{
+    var oauthRes=await fetch(EDGE_URL+'/fanvue-oauth-start',{
+      method:'POST',
+      headers:{'Authorization':'Bearer '+jwt,'Content-Type':'application/json'},
+      body:JSON.stringify({model_id:newModelId})
+    });
+    var oauthData=await oauthRes.json();
+    if(oauthData.url){
+      window.location.href=oauthData.url;
+    }else{
+      showToast(oauthData.error||'Failed to start OAuth','error');
+      btn.disabled=false;btn.textContent='Create';
+    }
+  }catch(e){
+    showToast('Connection error','error');
+    btn.disabled=false;btn.textContent='Create';
+  }
 }
 
 /* ---- Per-model split management ---- */
@@ -2254,7 +2310,8 @@ async function connectFanvueOnboarding(){
     if(!jwt){btn.disabled=false;btn.textContent='Connect Fanvue →';return;}
     var res=await fetch(EDGE_URL+'/fanvue-oauth-start',{
       method:'POST',
-      headers:{'Authorization':'Bearer '+jwt,'Content-Type':'application/json'}
+      headers:{'Authorization':'Bearer '+jwt,'Content-Type':'application/json'},
+      body:JSON.stringify({model_id:ACTIVE_MODEL_ID||null})
     });
     var data=await res.json();
     if(data.url){
@@ -2278,7 +2335,8 @@ async function connectFanvue(){
 
     var res=await fetch(EDGE_URL+'/fanvue-oauth-start',{
       method:'POST',
-      headers:{'Authorization':'Bearer '+jwt,'Content-Type':'application/json'}
+      headers:{'Authorization':'Bearer '+jwt,'Content-Type':'application/json'},
+      body:JSON.stringify({model_id:ACTIVE_MODEL_ID||null})
     });
     var data=await res.json();
     if(data.url){
@@ -2307,6 +2365,11 @@ function showToast(msg,type){
 
 function handleCallbackParams(){
   var params=new URLSearchParams(window.location.search);
+  if(params.get('signup')==='1'){
+    setAuthMode('signup');
+    history.replaceState({},'',window.location.pathname);
+    return;
+  }
   if(params.get('fanvue_connected')==='1'){
     showToast('Fanvue connected successfully!','success');
     loadFanvueConnection();
@@ -2325,6 +2388,34 @@ function handleCallbackParams(){
 }
 
 var WISE_RATE=0.855;
+var DISPLAY_CURRENCY=localStorage.getItem('displayCurrency')||'USD';
+var FX_RATES={USD:1,EUR:0.855,GBP:0.73};
+var CURRENCY_SYMBOLS={USD:'$',EUR:'€',GBP:'£'};
+function fc(usdAmount){
+  var rate=FX_RATES[DISPLAY_CURRENCY]||1;
+  var sym=CURRENCY_SYMBOLS[DISPLAY_CURRENCY]||'$';
+  return sym+(Math.abs(usdAmount)*rate).toFixed(2);
+}
+function setDisplayCurrency(cur){
+  DISPLAY_CURRENCY=cur;
+  localStorage.setItem('displayCurrency',cur);
+  renderCurrencyButtons();
+  renderAll();
+}
+function renderCurrencyButtons(){
+  ['USD','EUR','GBP'].forEach(function(cur){
+    var btn=g('curBtn'+cur);
+    if(btn)btn.classList.toggle('act',DISPLAY_CURRENCY===cur);
+  });
+}
+async function loadFxRates(){
+  try{
+    var res=await fetch('https://api.wise.com/v1/rates?source=USD&target=GBP');
+    if(res.ok){var d=await res.json();var e=Array.isArray(d)?d[0]:d;if(e&&e.rate)FX_RATES.GBP=e.rate;}
+  }catch(e){}
+  FX_RATES.EUR=WISE_RATE;
+  FX_RATES.USD=1;
+}
 var PLATFORM_COLORS=['#6366F1','#a78bfa','#fb923c','#34d399','#f87171','#fbbf24','#60a5fa','#c084fc'];
 var DEFAULT_PLATFORMS=['Fanvue','Telegram','PayPal'];
 var MONTH_NAMES=['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -2440,7 +2531,12 @@ function toggleTheme(){
   var html=document.documentElement;
   var next=html.getAttribute('data-theme')==='dark'?'light':'dark';
   html.setAttribute('data-theme',next);
-  g('themeIcon').textContent=next==='dark'?'☀':'☾';
+  var icon=g('themeIcon');
+  if(icon){
+    icon.textContent=next==='dark'?'☀':'☾';
+    var btn=icon.closest('button')||icon.parentElement;
+    if(btn)btn.title=next==='dark'?'Switch to light theme':'Switch to dark theme';
+  }
   localStorage.setItem('theme',next);
   if(currentTab==='dashboard'||currentTab==='revenue')renderChart();
 }
@@ -2488,6 +2584,7 @@ async function fetchWiseRate(){
     var entry=Array.isArray(data)?data[0]:data;
     if(entry&&typeof entry.rate==='number')WISE_RATE=entry.rate;
   }catch(e){}
+  FX_RATES.EUR=WISE_RATE;
   var el=g('wiseRateLine');
   if(el)el.innerHTML='<span style="color:var(--green-text)">Wise mid-market: 1 USD = '+WISE_RATE.toFixed(4)+' EUR</span>';
   var fxField=g('nFxRate');
@@ -2554,7 +2651,7 @@ async function loadRevenueData(){
   var results=await Promise.all([
     txQuery,
     db.from('expenses')
-      .select('id,amount_usd,partner_id,date,description')
+      .select('id,amount_usd,partner_id,date,description,model_id')
       .order('date',{ascending:true})
   ]);
 
@@ -2567,9 +2664,13 @@ async function loadRevenueData(){
     return{id:tx.id,amount:parseFloat(tx.amount_usd)||0,platform:tx.platform,date:tx.date,source:tx.source||'manual',model_id:tx.model_id||''};
   });
 
-  S.exps=(expRes.data||[]).map(function(exp){
-    return{id:exp.id,amount:parseFloat(exp.amount_usd)||0,partner_id:exp.partner_id,date:exp.date,description:exp.description||''};
+  var allExps=(expRes.data||[]).map(function(exp){
+    return{id:exp.id,amount:parseFloat(exp.amount_usd)||0,partner_id:exp.partner_id,date:exp.date,description:exp.description||'',model_id:exp.model_id||null};
   });
+  /* Filter expenses: show all if All-models view, else model-specific + agency (null) */
+  S.exps=ACTIVE_MODEL_ID
+    ?allExps.filter(function(e){return !e.model_id||e.model_id===ACTIVE_MODEL_ID;})
+    :allExps;
 
   var monthMap={};
 
@@ -2622,10 +2723,8 @@ async function loadRevenueData(){
 
 /* ---- Load withdrawals ---- */
 async function loadWithdrawals(){
-  var results=await Promise.all([
-    db.from('withdrawals').select('*').order('request_date',{ascending:false}),
-    db.from('withdrawal_splits').select('*')
-  ]);
+  var wQuery=db.from('withdrawals').select('*').order('request_date',{ascending:false});
+  var results=await Promise.all([wQuery,db.from('withdrawal_splits').select('*')]);
 
   var wRes=results[0],splitsRes=results[1];
   if(wRes.error){console.error(wRes.error);return;}
@@ -2638,7 +2737,7 @@ async function loadWithdrawals(){
     else if(s.partner_id===P1().id)splitsMap[s.withdrawal_id].vlE=amt;
   });
 
-  S.ws=(wRes.data||[]).map(function(row){
+  var allWs=(wRes.data||[]).map(function(row){
     var sp=splitsMap[row.id]||{};
     return{
       id:row.id,pl:row.platform,
@@ -2647,9 +2746,14 @@ async function loadWithdrawals(){
       vE:sp.vE!=null?sp.vE:(parseFloat(row.v_eur)||0),
       vlE:sp.vlE!=null?sp.vlE:(parseFloat(row.vl_eur)||0),
       date:row.request_date,rd:row.received_date,
-      st:row.status==='ok'?'ok':'pend'
+      st:row.status==='ok'?'ok':'pend',
+      model_id:row.model_id||null
     };
   });
+  /* Show all if All-models view; otherwise model-specific + agency (null) */
+  S.ws=ACTIVE_MODEL_ID
+    ?allWs.filter(function(w){return !w.model_id||w.model_id===ACTIVE_MODEL_ID;})
+    :allWs;
   renderAll();
 }
 
@@ -2686,7 +2790,8 @@ async function addW(){
   var vG=r2(expEUR*ratio);
   var vlG=r2(expEUR-vG);
 
-  _wPending={platform:platform,usd:r2(usd),request_date:date,eur:0,v_eur:0,vl_eur:0,status:'pending'};
+  var wModelId=(g('wModel')&&g('wModel').value)||null;
+  _wPending={platform:platform,usd:r2(usd),request_date:date,eur:0,v_eur:0,vl_eur:0,status:'pending',model_id:wModelId||null};
 
   g('wConfirmBody').innerHTML=
     'Amount: <strong>'+fu(usd)+'</strong><br>'
@@ -2820,6 +2925,26 @@ function renderPartnerSelect(){
   }).join('');
 }
 
+function renderExpModelSelect(){
+  var sel=g('expModel');if(!sel)return;
+  var agencyOpt='<option value="">Agency (all models)</option>';
+  var modelOpts=ALL_MODELS.map(function(m){
+    var sel2=m.id===(ACTIVE_MODEL_ID||'')?'selected':'';
+    return '<option value="'+m.id+'" '+sel2+'>'+escHtml(m.name)+'</option>';
+  }).join('');
+  sel.innerHTML=agencyOpt+modelOpts;
+}
+
+function renderWModelSelect(){
+  var sel=g('wModel');if(!sel)return;
+  var agencyOpt='<option value="">Agency (all models)</option>';
+  var modelOpts=ALL_MODELS.map(function(m){
+    var sel2=m.id===(ACTIVE_MODEL_ID||'')?'selected':'';
+    return '<option value="'+m.id+'" '+sel2+'>'+escHtml(m.name)+'</option>';
+  }).join('');
+  sel.innerHTML=agencyOpt+modelOpts;
+}
+
 async function addExpense(){
   var amt=pn(g('expAmt').value);
   if(!amt||amt<=0){g('expAmt').focus();return;}
@@ -2832,8 +2957,10 @@ async function addExpense(){
   var btn=g('expAddBtn'),statusEl=g('expStatus');
   btn.disabled=true;btn.textContent='Adding…';statusEl.textContent='';
 
+  var expModelId=(g('expModel')&&g('expModel').value)||null;
   var res=await db.from('expenses').insert({
-    partner_id:partnerId,amount_usd:r2(amt),date:date,description:desc
+    partner_id:partnerId,amount_usd:r2(amt),date:date,description:desc,
+    model_id:expModelId||null
   });
 
   if(res.error){
@@ -2941,11 +3068,15 @@ function renderExpenses(){
     }
     var parsed=parseExpDesc(exp.description);
     var catBadge=parsed.cat?'<span class="exp-cat-badge '+catClass(parsed.cat)+'">'+parsed.cat+'</span>':'';
+    var mObj=exp.model_id?ALL_MODELS.find(function(m){return m.id===exp.model_id;}):{name:'Agency'};
+    var modelBadge=(!ACTIVE_MODEL_ID&&ALL_MODELS.length>1)
+      ?'<span style="font-size:9px;font-weight:700;padding:1px 5px;border-radius:8px;background:var(--blue-bg);color:var(--blue-text)">'+(mObj?escHtml(mObj.name):'Agency')+'</span>'
+      :'';
     return '<div class="exp-item">'
       +'<div class="exp-left">'
       +'<span class="exp-who '+cls+'">'+p.name+'</span>'
       +'<span class="exp-amt">'+fu(exp.amount)+'</span>'
-      +catBadge
+      +catBadge+modelBadge
       +(parsed.text?'<span class="exp-desc" title="'+parsed.text+'">'+parsed.text+'</span>':'')
       +'</div>'
       +'<div style="display:flex;align-items:center;gap:6px;flex-shrink:0">'
@@ -3018,11 +3149,23 @@ function setMonth(i){
 function renderBal(){
   var vE=r2(totalVEUR()),vlE=r2(totalVlEUR()),tot=vE+vlE,diff=Math.abs(vE-vlE);
   var vr=vRem(),vlr=vlRem();
+  var vWithdrawn=r2(totalVUSD()),vlWithdrawn=r2(totalVlUSD());
   g('bV').textContent=fe(vE);g('bVl').textContent=fe(vlE);
-  g('vRemEl').textContent=vr>=0?fu(vr):'-'+fu(Math.abs(vr));
-  g('vRemEl').style.color=vr>=0?'var(--blue-text)':'var(--red)';
-  g('vlRemEl').textContent=vlr>=0?fu(vlr):'-'+fu(Math.abs(vlr));
-  g('vlRemEl').style.color=vlr>=0?'var(--green-text)':'var(--red)';
+  var vwEl=g('vWithdrawnEl'),vlwEl=g('vlWithdrawnEl');
+  if(vwEl)vwEl.textContent=fc(vWithdrawn);
+  if(vlwEl)vlwEl.textContent=fc(vlWithdrawn);
+  var vrEl=g('vRemEl'),vlrEl=g('vlRemEl');
+  var zeroStr=CURRENCY_SYMBOLS[DISPLAY_CURRENCY]+'0.00';
+  if(vrEl){
+    if(vr>0.01){vrEl.textContent=fc(vr);vrEl.style.color='var(--blue-text)';}
+    else if(vr<-0.01){vrEl.textContent=zeroStr+' (overpaid)';vrEl.style.color='var(--text3)';}
+    else{vrEl.textContent=zeroStr;vrEl.style.color='var(--text3)';}
+  }
+  if(vlrEl){
+    if(vlr>0.01){vlrEl.textContent=fc(vlr);vlrEl.style.color='var(--green-text)';}
+    else if(vlr<-0.01){vlrEl.textContent=zeroStr+' (overpaid)';vlrEl.style.color='var(--text3)';}
+    else{vlrEl.textContent=zeroStr;vlrEl.style.color='var(--text3)';}
+  }
 
   if(tot>0.01){
     var vf=vE/tot;
@@ -3075,9 +3218,9 @@ function renderBal(){
   /* All-models aggregate view */
   if(!ACTIVE_MODEL_ID&&ALL_MODELS.length>1){
     g('dashStats').innerHTML=
-      '<div class="stat-box"><p class="stat-lbl">This month (all)</p><p class="stat-val">'+fu(curRev)+trendHtml+'</p></div>'
-      +'<div class="stat-box"><p class="stat-lbl">Total revenue</p><p class="stat-val">'+fu(totalRev)+'</p></div>'
-      +'<div class="stat-box"><p class="stat-lbl">Total withdrawn</p><p class="stat-val">'+fu(totalW)+'</p></div>'
+      '<div class="stat-box"><p class="stat-lbl">This month (all)</p><p class="stat-val">'+fc(curRev)+trendHtml+'</p></div>'
+      +'<div class="stat-box"><p class="stat-lbl">Total revenue</p><p class="stat-val">'+fc(totalRev)+'</p></div>'
+      +'<div class="stat-box"><p class="stat-lbl">Total withdrawn</p><p class="stat-val">'+fc(totalW)+'</p></div>'
       +'<div class="stat-box"><p class="stat-lbl">Models</p><p class="stat-val">'+ALL_MODELS.length+'</p></div>'
       +(avgRate?'<div class="stat-box"><p class="stat-lbl">Avg rate</p><p class="stat-val">'+avgRate+'</p></div>':'')
       +(tLoss>0?'<div class="stat-box"><p class="stat-lbl">FX loss</p><p class="stat-val red">'+fe(tLoss)+'</p></div>':'');
@@ -3085,11 +3228,11 @@ function renderBal(){
   }
 
   g('dashStats').innerHTML=
-    '<div class="stat-box"><p class="stat-lbl">This month</p><p class="stat-val">'+fu(curRev)+trendHtml+'</p></div>'
-    +'<div class="stat-box"><p class="stat-lbl">Total revenue</p><p class="stat-val">'+fu(totalRev)+'</p></div>'
-    +'<div class="stat-box"><p class="stat-lbl">Total withdrawn</p><p class="stat-val">'+fu(totalW)+'</p></div>'
-    +'<div class="stat-box"><p class="stat-lbl">'+P0().name+'\'s share</p><p class="stat-val blue">'+fu(r2(totalVSh()))+'</p></div>'
-    +'<div class="stat-box"><p class="stat-lbl">'+P1().name+'\'s share</p><p class="stat-val green">'+fu(r2(totalVlSh()))+'</p></div>'
+    '<div class="stat-box"><p class="stat-lbl">This month</p><p class="stat-val">'+fc(curRev)+trendHtml+'</p></div>'
+    +'<div class="stat-box"><p class="stat-lbl">Total revenue</p><p class="stat-val">'+fc(totalRev)+'</p></div>'
+    +'<div class="stat-box"><p class="stat-lbl">Total withdrawn</p><p class="stat-val">'+fc(totalW)+'</p></div>'
+    +'<div class="stat-box"><p class="stat-lbl">'+P0().name+'\'s share</p><p class="stat-val blue">'+fc(r2(totalVSh()))+'</p></div>'
+    +'<div class="stat-box"><p class="stat-lbl">'+P1().name+'\'s share</p><p class="stat-val green">'+fc(r2(totalVlSh()))+'</p></div>'
     +(avgRate?'<div class="stat-box"><p class="stat-lbl">Avg rate</p><p class="stat-val">'+avgRate+'</p></div>':'')
     +(tLoss>0?'<div class="stat-box"><p class="stat-lbl">FX loss</p><p class="stat-val red">'+fe(tLoss)+'</p></div>':'');
 }
@@ -3362,9 +3505,13 @@ function renderList(){
     h+='<p class="list-section-label">Pending receipt</p>';
     pend.forEach(function(w){
       var isE=!!EXP[w.id],expE=expectedEur(w.usd);
+      var wMObj=w.model_id?ALL_MODELS.find(function(m){return m.id===w.model_id;}):null;
+      var wMBadge=(!ACTIVE_MODEL_ID&&ALL_MODELS.length>1)
+        ?'<span style="font-size:9px;font-weight:700;padding:1px 5px;border-radius:8px;background:var(--blue-bg);color:var(--blue-text)">'+(wMObj?escHtml(wMObj.name):'Agency')+'</span>'
+        :'';
       h+='<div class="w-item">'
         +'<div class="w-row1">'
-        +'<div class="w-row1-left"><span class="badge badge-pend">'+w.pl+'</span><span class="w-amt">'+fu(w.usd)+'</span></div>'
+        +'<div class="w-row1-left"><span class="badge badge-pend">'+w.pl+'</span>'+wMBadge+'<span class="w-amt">'+fu(w.usd)+'</span></div>'
         +'<div style="display:flex;gap:6px;align-items:center">'
         +'<button class="btn-outline" style="font-size:11px;padding:6px 12px" onclick="toggleExp(\''+w.id+'\')">'+( isE?'Cancel':'Money received')+'</button>'
         +'<button class="btn-del" onclick="delW(\''+w.id+'\')">&times;</button>'
@@ -3403,12 +3550,17 @@ function renderList(){
     done.forEach(function(w){
       var rate=w.usd>0?(w.eur/w.usd).toFixed(4):'-';
       var loss=r2(expectedEur(w.usd)-w.eur);
+      var dwMObj=w.model_id?ALL_MODELS.find(function(m){return m.id===w.model_id;}):null;
+      var dwMBadge=(!ACTIVE_MODEL_ID&&ALL_MODELS.length>1)
+        ?'<span style="font-size:9px;font-weight:700;padding:1px 5px;border-radius:8px;background:var(--blue-bg);color:var(--blue-text)">'+(dwMObj?escHtml(dwMObj.name):'Agency')+'</span>'
+        :'';
       h+='<div class="w-item">'
         +'<div class="w-row1">'
         +'<div class="w-row1-left" style="align-items:flex-start;flex-direction:column;gap:2px">'
-        +'<div style="display:flex;align-items:center;gap:8px">'
+        +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'
         +'<span class="badge" style="background:var(--card2);color:var(--text3)">'+w.pl+'</span>'
         +'<span class="badge badge-confirmed">Confirmed</span>'
+        +dwMBadge
         +(loss>0?'<span class="badge" style="background:var(--red-bg);color:var(--red)">loss '+fe(loss)+'</span>':'')
         +'</div>'
         +'<div class="w-done-eur">'+fe(w.eur)+'</div>'
@@ -3459,10 +3611,13 @@ async function init(){
   var lrl=g('lastRefreshLabel');if(lrl&&lastRefresh)lrl.textContent='Last refresh: '+lastRefresh;
 
   renderModelSwitcher();
+  renderCurrencyButtons();
+  renderExpModelSelect();
+  renderWModelSelect();
   renderAll();
   fetchWiseRate();
 
-  await Promise.all([loadRevenueData(),loadWithdrawals(),loadAllModelsSplits()]);
+  await Promise.all([loadRevenueData(),loadWithdrawals(),loadAllModelsSplits(),loadFxRates()]);
   renderModelSwitcher();
   renderModelSplitSection();
   renderAll();

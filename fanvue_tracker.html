@@ -493,15 +493,11 @@ body{
 .badge-pending-w{background:var(--yellow-bg);color:var(--yellow)}
 
 /* ---- Model switcher ---- */
-.model-switcher{display:flex;align-items:center;gap:8px;padding:12px 0 4px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
-.model-switcher::-webkit-scrollbar{display:none}
 .model-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;border:1px solid var(--border2);background:var(--card2);color:var(--text2);transition:all .15s;flex-shrink:0}
 .model-chip:hover{color:var(--text);border-color:var(--border)}
 .model-chip.act{background:var(--blue);color:#fff;border-color:var(--blue)}
 .model-chip.add{background:transparent;color:var(--text3);border-style:dashed}
 .model-chip.add:hover{color:var(--text);border-color:var(--border)}
-.model-dot{width:7px;height:7px;border-radius:50%;background:currentColor;opacity:.6}
-.model-chip.act .model-dot{background:#fff;opacity:.8}
 
 /* ---- Model split section ---- */
 .split-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
@@ -819,27 +815,12 @@ body{
 /* ============================================================
    TOAST
 ============================================================ */
-.toast{
-  position:fixed;bottom:80px;left:50%;transform:translateX(-50%);
-  padding:10px 20px;border-radius:12px;
-  font-size:13px;font-weight:500;z-index:9999;
-  opacity:0;transition:opacity .3s;pointer-events:none;
-  white-space:nowrap;box-shadow:var(--shadow);
-}
-.toast.show{opacity:1}
-.toast.success{background:var(--green);color:#fff}
-.toast.error{background:var(--red);color:#fff}
+/* .toast styles moved to STAGE 8 block below */
 
 /* ============================================================
    AUTH OVERLAY
 ============================================================ */
-#authOverlay{
-  position:fixed;inset:0;z-index:999;
-  background:var(--bg);
-  display:flex;align-items:center;justify-content:center;
-  padding:1.5rem;transition:opacity .25s;
-}
-#authOverlay.hidden{opacity:0;pointer-events:none}
+/* #authOverlay styles moved to STAGE 3 block below */
 .auth-box{
   width:100%;max-width:380px;
   background:var(--card);border:1px solid var(--border2);
@@ -918,7 +899,9 @@ body{
 /* ============================================================
    TAB PAGES
 ============================================================ */
-.tab-page{display:none}.tab-page.act{display:block}
+.tab-page{display:none;animation:tabFadeIn .18s ease}
+.tab-page.act{display:block}
+@keyframes tabFadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
 /* ============================================================
    MOBILE BOTTOM NAV
@@ -957,49 +940,233 @@ body{
   .partner-row{grid-template-columns:1fr}
   .kpi-grid{grid-template-columns:1fr}
 }
+
+/* ============================================================
+   STAGE 3 — AUTH SPLIT LAYOUT
+============================================================ */
+#authOverlay{
+  position:fixed;inset:0;z-index:999;
+  background:var(--bg2);
+  display:flex;align-items:stretch;
+  transition:opacity .25s;
+}
+#authOverlay.hidden{opacity:0;pointer-events:none}
+.auth-split{display:flex;width:100%;min-height:100vh}
+.auth-brand{
+  flex:0 0 42%;
+  background:var(--card);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;justify-content:center;
+  padding:60px 52px;position:relative;overflow:hidden;
+}
+.auth-brand::before{
+  content:'';position:absolute;top:-20%;right:-15%;
+  width:560px;height:560px;border-radius:50%;
+  background:radial-gradient(circle,rgba(99,102,241,.15) 0%,transparent 65%);
+  pointer-events:none;
+}
+.auth-brand::after{
+  content:'';position:absolute;bottom:-15%;left:-10%;
+  width:400px;height:400px;border-radius:50%;
+  background:radial-gradient(circle,rgba(34,197,94,.08) 0%,transparent 65%);
+  pointer-events:none;
+}
+.auth-brand-logo{display:flex;align-items:center;gap:12px;margin-bottom:52px}
+.auth-brand-icon{
+  width:46px;height:46px;background:var(--blue);border-radius:14px;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 20px rgba(99,102,241,.5);
+}
+.auth-brand-name{font-size:18px;font-weight:700;letter-spacing:-.03em}
+.auth-brand-headline{
+  font-size:34px;font-weight:700;letter-spacing:-.04em;
+  line-height:1.18;margin-bottom:16px;
+}
+.auth-brand-sub{font-size:14px;color:var(--text2);line-height:1.65;margin-bottom:44px}
+.auth-brand-bullets{list-style:none;display:flex;flex-direction:column;gap:13px}
+.auth-brand-bullets li{display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--text2)}
+.auth-brand-check{
+  width:18px;height:18px;border-radius:50%;
+  background:var(--green-bg);color:var(--green-text);
+  display:flex;align-items:center;justify-content:center;
+  font-size:9px;font-weight:800;flex-shrink:0;margin-top:1px;
+}
+.auth-form-side{
+  flex:1;display:flex;align-items:center;justify-content:center;
+  padding:40px 32px;overflow-y:auto;background:var(--bg);
+}
+@media(max-width:700px){
+  .auth-brand{display:none}
+  .auth-split{display:block}
+  .auth-form-side{min-height:100vh;padding:28px 20px}
+}
+
+/* ============================================================
+   STAGE 4 — DASHBOARD WELCOME CARD
+============================================================ */
+.welcome-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:20px;padding:48px 40px;margin-bottom:16px;
+  text-align:center;position:relative;overflow:hidden;
+}
+.welcome-card::before{
+  content:'';position:absolute;top:-40%;left:50%;transform:translateX(-50%);
+  width:600px;height:600px;border-radius:50%;
+  background:radial-gradient(circle,rgba(99,102,241,.07) 0%,transparent 60%);
+  pointer-events:none;
+}
+.welcome-logo-icon{
+  width:56px;height:56px;background:var(--blue);border-radius:18px;
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 20px;box-shadow:0 4px 24px rgba(99,102,241,.4);
+}
+.welcome-title{font-size:22px;font-weight:700;letter-spacing:-.03em;margin-bottom:8px}
+.welcome-sub{font-size:14px;color:var(--text2);margin-bottom:40px}
+.welcome-steps{display:flex;gap:0;justify-content:center;flex-wrap:wrap;margin-bottom:36px;position:relative}
+.welcome-steps::before{
+  content:'';position:absolute;top:18px;left:calc(16.66% + 18px);
+  right:calc(16.66% + 18px);height:1px;background:var(--border2);
+}
+.welcome-step{flex:1;min-width:130px;max-width:200px;text-align:center;padding:0 16px;position:relative}
+.ws-num{
+  width:36px;height:36px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:700;margin:0 auto 12px;
+  border:2px solid var(--border2);background:var(--card);
+  color:var(--text3);position:relative;z-index:1;
+}
+.ws-num.done{background:var(--green);border-color:var(--green);color:#fff}
+.ws-num.active{background:var(--blue);border-color:var(--blue);color:#fff;box-shadow:0 0 0 4px var(--blue-bg)}
+.ws-label{font-size:12px;font-weight:600;color:var(--text);margin-bottom:4px}
+.ws-desc{font-size:11px;color:var(--text3)}
+
+/* ============================================================
+   STAGE 5 — MODEL BAR
+============================================================ */
+.model-switcher{
+  display:flex;align-items:center;gap:8px;
+  padding:10px 32px;
+  background:var(--card);
+  border-bottom:1px solid var(--border);
+  overflow-x:auto;-webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+  margin:-28px -32px 28px;
+}
+.model-switcher::-webkit-scrollbar{display:none}
+.model-dot{width:7px;height:7px;border-radius:50%;background:var(--border2);flex-shrink:0}
+.model-dot.connected{background:var(--green);box-shadow:0 0 0 2px var(--green-bg)}
+.model-chip.act .model-dot{background:rgba(255,255,255,.7)}
+.model-chip.act .model-dot.connected{background:#fff;box-shadow:0 0 0 2px rgba(255,255,255,.25)}
+@media(max-width:960px){
+  .model-switcher{padding:10px 18px;margin:-20px -16px 20px}
+}
+
+/* ============================================================
+   STAGE 6 — PARTNER CARD GLOW + STAT ICONS
+============================================================ */
+.partner-card.blue{box-shadow:0 4px 28px rgba(99,102,241,.14),0 0 0 1px var(--border)}
+.partner-card.green{box-shadow:0 4px 28px rgba(34,197,94,.1),0 0 0 1px var(--border)}
+[data-theme="light"] .partner-card.blue{box-shadow:0 4px 20px rgba(99,102,241,.1),0 0 0 1px var(--border)}
+[data-theme="light"] .partner-card.green{box-shadow:0 4px 20px rgba(34,197,94,.08),0 0 0 1px var(--border)}
+.recent-tx-icon{
+  width:28px;height:28px;border-radius:8px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:11px;
+}
+
+/* ============================================================
+   STAGE 7 — SETTINGS SECTION ICONS
+============================================================ */
+.settings-section-header{
+  display:flex;align-items:center;gap:8px;margin-bottom:12px;
+}
+.settings-section-icon{
+  width:22px;height:22px;border-radius:6px;
+  background:var(--blue-bg);color:var(--blue-text);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.settings-section-icon svg{width:12px;height:12px}
+.settings-section-header .settings-section-title{margin-bottom:0;padding-left:0}
+
+/* ============================================================
+   STAGE 8 — IMPROVED TOASTS
+============================================================ */
+.toast{
+  position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(12px);
+  padding:10px 18px 10px 14px;border-radius:12px;
+  font-size:13px;font-weight:500;z-index:9999;
+  opacity:0;transition:opacity .22s,transform .22s;pointer-events:none;
+  white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.3);
+  display:flex;align-items:center;gap:8px;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.success{background:#16a34a;color:#fff}
+.toast.error{background:#dc2626;color:#fff}
+.toast-icon{width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;background:rgba(255,255,255,.25);flex-shrink:0}
 </style>
 </head>
 <body>
 
 <!-- AUTH OVERLAY -->
 <div id="authOverlay">
-  <div class="auth-box">
-    <div class="auth-logo">
-      <div class="auth-logo-icon">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
-          <path d="M12 6v2m0 8v2M8.5 9.5C8.5 8.12 10.07 7 12 7s3.5 1.12 3.5 2.5c0 2-3.5 2.5-3.5 4.5"/>
-          <circle cx="12" cy="17" r=".5" fill="#fff"/>
-        </svg>
+  <div class="auth-split">
+    <!-- Branding side -->
+    <div class="auth-brand">
+      <div class="auth-brand-logo">
+        <div class="auth-brand-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+          </svg>
+        </div>
+        <div class="auth-brand-name">Payout Manager</div>
       </div>
-      <div class="auth-logo-text">Payout Manager</div>
+      <h1 class="auth-brand-headline">Track every dollar.<br>Pay fairly.</h1>
+      <p class="auth-brand-sub">The financial operating system for Fanvue agencies — revenue sync, partner splits, and withdrawal tracking in one place.</p>
+      <ul class="auth-brand-bullets">
+        <li><div class="auth-brand-check">✓</div>Automatic revenue sync from Fanvue</li>
+        <li><div class="auth-brand-check">✓</div>Partner splits calculated to the cent</li>
+        <li><div class="auth-brand-check">✓</div>Multi-model management in one view</li>
+        <li><div class="auth-brand-check">✓</div>EUR/USD withdrawal tracking with live FX rates</li>
+      </ul>
     </div>
+    <!-- Form side -->
+    <div class="auth-form-side">
+      <div class="auth-box">
+        <div class="auth-logo">
+          <div class="auth-logo-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+            </svg>
+          </div>
+          <div class="auth-logo-text">Payout Manager</div>
+        </div>
         <div class="auth-tabs">
-      <button class="auth-tab act" id="tabSignin" onclick="setAuthMode('signin')">Sign in</button>
-      <button class="auth-tab" id="tabSignup" onclick="setAuthMode('signup')">Create account</button>
-    </div>
-    <div class="auth-field">
-      <label>Email</label>
-      <input type="email" id="authEmail" placeholder="you@example.com"
-        onkeydown="if(event.key==='Enter')document.getElementById('authPass').focus()">
-    </div>
-    <div class="auth-field">
-      <label>Password</label>
-      <input type="password" id="authPass" placeholder="••••••••"
-        onkeydown="if(event.key==='Enter'&&authMode==='signin')login();else if(event.key==='Enter')document.getElementById('authPassConfirm').focus()">
-    </div>
-    <div class="auth-field" id="authConfirmField" style="display:none">
-      <label>Confirm password</label>
-      <input type="password" id="authPassConfirm" placeholder="••••••••"
-        onkeydown="if(event.key==='Enter')signup()">
-    </div>
-    <button class="auth-btn" id="authBtn" onclick="authMode==='signin'?login():signup()">Sign in</button>
-    <div class="auth-err" id="authErr"></div>
-    <div style="text-align:center;margin-top:12px">
-      <button onclick="forgotPassword()" style="background:none;border:none;color:var(--text3);font-size:12px;cursor:pointer;font-family:inherit">Forgot password?</button>
-    </div>
-    <div id="resendRow" style="display:none;text-align:center;margin-top:8px">
-      <button id="resendBtn" onclick="resendConfirmation()" style="background:none;border:none;color:var(--blue-text);font-size:12px;cursor:pointer;font-family:inherit">Resend confirmation email</button>
+          <button class="auth-tab act" id="tabSignin" onclick="setAuthMode('signin')">Sign in</button>
+          <button class="auth-tab" id="tabSignup" onclick="setAuthMode('signup')">Create account</button>
+        </div>
+        <div class="auth-field">
+          <label>Email</label>
+          <input type="email" id="authEmail" placeholder="you@example.com"
+            onkeydown="if(event.key==='Enter')document.getElementById('authPass').focus()">
+        </div>
+        <div class="auth-field">
+          <label>Password</label>
+          <input type="password" id="authPass" placeholder="••••••••"
+            onkeydown="if(event.key==='Enter'&&authMode==='signin')login();else if(event.key==='Enter')document.getElementById('authPassConfirm').focus()">
+        </div>
+        <div class="auth-field" id="authConfirmField" style="display:none">
+          <label>Confirm password</label>
+          <input type="password" id="authPassConfirm" placeholder="••••••••"
+            onkeydown="if(event.key==='Enter')signup()">
+        </div>
+        <button class="auth-btn" id="authBtn" onclick="authMode==='signin'?login():signup()">Sign in</button>
+        <div class="auth-err" id="authErr"></div>
+        <div style="text-align:center;margin-top:12px">
+          <button onclick="forgotPassword()" style="background:none;border:none;color:var(--text3);font-size:12px;cursor:pointer;font-family:inherit">Forgot password?</button>
+        </div>
+        <div id="resendRow" style="display:none;text-align:center;margin-top:8px">
+          <button id="resendBtn" onclick="resendConfirmation()" style="background:none;border:none;color:var(--blue-text);font-size:12px;cursor:pointer;font-family:inherit">Resend confirmation email</button>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -1167,8 +1334,39 @@ body{
       <!-- ============ DASHBOARD ============ -->
       <div class="tab-page act" id="tab-dashboard">
 
+        <!-- Welcome card (shown only when no models exist) -->
+        <div id="dashWelcome" style="display:none">
+          <div class="welcome-card">
+            <div class="welcome-logo-icon">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+              </svg>
+            </div>
+            <div class="welcome-title">Welcome to Payout Manager</div>
+            <div class="welcome-sub">Get set up in three steps — takes about 2 minutes.</div>
+            <div class="welcome-steps">
+              <div class="welcome-step">
+                <div class="ws-num done">✓</div>
+                <div class="ws-label">Create account</div>
+                <div class="ws-desc">You're signed in</div>
+              </div>
+              <div class="welcome-step">
+                <div class="ws-num active" id="wsNum2">2</div>
+                <div class="ws-label">Add a model</div>
+                <div class="ws-desc">Name your first creator</div>
+              </div>
+              <div class="welcome-step">
+                <div class="ws-num" id="wsNum3">3</div>
+                <div class="ws-label">Connect Fanvue</div>
+                <div class="ws-desc">Sync revenue automatically</div>
+              </div>
+            </div>
+            <button class="btn btn-primary" style="margin:0 auto;display:inline-flex" onclick="showAddModelModal()">Add your first model →</button>
+          </div>
+        </div>
+
         <!-- Partner balance KPI cards -->
-        <div class="partner-row">
+        <div class="partner-row" id="partnerRow">
           <div class="partner-card blue">
             <div class="partner-name" id="partnerName0">—</div>
             <div class="partner-eur" id="bV">€0.00</div>
@@ -1391,7 +1589,10 @@ body{
 
         <!-- SECTION: AGENCY -->
         <div class="settings-section" id="agencyCard" style="display:none">
-          <div class="settings-section-title">Agency</div>
+          <div class="settings-section-header">
+            <div class="settings-section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 12h8M8 8h8M8 16h5"/></svg></div>
+            <div class="settings-section-title">Agency</div>
+          </div>
           <div class="card">
             <div class="sec-label">Agency name</div>
             <div class="field">
@@ -1405,7 +1606,10 @@ body{
 
         <!-- SECTION: TEAM -->
         <div class="settings-section" id="partnersCard" style="display:none">
-          <div class="settings-section-title">Team</div>
+          <div class="settings-section-header">
+            <div class="settings-section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+            <div class="settings-section-title">Team</div>
+          </div>
           <div class="card">
             <div class="sec-label">Partners</div>
             <div id="partnersList"></div>
@@ -1446,7 +1650,10 @@ body{
 
         <!-- SECTION: INTEGRATIONS -->
         <div class="settings-section">
-          <div class="settings-section-title">Integrations</div>
+          <div class="settings-section-header">
+            <div class="settings-section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></div>
+            <div class="settings-section-title">Integrations</div>
+          </div>
           <div class="card">
             <div class="sec-label">Fanvue Account</div>
             <div id="fanvueStatusBlock"></div>
@@ -1464,7 +1671,10 @@ body{
 
         <!-- SECTION: PREFERENCES -->
         <div class="settings-section">
-          <div class="settings-section-title">Preferences</div>
+          <div class="settings-section-header">
+            <div class="settings-section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg></div>
+            <div class="settings-section-title">Preferences</div>
+          </div>
           <div class="card" style="margin-bottom:2px">
             <div class="sec-label">Display currency</div>
             <div style="display:flex;gap:6px;margin-bottom:10px">
@@ -1490,7 +1700,10 @@ body{
 
         <!-- SECTION: ABOUT -->
         <div class="settings-section">
-          <div class="settings-section-title">About</div>
+          <div class="settings-section-header">
+            <div class="settings-section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+            <div class="settings-section-title">About</div>
+          </div>
           <div class="card">
             <div class="sec-label">Rates &amp; Info</div>
             <p id="infoCard" style="font-size:13px;color:var(--text2);line-height:2">
@@ -1782,7 +1995,7 @@ function renderModelSwitcher(){
   }
   ALL_MODELS.forEach(function(m){
     var act=ACTIVE_MODEL_ID===m.id?' act':'';
-    var dot=m.connected?'<span class="model-dot"></span>':'';
+    var dot='<span class="model-dot'+(m.connected?' connected':'')+'"></span>';
     html+='<div class="model-chip'+act+'" onclick="selectModel(\''+m.id+'\')">'+dot+escHtml(m.name)+'</div>';
   });
   if(currentRole==='admin'){
@@ -2331,12 +2544,25 @@ async function connectFanvue(){
   try{
     var sessionRes=await db.auth.getSession();
     var jwt=sessionRes.data&&sessionRes.data.session&&sessionRes.data.session.access_token;
-    if(!jwt){showToast('Not logged in','error');return;}
+    if(!jwt){showToast('Not logged in','error');if(btn){btn.disabled=false;btn.textContent='Connect Fanvue';}return;}
+
+    var modelId=ACTIVE_MODEL_ID;
+    if(!modelId){
+      var agRes=await db.from('agencies').select('id,name').single();
+      var agId=agRes.data&&agRes.data.id;
+      var mName=(agRes.data&&agRes.data.name)||'My Model';
+      var mRes=await db.from('models').insert({name:mName,agency_id:agId}).select().single();
+      if(mRes.error){showToast('Could not create model','error');if(btn){btn.disabled=false;btn.textContent='Connect Fanvue';}return;}
+      modelId=mRes.data.id;
+      ACTIVE_MODEL_ID=modelId;
+      await loadModels();
+      renderModelSwitcher();
+    }
 
     var res=await fetch(EDGE_URL+'/fanvue-oauth-start',{
       method:'POST',
       headers:{'Authorization':'Bearer '+jwt,'Content-Type':'application/json'},
-      body:JSON.stringify({model_id:ACTIVE_MODEL_ID||null})
+      body:JSON.stringify({model_id:modelId})
     });
     var data=await res.json();
     if(data.url){
@@ -2358,9 +2584,11 @@ async function disconnectFanvue(){
 
 function showToast(msg,type){
   var t=g('toast');if(!t)return;
-  t.textContent=msg;
+  var icon=type==='error'?'✕':'✓';
+  t.innerHTML='<div class="toast-icon">'+icon+'</div><span>'+msg+'</span>';
   t.className='toast '+(type||'success')+' show';
-  setTimeout(function(){t.classList.remove('show');},3000);
+  clearTimeout(t._tid);
+  t._tid=setTimeout(function(){t.classList.remove('show');},3200);
 }
 
 function handleCallbackParams(){
@@ -2373,6 +2601,7 @@ function handleCallbackParams(){
   if(params.get('fanvue_connected')==='1'){
     showToast('Fanvue connected successfully!','success');
     loadFanvueConnection();
+    loadModels().then(function(){renderModelSwitcher();});
     history.replaceState({},'',window.location.pathname);
   }else if(params.get('fanvue_error')){
     var errors={
@@ -3150,7 +3379,9 @@ function renderBal(){
   var vE=r2(totalVEUR()),vlE=r2(totalVlEUR()),tot=vE+vlE,diff=Math.abs(vE-vlE);
   var vr=vRem(),vlr=vlRem();
   var vWithdrawn=r2(totalVUSD()),vlWithdrawn=r2(totalVlUSD());
-  g('bV').textContent=fe(vE);g('bVl').textContent=fe(vlE);
+  var vEusd=FX_RATES.EUR>0?vE/FX_RATES.EUR:vE;
+  var vlEusd=FX_RATES.EUR>0?vlE/FX_RATES.EUR:vlE;
+  g('bV').textContent=fc(vEusd);g('bVl').textContent=fc(vlEusd);
   var vwEl=g('vWithdrawnEl'),vlwEl=g('vlWithdrawnEl');
   if(vwEl)vwEl.textContent=fc(vWithdrawn);
   if(vlwEl)vlwEl.textContent=fc(vlWithdrawn);
@@ -3204,16 +3435,15 @@ function renderBal(){
     trendHtml='<span class="trend-badge '+(trendUp?'trend-up':'trend-down')+'">'+(trendUp?'+':'')+trendPct+'%</span>';
   }
 
-  /* Empty state if no models at all */
+  /* Welcome state if no models at all */
   if(!ACTIVE_MODEL_ID&&ALL_MODELS.length===0){
-    g('dashStats').innerHTML='<div class="empty-state" style="padding:40px 20px;width:100%">'
-      +'<div class="empty-state-icon">📊</div>'
-      +'<div class="empty-state-title">No data yet</div>'
-      +'<div class="empty-state-sub">Connect your Fanvue account to start tracking revenue</div>'
-      +'<button class="btn btn-primary" onclick="showTab(\'settings\',document.querySelector(\'[data-tab=settings]\'))">Connect Fanvue →</button>'
-      +'</div>';
+    var dw=g('dashWelcome');if(dw)dw.style.display='block';
+    var pr=g('partnerRow');if(pr)pr.style.display='none';
+    g('dashStats').innerHTML='';
     return;
   }
+  var dw=g('dashWelcome');if(dw)dw.style.display='none';
+  var pr=g('partnerRow');if(pr)pr.style.display='';
 
   /* All-models aggregate view */
   if(!ACTIVE_MODEL_ID&&ALL_MODELS.length>1){

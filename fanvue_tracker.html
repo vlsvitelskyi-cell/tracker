@@ -490,6 +490,27 @@ body{
 .badge-confirmed{background:var(--green-bg);color:var(--green-text)}
 .badge-pending-w{background:var(--yellow-bg);color:var(--yellow)}
 
+/* ---- Model switcher ---- */
+.model-switcher{display:flex;align-items:center;gap:8px;padding:12px 0 4px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.model-switcher::-webkit-scrollbar{display:none}
+.model-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;border:1px solid var(--border2);background:var(--card2);color:var(--text2);transition:all .15s;flex-shrink:0}
+.model-chip:hover{color:var(--text);border-color:var(--border)}
+.model-chip.act{background:var(--blue);color:#fff;border-color:var(--blue)}
+.model-chip.add{background:transparent;color:var(--text3);border-style:dashed}
+.model-chip.add:hover{color:var(--text);border-color:var(--border)}
+.model-dot{width:7px;height:7px;border-radius:50%;background:currentColor;opacity:.6}
+.model-chip.act .model-dot{background:#fff;opacity:.8}
+
+/* ---- Model split section ---- */
+.split-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+.split-row:last-child{border-bottom:none}
+.split-row-name{flex:1;font-size:13px;font-weight:600;color:var(--text)}
+.split-row-pct{font-size:13px;font-weight:700;color:var(--text);min-width:38px;text-align:right}
+.split-input{width:64px;padding:6px 8px;border:1px solid var(--border);border-radius:7px;font-size:13px;font-weight:600;color:var(--text);background:var(--bg2);font-family:inherit;text-align:center}
+.split-total-row{display:flex;justify-content:space-between;font-size:12px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+.split-total-ok{color:var(--green-text)}
+.split-total-err{color:var(--red)}
+
 /* ============================================================
    FORM ELEMENTS
 ============================================================ */
@@ -1138,6 +1159,9 @@ body{
     <div class="page-content">
       <div id="toast" class="toast"></div>
 
+      <!-- ============ MODEL SWITCHER ============ -->
+      <div class="model-switcher" id="modelSwitcher"></div>
+
       <!-- ============ DASHBOARD ============ -->
       <div class="tab-page act" id="tab-dashboard">
 
@@ -1380,6 +1404,20 @@ body{
           </div>
         </div>
 
+        <!-- Model revenue splits -->
+        <div class="card" id="modelSplitSection" style="margin-top:2px;display:none">
+          <div class="sec-label">Revenue splits per model</div>
+          <div id="modelSplitList"></div>
+          <div class="split-total-row">
+            <span style="color:var(--text3)">Total</span>
+            <span id="splitTotalLabel" class="split-total-ok">100%</span>
+          </div>
+          <div style="margin-top:14px;display:flex;gap:8px" id="splitEditActions" style="display:none">
+            <button class="btn" style="flex:1" onclick="cancelEditSplits()">Cancel</button>
+            <button class="btn btn-primary" style="flex:1" id="saveSplitsBtn" onclick="saveModelSplits()">Save splits</button>
+          </div>
+        </div>
+
         <!-- SECTION: INTEGRATIONS -->
         <div class="settings-section">
           <div class="settings-section-title">Integrations</div>
@@ -1431,6 +1469,23 @@ body{
       </div><!-- end tab-settings -->
 
     </div><!-- end page-content -->
+
+    <!-- ============ ADD MODEL MODAL ============ -->
+    <div class="w-confirm-modal" id="addModelModal" onclick="if(event.target===this)closeAddModelModal()">
+      <div class="w-confirm-box">
+        <div style="font-size:16px;font-weight:700;margin-bottom:16px">Add model</div>
+        <div class="field">
+          <label>Model name</label>
+          <input id="addModelName" placeholder="e.g. Sophia" maxlength="60">
+        </div>
+        <div id="addModelStatus" style="font-size:12px;min-height:16px;margin-bottom:12px"></div>
+        <div style="display:flex;gap:8px">
+          <button class="btn" style="flex:1" onclick="closeAddModelModal()">Cancel</button>
+          <button class="btn btn-primary" style="flex:1" id="addModelBtn" onclick="createAndConnectModel()">Create</button>
+        </div>
+      </div>
+    </div>
+
   </main><!-- end main-area -->
 </div><!-- end layout -->
 
@@ -1565,7 +1620,7 @@ async function login(){
   init();
   loadFanvueConnection();
   if(currentRole==='admin')loadAgencySettings();
-  if(MODELS.length===0&&currentRole==='admin'&&!localStorage.getItem('onboarding_skipped_'+res.data.user.id)){
+  if(ALL_MODELS.length===0&&currentRole==='admin'&&!localStorage.getItem('onboarding_skipped_'+res.data.user.id)){
     showOnboardingOverlay();
   }
 }
@@ -1635,24 +1690,196 @@ async function forgotPassword(){
 
 async function logout(){
   await db.auth.signOut();
-  PARTNERS=[];MODELS=[];MODEL_ID='';FANVUE_CONNECTION=null;
+  PARTNERS=[];ALL_MODELS=[];ACTIVE_MODEL_ID='';MODEL_SPLITS={};FANVUE_CONNECTION=null;
   showLogin();
   S={months:[],ws:[],txs:[],exps:[],am:0,platforms:DEFAULT_PLATFORMS.slice()};
   renderAll();
 }
 
 /* ---- Entity IDs (loaded from DB after auth) ---- */
-var MODEL_ID='';
-var MODELS=[];
+var ACTIVE_MODEL_ID='';
+var ALL_MODELS=[];
+var MODEL_SPLITS={};
 
 async function loadModels(){
-  var res=await db.from('models').select('id,name').order('created_at',{ascending:true});
-    if(res.error||!res.data||!res.data.length){
+  var res=await db.from('models')
+    .select('id,name,fanvue_connections(model_id)')
+    .order('created_at',{ascending:true});
+  if(res.error||!res.data||!res.data.length){
     console.error('loadModels failed:',res.error);
     return;
   }
-  MODELS=res.data;
-  MODEL_ID=res.data[0].id;
+  ALL_MODELS=res.data.map(function(m){return{
+    id:m.id,
+    name:m.name,
+    connected:!!(m.fanvue_connections&&m.fanvue_connections.length>0)
+  };});
+  if(!ACTIVE_MODEL_ID&&ALL_MODELS.length>0)ACTIVE_MODEL_ID=ALL_MODELS[0].id;
+}
+
+async function loadModelSplits(modelId){
+  var res=await db.from('model_splits')
+    .select('partner_id,split_pct')
+    .eq('model_id',modelId);
+  if(!res.error&&res.data){
+    MODEL_SPLITS[modelId]={};
+    res.data.forEach(function(row){MODEL_SPLITS[modelId][row.partner_id]=row.split_pct;});
+  }
+}
+
+async function loadAllModelsSplits(){
+  await Promise.all(ALL_MODELS.map(function(m){return loadModelSplits(m.id);}));
+}
+
+function getCurrentSplit(modelId,partnerId){
+  var splits=MODEL_SPLITS[modelId];
+  if(!splits)return 50;
+  return splits[partnerId]!=null?splits[partnerId]:50;
+}
+
+/* ---- Model switcher ---- */
+function renderModelSwitcher(){
+  var el=g('modelSwitcher');if(!el)return;
+  if(!ALL_MODELS.length){el.innerHTML='';return;}
+  var html='';
+  if(ALL_MODELS.length>1){
+    html+='<div class="model-chip'+(ACTIVE_MODEL_ID===''?' act':'')+'" onclick="selectModel(\'\')">All models</div>';
+  }
+  ALL_MODELS.forEach(function(m){
+    var act=ACTIVE_MODEL_ID===m.id?' act':'';
+    var dot=m.connected?'<span class="model-dot"></span>':'';
+    html+='<div class="model-chip'+act+'" onclick="selectModel(\''+m.id+'\')">'+dot+escHtml(m.name)+'</div>';
+  });
+  if(currentRole==='admin'){
+    html+='<div class="model-chip add" onclick="showAddModelModal()">+ Add model</div>';
+  }
+  el.innerHTML=html;
+}
+
+async function selectModel(modelId){
+  ACTIVE_MODEL_ID=modelId;
+  renderModelSwitcher();
+  renderModelSplitSection();
+  await Promise.all([loadRevenueData(),loadWithdrawals()]);
+  renderAll();
+}
+
+/* ---- Add model modal ---- */
+function showAddModelModal(){
+  var m=g('addModelModal');if(!m)return;
+  m.classList.add('open');
+  g('addModelName').value='';
+  g('addModelStatus').textContent='';
+  setTimeout(function(){g('addModelName').focus();},80);
+}
+
+function closeAddModelModal(){
+  var m=g('addModelModal');if(m)m.classList.remove('open');
+}
+
+async function createAndConnectModel(){
+  var name=g('addModelName').value.trim();
+  var st=g('addModelStatus'),btn=g('addModelBtn');
+  if(!name){g('addModelName').focus();return;}
+  btn.disabled=true;btn.textContent='Creating…';st.textContent='';
+  var res=await db.from('models').insert({name:name}).select('id,name').single();
+  if(res.error){
+    st.innerHTML='<span style="color:var(--red)">'+res.error.message+'</span>';
+    btn.disabled=false;btn.textContent='Create';return;
+  }
+  ALL_MODELS.push({id:res.data.id,name:res.data.name,connected:false});
+  ACTIVE_MODEL_ID=res.data.id;
+  closeAddModelModal();
+  renderModelSwitcher();
+  renderModelSplitSection();
+  await loadRevenueData();renderAll();
+  btn.disabled=false;btn.textContent='Create';
+}
+
+/* ---- Per-model split management ---- */
+var _editingSplits=false;
+var _splitDraft={};
+
+function renderModelSplitSection(){
+  var sec=g('modelSplitSection');
+  var actions=g('splitEditActions');
+  if(!sec)return;
+  if(!ACTIVE_MODEL_ID||!PARTNERS.length||currentRole!=='admin'){sec.style.display='none';return;}
+  sec.style.display='block';
+  var listEl=g('modelSplitList');
+  var html='';
+  PARTNERS.forEach(function(p){
+    var pct=_editingSplits
+      ?(_splitDraft[p.id]!=null?_splitDraft[p.id]:getCurrentSplit(ACTIVE_MODEL_ID,p.id))
+      :getCurrentSplit(ACTIVE_MODEL_ID,p.id);
+    if(_editingSplits){
+      html+='<div class="split-row">'
+        +'<div class="split-row-name">'+escHtml(p.name)+'</div>'
+        +'<input class="split-input" type="number" min="0" max="100" value="'+pct+'" '
+        +'oninput="updateSplitDraftTotal(\''+p.id+'\',this.value)">'
+        +'</div>';
+    }else{
+      html+='<div class="split-row">'
+        +'<div class="split-row-name">'+escHtml(p.name)+'</div>'
+        +'<div class="split-row-pct">'+pct+'%</div>'
+        +'</div>';
+    }
+  });
+  listEl.innerHTML=html;
+  if(_editingSplits){
+    updateSplitDraftTotal();
+    if(actions)actions.style.display='flex';
+    if(!sec.querySelector('.split-edit-btn')){
+      /* replace any static edit btn */
+    }
+  }else{
+    if(actions)actions.style.display='none';
+    if(currentRole==='admin'){
+      listEl.insertAdjacentHTML('afterend',
+        '<button class="btn" style="margin-top:12px;width:100%" onclick="startEditSplits()">Edit splits</button>');
+    }
+  }
+}
+
+function startEditSplits(){
+  _editingSplits=true;
+  _splitDraft={};
+  PARTNERS.forEach(function(p){_splitDraft[p.id]=getCurrentSplit(ACTIVE_MODEL_ID,p.id);});
+  renderModelSplitSection();
+}
+
+function cancelEditSplits(){
+  _editingSplits=false;
+  _splitDraft={};
+  renderModelSplitSection();
+}
+
+function updateSplitDraftTotal(partnerId,val){
+  if(partnerId!=null)_splitDraft[partnerId]=parseFloat(val)||0;
+  var total=PARTNERS.reduce(function(s,p){return s+(_splitDraft[p.id]||0);},0);
+  var lbl=g('splitTotalLabel');
+  if(lbl){
+    lbl.textContent=total+'%';
+    lbl.className='split-total-row';
+    lbl.classList.add(Math.abs(total-100)<0.01?'split-total-ok':'split-total-err');
+  }
+}
+
+async function saveModelSplits(){
+  var total=PARTNERS.reduce(function(s,p){return s+(_splitDraft[p.id]||0);},0);
+  if(Math.abs(total-100)>0.01){showToast('Splits must add up to 100%','error');return;}
+  var btn=g('saveSplitsBtn');btn.disabled=true;btn.textContent='Saving…';
+  var rows=PARTNERS.map(function(p){return{model_id:ACTIVE_MODEL_ID,partner_id:p.id,split_pct:_splitDraft[p.id]||0};});
+  var res=await db.from('model_splits').upsert(rows,{onConflict:'model_id,partner_id'});
+  if(res.error){showToast(res.error.message,'error');}
+  else{
+    MODEL_SPLITS[ACTIVE_MODEL_ID]={};
+    rows.forEach(function(r){MODEL_SPLITS[ACTIVE_MODEL_ID][r.partner_id]=r.split_pct;});
+    _editingSplits=false;_splitDraft={};
+    showToast('Splits saved','success');
+    renderModelSplitSection();
+  }
+  btn.disabled=false;btn.textContent='Save splits';
 }
 
 /* ---- Partners ---- */
@@ -2108,6 +2335,7 @@ function r2(n){return Math.round(n*100)/100;}
 function fe(n){return '€'+Math.abs(n).toFixed(2);}
 function fu(n){return '$'+Math.abs(n).toFixed(2);}
 function g(id){return document.getElementById(id);}
+function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,5);}
 function slug(p){return p.toLowerCase().replace(/[^a-z0-9]/g,'_');}
 function fdate(d){if(!d)return'';var p=d.split('-');return p[2]+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+p[1]-1];}
@@ -2248,7 +2476,7 @@ function showTab(name,btn,isMobile){
     var mb=g('mob-'+name);if(mb)mb.classList.add('act');
   }
   if(name==='dashboard'||name==='revenue')setTimeout(renderChart,50);
-  if(name==='settings')loadAgencySettings();
+  if(name==='settings'){loadAgencySettings();renderModelSplitSection();}
 }
 
 /* ---- Wise rate ---- */
@@ -2309,18 +2537,22 @@ function removePlatform(i){
 /* ---- Load revenue data from Supabase ---- */
 async function loadRevenueData(){
   var statusEl=g('revLoadStatus');
-  if(!MODEL_ID){
+  /* All-models aggregate mode */
+  if(!ACTIVE_MODEL_ID&&ALL_MODELS.length===0){
     S.txs=[];S.months=[];
     if(statusEl)statusEl.textContent='';
     renderAll();return;
   }
   if(statusEl)statusEl.innerHTML='<span style="display:inline-flex;align-items:center;gap:5px"><span class="spinner"></span>Loading…</span>';
 
+  var txQuery=db.from('transactions')
+    .select('id,amount_usd,platform,date,source,model_id')
+    .order('date',{ascending:true});
+  if(ACTIVE_MODEL_ID){txQuery=txQuery.eq('model_id',ACTIVE_MODEL_ID);}
+  else{var ids=ALL_MODELS.map(function(m){return m.id;});txQuery=txQuery.in('model_id',ids);}
+
   var results=await Promise.all([
-    db.from('transactions')
-      .select('id,amount_usd,platform,date,source')
-      .eq('model_id',MODEL_ID)
-      .order('date',{ascending:true}),
+    txQuery,
     db.from('expenses')
       .select('id,amount_usd,partner_id,date,description')
       .order('date',{ascending:true})
@@ -2332,7 +2564,7 @@ async function loadRevenueData(){
   if(expRes.error)console.error('expenses error:',expRes.error);
 
   S.txs=(txRes.data||[]).map(function(tx){
-    return{id:tx.id,amount:parseFloat(tx.amount_usd)||0,platform:tx.platform,date:tx.date,source:tx.source||'manual'};
+    return{id:tx.id,amount:parseFloat(tx.amount_usd)||0,platform:tx.platform,date:tx.date,source:tx.source||'manual',model_id:tx.model_id||''};
   });
 
   S.exps=(expRes.data||[]).map(function(exp){
@@ -2511,7 +2743,7 @@ async function addTransaction(){
   var statusEl=g('txStatus');statusEl.textContent='';
 
   var res=await db.from('transactions').insert({
-    model_id:MODEL_ID,
+    model_id:ACTIVE_MODEL_ID,
     platform:pl.toLowerCase(),
     amount_usd:r2(amt),
     date:date,
@@ -2829,14 +3061,26 @@ function renderBal(){
     trendHtml='<span class="trend-badge '+(trendUp?'trend-up':'trend-down')+'">'+(trendUp?'+':'')+trendPct+'%</span>';
   }
 
-  /* Empty state if no data connected */
-  if(!MODEL_ID){
+  /* Empty state if no models at all */
+  if(!ACTIVE_MODEL_ID&&ALL_MODELS.length===0){
     g('dashStats').innerHTML='<div class="empty-state" style="padding:40px 20px;width:100%">'
       +'<div class="empty-state-icon">📊</div>'
       +'<div class="empty-state-title">No data yet</div>'
       +'<div class="empty-state-sub">Connect your Fanvue account to start tracking revenue</div>'
       +'<button class="btn btn-primary" onclick="showTab(\'settings\',document.querySelector(\'[data-tab=settings]\'))">Connect Fanvue →</button>'
       +'</div>';
+    return;
+  }
+
+  /* All-models aggregate view */
+  if(!ACTIVE_MODEL_ID&&ALL_MODELS.length>1){
+    g('dashStats').innerHTML=
+      '<div class="stat-box"><p class="stat-lbl">This month (all)</p><p class="stat-val">'+fu(curRev)+trendHtml+'</p></div>'
+      +'<div class="stat-box"><p class="stat-lbl">Total revenue</p><p class="stat-val">'+fu(totalRev)+'</p></div>'
+      +'<div class="stat-box"><p class="stat-lbl">Total withdrawn</p><p class="stat-val">'+fu(totalW)+'</p></div>'
+      +'<div class="stat-box"><p class="stat-lbl">Models</p><p class="stat-val">'+ALL_MODELS.length+'</p></div>'
+      +(avgRate?'<div class="stat-box"><p class="stat-lbl">Avg rate</p><p class="stat-val">'+avgRate+'</p></div>':'')
+      +(tLoss>0?'<div class="stat-box"><p class="stat-lbl">FX loss</p><p class="stat-val red">'+fe(tLoss)+'</p></div>':'');
     return;
   }
 
@@ -2867,11 +3111,16 @@ function renderRecentTx(){
     var pos=tx.amount>=0;
     var accentColor=pos?'var(--green)':'var(--red)';
     var autoTag=tx.source==='scraper'?'<span style="font-size:9px;font-weight:700;padding:1px 5px;border-radius:8px;background:var(--card2);color:var(--text3);margin-left:2px">auto</span>':'';
+    var modelTag='';
+    if(!ACTIVE_MODEL_ID&&ALL_MODELS.length>1){
+      var mObj=ALL_MODELS.find(function(m){return m.id===tx.model_id;});
+      if(mObj)modelTag='<span style="font-size:9px;font-weight:700;padding:1px 5px;border-radius:8px;background:var(--blue-bg);color:var(--blue-text);margin-left:2px">'+escHtml(mObj.name)+'</span>';
+    }
     return '<div class="recent-tx-row">'
       +'<div class="recent-tx-accent" style="background:'+accentColor+'"></div>'
       +'<div class="recent-tx-left">'
       +'<span class="recent-tx-type" style="background:'+plColor+'22;color:'+plColor+'">'+pl+'</span>'
-      +autoTag
+      +autoTag+modelTag
       +'<span class="recent-tx-date">'+fdate(tx.date)+'</span>'
       +'</div>'
       +'<span class="recent-tx-amt '+(pos?'pos':'neg')+'">'+(pos?'':'-')+fu(Math.abs(tx.amount))+'</span>'
@@ -3209,10 +3458,13 @@ async function init(){
   var lastRefresh=localStorage.getItem('lastRevRefresh');
   var lrl=g('lastRefreshLabel');if(lrl&&lastRefresh)lrl.textContent='Last refresh: '+lastRefresh;
 
+  renderModelSwitcher();
   renderAll();
   fetchWiseRate();
 
-  await Promise.all([loadRevenueData(),loadWithdrawals()]);
+  await Promise.all([loadRevenueData(),loadWithdrawals(),loadAllModelsSplits()]);
+  renderModelSwitcher();
+  renderModelSplitSection();
   renderAll();
 
   setupRealtime();
@@ -3240,7 +3492,7 @@ async function init(){
       init();
       loadFanvueConnection();
       if(currentRole==='admin')loadAgencySettings();
-      if(MODELS.length===0&&currentRole==='admin'&&!localStorage.getItem('onboarding_skipped_'+session.user.id)){
+      if(ALL_MODELS.length===0&&currentRole==='admin'&&!localStorage.getItem('onboarding_skipped_'+session.user.id)){
         showOnboardingOverlay();
       }
       return;
@@ -3253,7 +3505,7 @@ async function init(){
 /* ---- Sync full history ---- */
 async function syncFullHistory(){
   var btn=g('syncBtn'),st=g('syncStatus');
-  if(!MODEL_ID){
+  if(!ACTIVE_MODEL_ID){
     st.innerHTML='<span style="color:var(--text3)">No Fanvue account connected</span>';
     return;
   }
@@ -3267,7 +3519,7 @@ async function syncFullHistory(){
     var res=await fetch(EDGE_URL+'/fanvue-sync?full=1',{
       method:'POST',
       headers:{'Authorization':'Bearer '+jwt,'Content-Type':'application/json'},
-      body:JSON.stringify({model_id:MODEL_ID})
+      body:JSON.stringify({model_id:ACTIVE_MODEL_ID})
     });
     var data=await res.json();
     if(res.ok){

@@ -11,42 +11,42 @@
    DESIGN TOKENS
 ============================================================ */
 :root {
-  --bg: #0A0C12;
-  --bg2: #0D0F17;
-  --bg3: #111420;
-  --card: #141720;
-  --card2: #1A1E2E;
-  --card3: #1F2436;
-  --border: rgba(255,255,255,.06);
-  --border2: rgba(255,255,255,.1);
-  --border3: rgba(255,255,255,.15);
-  --text: #F1F5F9;
-  --text2: #8892A4;
-  --text3: #4A5270;
-  --text4: #2D3450;
+  --bg: #0F1117;
+  --bg2: #131620;
+  --bg3: #171B28;
+  --card: #1C1F2E;
+  --card2: #222638;
+  --card3: #272C42;
+  --border: rgba(255,255,255,.10);
+  --border2: rgba(255,255,255,.16);
+  --border3: rgba(255,255,255,.22);
+  --text: #F0F4FF;
+  --text2: #8892B0;
+  --text3: #4E5775;
+  --text4: #2E3550;
   --blue: #6366F1;
-  --blue-dim: #4F52D0;
-  --blue-bg: rgba(99,102,241,.1);
-  --blue-bg2: rgba(99,102,241,.18);
-  --blue-text: #818CF8;
-  --blue-glow: rgba(99,102,241,.4);
+  --blue-dim: #4C4FBF;
+  --blue-bg: rgba(99,102,241,.12);
+  --blue-bg2: rgba(99,102,241,.20);
+  --blue-text: #A5B4FC;
+  --blue-glow: rgba(99,102,241,.45);
   --green: #10B981;
-  --green-bg: rgba(16,185,129,.1);
-  --green-bg2: rgba(16,185,129,.18);
-  --green-text: #34D399;
-  --green-glow: rgba(16,185,129,.35);
+  --green-bg: rgba(16,185,129,.12);
+  --green-bg2: rgba(16,185,129,.20);
+  --green-text: #6EE7B7;
+  --green-glow: rgba(16,185,129,.4);
   --yellow: #F59E0B;
-  --yellow-bg: rgba(245,158,11,.1);
+  --yellow-bg: rgba(245,158,11,.12);
   --yellow-text: #FCD34D;
   --red: #EF4444;
-  --red-bg: rgba(239,68,68,.1);
-  --red-text: #FCA5A5;
+  --red-bg: rgba(239,68,68,.12);
+  --red-text: #F87171;
   --shadow-xs: 0 1px 2px rgba(0,0,0,.5);
-  --shadow-sm: 0 2px 8px rgba(0,0,0,.4), 0 1px 2px rgba(0,0,0,.5);
-  --shadow-md: 0 4px 20px rgba(0,0,0,.5), 0 2px 6px rgba(0,0,0,.4);
-  --shadow-lg: 0 8px 40px rgba(0,0,0,.6), 0 4px 12px rgba(0,0,0,.4);
-  --shadow-glow-blue: 0 4px 24px rgba(99,102,241,.2), 0 0 0 1px rgba(99,102,241,.15);
-  --shadow-glow-green: 0 4px 24px rgba(16,185,129,.15), 0 0 0 1px rgba(16,185,129,.1);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.5), 0 1px 2px rgba(0,0,0,.3);
+  --shadow-md: 0 4px 16px rgba(0,0,0,.5), 0 2px 4px rgba(0,0,0,.3);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,.6), 0 4px 8px rgba(0,0,0,.4);
+  --shadow-glow-blue: 0 0 0 1px rgba(99,102,241,.2), 0 4px 20px rgba(99,102,241,.15);
+  --shadow-glow-green: 0 0 0 1px rgba(16,185,129,.15), 0 4px 20px rgba(16,185,129,.1);
   --r-xs: 6px;
   --r-sm: 10px;
   --r-md: 14px;
@@ -54,42 +54,45 @@
   --r-xl: 24px;
   --ease-out: cubic-bezier(.16,1,.3,1);
   --ease-spring: cubic-bezier(.34,1.56,.64,1);
-  --dur-fast: 140ms;
-  --dur-normal: 220ms;
-  --dur-slow: 380ms;
-  --topbar-bg: rgba(10,12,18,.92);
+  --dur-fast: 130ms;
+  --dur-normal: 200ms;
+  --dur-slow: 350ms;
+  --topbar-bg: rgba(15,17,23,.92);
 }
 [data-theme="light"] {
-  --bg: #F4F6FB;
+  --bg: #F5F7FC;
   --bg2: #ECEEF7;
-  --bg3: #E4E8F3;
+  --bg3: #E4E7F2;
   --card: #FFFFFF;
   --card2: #F8F9FE;
   --card3: #F0F2FA;
-  --border: rgba(0,0,0,.07);
-  --border2: rgba(0,0,0,.12);
-  --border3: rgba(0,0,0,.18);
-  --text: #0D0F1A;
-  --text2: #4A5270;
-  --text3: #8892A4;
-  --text4: #B0BAD0;
+  --border: rgba(0,0,0,.08);
+  --border2: rgba(0,0,0,.13);
+  --border3: rgba(0,0,0,.20);
+  --text: #111827;
+  --text2: #4B5563;
+  --text3: #9CA3AF;
+  --text4: #D1D5DB;
   --blue: #4F52D0;
   --blue-bg: rgba(79,82,208,.08);
   --blue-bg2: rgba(79,82,208,.14);
-  --blue-text: #3D41BC;
-  --blue-glow: rgba(79,82,208,.25);
+  --blue-text: #3730A3;
+  --blue-glow: rgba(79,82,208,.3);
   --green: #059669;
   --green-bg: rgba(5,150,105,.08);
   --green-bg2: rgba(5,150,105,.14);
-  --green-text: #047857;
-  --green-glow: rgba(5,150,105,.2);
+  --green-text: #065F46;
+  --green-glow: rgba(5,150,105,.25);
+  --red: #DC2626;
+  --red-bg: rgba(220,38,38,.08);
+  --red-text: #B91C1C;
   --shadow-xs: 0 1px 2px rgba(0,0,0,.06);
-  --shadow-sm: 0 2px 8px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.05);
-  --shadow-md: 0 4px 20px rgba(0,0,0,.1), 0 2px 6px rgba(0,0,0,.06);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.04);
+  --shadow-md: 0 4px 16px rgba(0,0,0,.1), 0 2px 4px rgba(0,0,0,.06);
   --shadow-lg: 0 8px 40px rgba(0,0,0,.12), 0 4px 12px rgba(0,0,0,.08);
-  --shadow-glow-blue: 0 4px 20px rgba(79,82,208,.15), 0 0 0 1px rgba(79,82,208,.12);
-  --shadow-glow-green: 0 4px 20px rgba(5,150,105,.12), 0 0 0 1px rgba(5,150,105,.08);
-  --topbar-bg: rgba(244,246,251,.92);
+  --shadow-glow-blue: 0 0 0 1px rgba(79,82,208,.15), 0 4px 20px rgba(79,82,208,.1);
+  --shadow-glow-green: 0 0 0 1px rgba(5,150,105,.12), 0 4px 20px rgba(5,150,105,.08);
+  --topbar-bg: rgba(245,247,252,.92);
 }
 
 /* ============================================================
@@ -167,19 +170,21 @@ body{
 .tab-btn.act { background: var(--blue-bg); color: var(--blue-text); font-weight: 600; }
 .tab-btn.act svg { opacity: 1; }
 .sidebar-agency-card {
-  margin: 12px 8px; padding: 14px;
-  background: var(--blue-bg); border: 1px solid rgba(99,102,241,.2);
+  margin: 10px 8px; padding: 14px;
+  background: linear-gradient(135deg, rgba(99,102,241,.14), rgba(99,102,241,.07));
+  border: 1px solid rgba(99,102,241,.22);
   border-radius: var(--r-md);
+  box-shadow: 0 0 20px rgba(99,102,241,.08);
 }
-.sac-label { font-size: 9px; font-weight: 700; color: var(--blue-text); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 5px; }
-.sac-name { font-size: 13px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.sac-models { font-size: 11px; color: var(--text3); margin-top: 2px; }
+.sac-label { font-size: 9px; font-weight: 700; color: var(--blue-text); text-transform: uppercase; letter-spacing: .12em; margin-bottom: 5px; }
+.sac-name { font-size: 14px; font-weight: 700; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sac-models { font-size: 11px; color: var(--text3); margin-top: 3px; }
 
-.sidebar-quick-stats { padding: 0 8px 12px; }
-.sqs-item { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+.sidebar-quick-stats { padding: 6px 8px 8px; }
+.sqs-item { padding: 10px 8px; border-bottom: 1px solid var(--border); }
 .sqs-item:last-child { border-bottom: none; }
-.sqs-label { font-size: 10px; color: var(--text4); font-weight: 600; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 4px; }
-.sqs-val { font-size: 15px; font-weight: 700; font-family: 'Outfit', sans-serif; color: var(--text); }
+.sqs-label { font-size: 9px; font-weight: 700; color: var(--text4); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 5px; }
+.sqs-val { font-size: 16px; font-weight: 700; font-family: 'Outfit', sans-serif; color: var(--text); }
 
 .sidebar-footer {
   padding: 12px 16px; border-top: 1px solid var(--border); flex-shrink: 0;
@@ -202,7 +207,8 @@ body{
   border-bottom: 1px solid var(--border);
   position: sticky; top: 0; z-index: 30;
   background: var(--topbar-bg);
-  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%);
+  transition: box-shadow var(--dur-normal);
 }
 .page-title { font-size: 15px; font-weight: 700; letter-spacing: -.02em; }
 .topbar-right { display: flex; align-items: center; gap: 8px; }
@@ -272,32 +278,33 @@ body{
 ============================================================ */
 .partner-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
 .partner-card {
-  background: var(--card); border: 1px solid var(--border);
-  border-radius: var(--r-xl); padding: 28px 30px;
+  border-radius: 22px; padding: 26px 28px;
   position: relative; overflow: hidden;
   transition: transform var(--dur-normal) var(--ease-out), box-shadow var(--dur-normal);
   animation: fadeUp var(--dur-slow) var(--ease-out) both;
 }
 .partner-card:hover { transform: translateY(-2px); }
 .partner-card.blue {
+  background: linear-gradient(145deg, #1E2134 0%, #1A1D2E 100%);
   border: 1px solid rgba(99,102,241,.25);
-  box-shadow: 0 0 0 1px rgba(99,102,241,.1), 0 4px 24px rgba(99,102,241,.1);
+  box-shadow: var(--shadow-glow-blue);
 }
 .partner-card.green {
+  background: linear-gradient(145deg, #1C2030 0%, #1A1D2E 100%);
   border: 1px solid rgba(16,185,129,.2);
-  box-shadow: 0 0 0 1px rgba(16,185,129,.08), 0 4px 24px rgba(16,185,129,.08);
+  box-shadow: var(--shadow-glow-green);
   animation-delay: 60ms;
 }
-.partner-card.blue::after {
-  content: ''; position: absolute; top: -50px; right: -50px;
-  width: 180px; height: 180px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(99,102,241,.22) 0%, transparent 70%);
+.partner-card.blue::before {
+  content: ''; position: absolute; top: -60px; right: -60px;
+  width: 200px; height: 200px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(99,102,241,.22) 0%, transparent 65%);
   pointer-events: none;
 }
-.partner-card.green::after {
-  content: ''; position: absolute; top: -50px; right: -50px;
-  width: 180px; height: 180px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(16,185,129,.18) 0%, transparent 70%);
+.partner-card.green::before {
+  content: ''; position: absolute; top: -60px; right: -60px;
+  width: 200px; height: 200px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(16,185,129,.18) 0%, transparent 65%);
   pointer-events: none;
 }
 .partner-name {
@@ -309,12 +316,19 @@ body{
 .partner-card.blue .pname-dot { background: var(--blue); box-shadow: 0 0 8px var(--blue-glow); }
 .partner-card.green .pname-dot { background: var(--green); box-shadow: 0 0 8px var(--green-glow); }
 .partner-eur {
-  font-size: 38px; font-weight: 800; letter-spacing: -.06em; line-height: 1;
-  font-variant-numeric: tabular-nums; font-family: 'Outfit', sans-serif; margin-bottom: 22px;
+  font-size: 42px; font-weight: 800; letter-spacing: -.07em; line-height: 1;
+  font-variant-numeric: tabular-nums; font-family: 'Outfit', sans-serif; margin-bottom: 6px;
 }
-.partner-card.blue .partner-eur { color: var(--blue-text); }
-.partner-card.green .partner-eur { color: var(--green-text); }
-.partner-divider { height: 1px; background: var(--border); margin-bottom: 18px; }
+.partner-card.blue .partner-eur { color: #E0E7FF; }
+.partner-card.green .partner-eur { color: #D1FAE5; }
+.partner-earned-label {
+  font-size: 10px; color: var(--text3); font-weight: 500;
+  letter-spacing: .04em; margin-bottom: 18px;
+}
+.partner-divider {
+  height: 1px; margin-bottom: 18px;
+  background: linear-gradient(to right, rgba(255,255,255,.12), transparent);
+}
 .partner-rem-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .partner-rem-lbl {
   font-size: 9px; font-weight: 700; color: var(--text4);
@@ -324,6 +338,8 @@ body{
   font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums;
   font-family: 'Outfit', sans-serif; color: var(--text2);
 }
+.partner-card.blue .partner-rem { color: rgba(165,180,252,.75); }
+.partner-card.green .partner-rem { color: rgba(110,231,183,.75); }
 
 /* ============================================================
    STATS ROW (used by JS renderBal)
@@ -335,9 +351,16 @@ body{
 .stat-box {
   background: var(--card); border: 1px solid var(--border);
   border-radius: var(--r-md); padding: 14px 16px;
-  transition: border-color var(--dur-fast), box-shadow var(--dur-fast);
+  position: relative; overflow: hidden;
+  transition: border-color var(--dur-fast), box-shadow var(--dur-fast), transform var(--dur-normal);
 }
-.stat-box:hover { border-color: var(--border2); box-shadow: var(--shadow-sm); }
+.stat-box:hover { border-color: var(--border2); box-shadow: var(--shadow-sm); transform: translateY(-1px); }
+.stat-box::before {
+  content: ''; position: absolute; left: 0; top: 12px; bottom: 12px;
+  width: 2px; background: var(--blue); border-radius: 2px; opacity: 0;
+  transition: opacity var(--dur-fast);
+}
+.stat-box:hover::before { opacity: .5; }
 .stat-lbl {
   font-size: 9px; font-weight: 700; color: var(--text4);
   text-transform: uppercase; letter-spacing: .1em; margin-bottom: 8px;
@@ -348,7 +371,7 @@ body{
 }
 .stat-val.blue { color: var(--blue-text); }
 .stat-val.green { color: var(--green-text); }
-.stat-val.red { color: var(--red-text); }
+.stat-val.red { color: var(--red); }
 
 /* ============================================================
    SPLIT BAR
@@ -535,14 +558,17 @@ body{
 .w-confirm-modal{
   position:fixed;inset:0;z-index:500;
   background:rgba(0,0,0,.65);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
   display:none;align-items:center;justify-content:center;padding:1.5rem;
 }
 .w-confirm-modal.open{display:flex}
 .w-confirm-box{
   width:100%;max-width:340px;
-  background:var(--card);border:1px solid var(--border2);
+  background:rgba(30,33,52,.92);
+  backdrop-filter:blur(40px) saturate(160%);-webkit-backdrop-filter:blur(40px) saturate(160%);
+  border:1px solid rgba(255,255,255,.12);
   border-radius:20px;padding:28px 24px;
-  box-shadow:0 24px 80px rgba(0,0,0,.5);
+  box-shadow:0 24px 80px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.04);
 }
 .w-confirm-title{font-size:15px;font-weight:700;margin-bottom:4px}
 .w-confirm-body{font-size:13px;color:var(--text2);line-height:1.8;margin-bottom:20px}
@@ -775,6 +801,7 @@ body{
 }
 .tx-amt{font-size:13px;font-weight:600;font-variant-numeric:tabular-nums}
 .tx-date{font-size:11px;color:var(--text3)}
+.tx-desc{font-size:11px;color:var(--text3);font-style:italic;margin-top:2px;padding:0 8px 6px}
 .tx-source{
   font-size:10px;color:var(--text3);
   background:var(--card);border:1px solid var(--border);
@@ -838,16 +865,17 @@ body{
   font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 8px;
   text-transform: uppercase; letter-spacing: .06em;
 }
-.wd-badge.confirmed { background: var(--green-bg); color: var(--green-text); }
-.wd-badge.pending { background: rgba(251,191,36,.12); color: var(--yellow-text); }
+.wd-badge.confirmed { background: var(--green-bg); color: var(--green-text); border: 1px solid rgba(16,185,129,.2); }
+.wd-badge.pending { background: var(--yellow-bg); color: var(--yellow-text); }
 .wd-badge.platform { background: var(--card2); color: var(--text3); border: 1px solid var(--border); }
 .wd-badge.model-b { background: var(--blue-bg); color: var(--blue-text); }
-.wd-loss { font-size: 11px; color: var(--red-text); }
+.wd-loss { font-size: 11px; color: var(--red); font-weight: 600; }
 .wd-detail { font-size: 11px; color: var(--text3); }
+.wd-description { font-size: 11px; color: var(--text3); font-style: italic; margin-top: 4px; }
 .wd-right { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; flex-shrink: 0; }
 .wd-splits { font-size: 11px; color: var(--text3); text-align: right; line-height: 1.8; }
 .wd-delete-btn {
-  width: 28px; height: 28px; border-radius: 8px; border: none;
+  width: 30px; height: 30px; border-radius: 8px; border: none;
   background: transparent; color: var(--text4); cursor: pointer;
   display: flex; align-items: center; justify-content: center; font-size: 16px;
   transition: all var(--dur-fast); font-family: inherit;
@@ -957,9 +985,11 @@ body{
 /* #authOverlay styles moved to STAGE 3 block below */
 .auth-box{
   width:100%;max-width:380px;
-  background:var(--card);border:1px solid var(--border2);
+  background:rgba(30,33,52,.92);
+  backdrop-filter:blur(40px) saturate(160%);-webkit-backdrop-filter:blur(40px) saturate(160%);
+  border:1px solid rgba(255,255,255,.12);
   border-radius:24px;padding:40px 36px;
-  box-shadow:0 24px 80px rgba(0,0,0,.5);
+  box-shadow:0 24px 80px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.04);
 }
 .auth-logo{display:flex;align-items:center;gap:11px;margin-bottom:6px}
 .auth-logo-icon{
@@ -1056,7 +1086,11 @@ body{
 .tab-page { display: none; }
 .tab-page.act {
   display: block;
-  animation: fadeUp var(--dur-normal) var(--ease-out);
+  animation: tabFadeIn 180ms cubic-bezier(.16,1,.3,1) both;
+}
+@keyframes tabFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 .skeleton {
   background: linear-gradient(90deg, var(--card2) 25%, var(--card3) 50%, var(--card2) 75%);
@@ -1541,7 +1575,8 @@ body{
         <div class="partner-row" id="partnerRow">
           <div class="partner-card blue">
             <div class="partner-name"><span class="pname-dot"></span><span id="partnerName0">—</span></div>
-            <div class="partner-eur" id="bV">€0.00</div>
+            <div class="partner-eur" id="bV">$0.00</div>
+            <div class="partner-earned-label">Earned (USD) · your share</div>
             <div class="partner-divider"></div>
             <div class="partner-rem-grid">
               <div>
@@ -1556,7 +1591,8 @@ body{
           </div>
           <div class="partner-card green">
             <div class="partner-name"><span class="pname-dot"></span><span id="partnerName1">—</span></div>
-            <div class="partner-eur" id="bVl">€0.00</div>
+            <div class="partner-eur" id="bVl">$0.00</div>
+            <div class="partner-earned-label">Earned (USD) · your share</div>
             <div class="partner-divider"></div>
             <div class="partner-rem-grid">
               <div>
@@ -1751,6 +1787,10 @@ body{
               <input type="date" id="nDate">
             </div>
             <button class="btn btn-primary" id="addBtn" onclick="addW()" style="align-self:flex-end">Add</button>
+          </div>
+          <div class="field" style="margin-top:10px;max-width:400px">
+            <label>Description (optional)</label>
+            <input id="wdDesc" placeholder="e.g. Monthly payout, Fanvue April">
           </div>
         </div>
         <div id="wList"></div>
@@ -2350,8 +2390,15 @@ function renderModelSplitSection(){
   if(!ACTIVE_MODEL_ID||!PARTNERS.length||currentRole!=='admin'){sec.style.display='none';return;}
   sec.style.display='block';
   var listEl=g('modelSplitList');
+  var activePartners=PARTNERS.filter(function(p){return p.status==='active';});
+  if(!activePartners.length){
+    listEl.innerHTML='<div style="font-size:12px;color:var(--text3);padding:8px 0">No active partners yet. Splits will appear after partners accept their invites.</div>';
+    var actions=g('splitEditActions');if(actions)actions.style.display='none';
+    sec.querySelectorAll('.split-edit-btn').forEach(function(b){b.remove();});
+    return;
+  }
   var html='';
-  PARTNERS.forEach(function(p){
+  activePartners.forEach(function(p){
     var pct=_editingSplits
       ?(_splitDraft[p.id]!=null?_splitDraft[p.id]:getCurrentSplit(ACTIVE_MODEL_ID,p.id))
       :getCurrentSplit(ACTIVE_MODEL_ID,p.id);
@@ -2466,9 +2513,9 @@ function P0(){return PARTNERS[0]||{id:'',name:'Partner 1'};}
 function P1(){return PARTNERS[1]||{id:'',name:'Partner 2'};}
 
 async function loadPartners(){
-  var res=await db.from('partners').select('id,name').order('created_at',{ascending:true});
+  var res=await db.from('partners').select('id,name,status,invited_email').order('created_at',{ascending:true});
   if(res.error||!res.data||!res.data.length){console.error('loadPartners:',res.error);return;}
-  PARTNERS=res.data.map(function(p,i){return{id:p.id,name:p.name,color:i===0?'blue':'green'};});
+  PARTNERS=res.data.map(function(p,i){return{id:p.id,name:p.name,status:p.status||'active',invited_email:p.invited_email||null,color:i===0?'blue':'green'};});
   renderPartnerCards();
   renderPartnerSelect();
 }
@@ -3095,7 +3142,7 @@ async function confirmWithdrawal(){
   var res=await db.from('withdrawals').insert(_wPending);
   _wPending=null;
   if(res.error)showToast(friendlyError(res.error),'error');
-  else g('nUSD').value='';
+  else{g('nUSD').value='';if(g('wdDesc'))g('wdDesc').value='';}
   if(btn){btn.disabled=false;btn.textContent='Add';}
 }
 async function wConfirmSubmit(){
@@ -3258,7 +3305,7 @@ async function loadRevenueData(){
   if(statusEl)statusEl.innerHTML='<span style="display:inline-flex;align-items:center;gap:5px"><span class="spinner"></span>Loading…</span>';
 
   var txQuery=db.from('transactions')
-    .select('id,amount_usd,platform,date,source,model_id')
+    .select('id,amount_usd,platform,date,source,model_id,description')
     .order('date',{ascending:true});
   if(ACTIVE_MODEL_ID){txQuery=txQuery.eq('model_id',ACTIVE_MODEL_ID);}
   else{var ids=ALL_MODELS.map(function(m){return m.id;});txQuery=txQuery.in('model_id',ids);}
@@ -3276,7 +3323,7 @@ async function loadRevenueData(){
   if(expRes.error)console.error('expenses error:',expRes.error);
 
   S.txs=(txRes.data||[]).map(function(tx){
-    return{id:tx.id,amount:parseFloat(tx.amount_usd)||0,platform:tx.platform,date:tx.date,source:tx.source||'manual',model_id:tx.model_id||''};
+    return{id:tx.id,amount:parseFloat(tx.amount_usd)||0,platform:tx.platform,date:tx.date,source:tx.source||'manual',model_id:tx.model_id||'',description:tx.description||null};
   });
 
   var allExps=(expRes.data||[]).map(function(exp){
@@ -3362,7 +3409,8 @@ async function loadWithdrawals(){
       vlE:sp.vlE!=null?sp.vlE:(parseFloat(row.vl_eur)||0),
       date:row.request_date,rd:row.received_date,
       st:row.status==='ok'?'ok':'pend',
-      model_id:row.model_id||null
+      model_id:row.model_id||null,
+      description:row.description||null
     };
   });
   /* Show all if All-models view; otherwise model-specific + agency (null) */
@@ -3401,7 +3449,8 @@ async function addW(){
   var platform=g('nPl').value;
 
   var wModelId=(g('wModel')&&g('wModel').value)||null;
-  _wPending={platform:platform,usd:r2(usd),request_date:date,eur:0,v_eur:0,vl_eur:0,status:'pending',model_id:wModelId||null};
+  var wdDescVal=(g('wdDesc')&&g('wdDesc').value.trim())||null;
+  _wPending={platform:platform,usd:r2(usd),request_date:date,eur:0,v_eur:0,vl_eur:0,status:'pending',model_id:wModelId||null,description:wdDescVal};
 
   // B7: styled confirm dialog with withdrawal currency
   var sym={EUR:'€',GBP:'£',USD:'$'}[WD_CURRENCY]||'€';
@@ -3461,6 +3510,18 @@ async function delW(id){
   if(res.error)showToast(friendlyError(res.error),'error');
 }
 
+async function editWdDesc(id){
+  var w=S.ws.find(function(x){return x.id===id;});
+  if(!w)return;
+  var newDesc=prompt('Edit description:',w.description||'');
+  if(newDesc===null)return;
+  var res=await db.from('withdrawals').update({description:newDesc.trim()||null}).eq('id',id);
+  if(res.error){showToast(friendlyError(res.error),'error');return;}
+  w.description=newDesc.trim()||null;
+  renderList();
+  showToast('Description updated','success');
+}
+
 async function resetAll(){
   if(!confirm('Delete ALL withdrawal history from the database?'))return;
   await db.from('withdrawal_splits').delete().neq('id','00000000-0000-0000-0000-000000000000');
@@ -3477,12 +3538,14 @@ async function addTransaction(){
   var btn=g('txAddBtn');btn.disabled=true;btn.textContent='Adding…';
   var statusEl=g('txStatus');statusEl.textContent='';
 
+  var txDesc=(g('txNote')&&g('txNote').value.trim())||null;
   var res=await db.from('transactions').insert({
     model_id:ACTIVE_MODEL_ID,
     platform:pl.toLowerCase(),
     amount_usd:r2(amt),
     date:date,
-    source:'manual'
+    source:'manual',
+    description:txDesc
   });
 
   if(res.error){
@@ -3531,10 +3594,12 @@ async function txSave(id){
   var btn=g('te_save_'+id);
   if(btn){btn.disabled=true;btn.textContent='Saving…';}
 
+  var desc=(g('te_desc_'+id)&&g('te_desc_'+id).value.trim())||null;
   var res=await db.from('transactions').update({
     amount_usd:r2(amt),
     date:date,
-    platform:pl.toLowerCase()
+    platform:pl.toLowerCase(),
+    description:desc
   }).eq('id',id);
 
   if(res.error){
@@ -3782,7 +3847,7 @@ function renderBal(){
   var vWithdrawn=r2(totalVUSD()),vlWithdrawn=r2(totalVlUSD());
   var vEusd=FX_RATES.EUR>0?vE/FX_RATES.EUR:vE;
   var vlEusd=FX_RATES.EUR>0?vlE/FX_RATES.EUR:vlE;
-  g('bV').textContent='€'+vE.toFixed(2);g('bVl').textContent='€'+vlE.toFixed(2);
+  g('bV').textContent=fc(r2(totalVSh()));g('bVl').textContent=fc(r2(totalVlSh()));
   var vwEl=g('vWithdrawnEl'),vlwEl=g('vlWithdrawnEl');
   if(vwEl)vwEl.textContent='€'+r2(totalVEUR()).toFixed(2);
   if(vlwEl)vlwEl.textContent='€'+r2(totalVlEUR()).toFixed(2);
@@ -3861,8 +3926,6 @@ function renderBal(){
     '<div class="stat-box"><div class="stat-lbl">This month</div><div class="stat-val">'+fc(curRev)+trendHtml+'</div></div>'
     +'<div class="stat-box"><div class="stat-lbl">Total revenue</div><div class="stat-val">'+fc(totalRev)+'</div></div>'
     +'<div class="stat-box"><div class="stat-lbl">Total withdrawn</div><div class="stat-val">'+fc(totalW)+'</div></div>'
-    +'<div class="stat-box"><div class="stat-lbl">'+P0().name+'\'s share</div><div class="stat-val blue">'+fc(r2(totalVSh()))+'</div></div>'
-    +'<div class="stat-box"><div class="stat-lbl">'+P1().name+'\'s share</div><div class="stat-val green">'+fc(r2(totalVlSh()))+'</div></div>'
     +(avgRate?'<div class="stat-box"><div class="stat-lbl">Avg rate</div><div class="stat-val">'+avgRate+'</div></div>':'')
     +(tLoss>0?'<div class="stat-box"><div class="stat-lbl">FX loss</div><div class="stat-val red">'+fe(tLoss)+'</div></div>':'');
 }
@@ -4094,6 +4157,8 @@ function renderMonths(){
           +'<input type="date" id="te_date_'+tx.id+'" value="'+tx.date+'"></div>'
           +'<div class="field"><label>Platform</label>'
           +'<select id="te_pl_'+tx.id+'">'+plOptions+'</select></div>'
+          +'<div class="field"><label>Note</label>'
+          +'<input id="te_desc_'+tx.id+'" value="'+escHtml(tx.description||'')+'" placeholder="Optional"></div>'
           +'<button class="btn-save" id="te_save_'+tx.id+'" onclick="txSave(\''+tx.id+'\')">Save</button>'
           +'<button class="btn-cancel" onclick="txEditCancel(\''+tx.id+'\')">Cancel</button>'
           +'</div>'
@@ -4116,6 +4181,7 @@ function renderMonths(){
               +'</div>'
             :'')
           +'</div>'
+          +(tx.description?'<div class="tx-desc">'+escHtml(tx.description)+'</div>':'')
           +'</div>';
       }
     });
@@ -4150,6 +4216,9 @@ function renderList(){
       var mBadge=(!ACTIVE_MODEL_ID&&ALL_MODELS.length>1)
         ?'<span class="wd-badge model-b">'+(wMObj?escHtml(wMObj.name):'Agency')+'</span>'
         :'';
+      var descHtmlPend=w.description
+        ?'<div class="wd-description">'+escHtml(w.description)+'</div>'
+        :'';
       h+='<div class="wd-row">'
         +'<div class="wd-left">'
         +'<div class="wd-amount">'+fu(w.usd)+'</div>'
@@ -4159,6 +4228,7 @@ function renderList(){
         +mBadge
         +'</div>'
         +'<div class="wd-detail">'+fdate(w.date)+' &nbsp;·&nbsp; Expected ≈ '+fe(expE)+'</div>'
+        +descHtmlPend
         +'</div>'
         +'<div class="wd-right">'
         +'<button class="wd-delete-btn" onclick="delW(\''+w.id+'\')" title="Delete">×</button>'
@@ -4206,6 +4276,9 @@ function renderList(){
       var splits=PARTNERS.length>=2
         ?escHtml(P0().name)+' '+fe(w.vE)+'<br>'+escHtml(P1().name)+' '+fe(w.vlE)
         :'';
+      var descHtmlDone=w.description
+        ?'<div class="wd-description">'+escHtml(w.description)+'</div>'
+        :'';
       h+='<div class="wd-row">'
         +'<div class="wd-left">'
         +'<div class="wd-amount">'+fe(w.eur)+'</div>'
@@ -4216,9 +4289,11 @@ function renderList(){
         +(loss>0?'<span class="wd-loss">FX loss '+fe(loss)+'</span>':'')
         +'</div>'
         +'<div class="wd-detail">'+fu(w.usd)+' &nbsp;·&nbsp; rate '+rate+' &nbsp;·&nbsp; '+fdate(w.date)+(w.rd?' → '+fdate(w.rd):'')+'</div>'
+        +descHtmlDone
         +'</div>'
         +'<div class="wd-right">'
         +'<button class="wd-delete-btn" onclick="delW(\''+w.id+'\')" title="Delete">×</button>'
+        +'<button class="btn" style="font-size:11px;padding:5px 10px" onclick="editWdDesc(\''+w.id+'\')">Edit note</button>'
         +(splits?'<div class="wd-splits">'+splits+'</div>':'')
         +'</div>'
         +'</div>';
@@ -4253,6 +4328,10 @@ document.addEventListener('keydown',function(e){
   if(ok.indexOf(e.key)===-1&&!e.ctrlKey&&!e.metaKey)e.preventDefault();
 });
 window.addEventListener('resize',function(){if(currentTab==='revenue'||currentTab==='dashboard')renderChart();});
+window.addEventListener('scroll',function(){
+  var tb=document.querySelector('.topbar');
+  if(tb)tb.style.boxShadow=window.scrollY>8?'0 4px 20px rgba(0,0,0,.4)':'none';
+},{passive:true});
 /* ---- Init ---- */
 async function init(){
   try{

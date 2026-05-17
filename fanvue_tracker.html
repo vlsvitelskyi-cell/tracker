@@ -2218,7 +2218,7 @@ async function loadModels(){
     if(agRes.data)_agencyId=agRes.data;
   }
   var res=await db.from('models')
-    .select('id,name,fanvue_connections(model_id)')
+    .select('id,name')
     .order('created_at',{ascending:true});
   if(res.error||!res.data||!res.data.length){
     console.error('loadModels failed:',res.error);

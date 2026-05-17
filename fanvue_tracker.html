@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Payout Manager</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 /* ============================================================
@@ -57,6 +57,7 @@
   --dur-fast: 140ms;
   --dur-normal: 220ms;
   --dur-slow: 380ms;
+  --topbar-bg: rgba(10,12,18,.92);
 }
 [data-theme="light"] {
   --bg: #F4F6FB;
@@ -88,6 +89,7 @@
   --shadow-lg: 0 8px 40px rgba(0,0,0,.12), 0 4px 12px rgba(0,0,0,.08);
   --shadow-glow-blue: 0 4px 20px rgba(79,82,208,.15), 0 0 0 1px rgba(79,82,208,.12);
   --shadow-glow-green: 0 4px 20px rgba(5,150,105,.12), 0 0 0 1px rgba(5,150,105,.08);
+  --topbar-bg: rgba(244,246,251,.92);
 }
 
 /* ============================================================
@@ -105,7 +107,7 @@ body{
   transition:background .2s,color .2s;
 }
 
-.mono { font-family: 'DM Mono', 'Fira Mono', monospace; }
+.mono { font-family: 'Outfit', sans-serif; font-variant-numeric: tabular-nums; }
 
 /* ============================================================
    LAYOUT — SIDEBAR + MAIN
@@ -164,6 +166,21 @@ body{
 .tab-btn:hover svg { opacity: .8; }
 .tab-btn.act { background: var(--blue-bg); color: var(--blue-text); font-weight: 600; }
 .tab-btn.act svg { opacity: 1; }
+.sidebar-agency-card {
+  margin: 12px 8px; padding: 14px;
+  background: var(--blue-bg); border: 1px solid rgba(99,102,241,.2);
+  border-radius: var(--r-md);
+}
+.sac-label { font-size: 9px; font-weight: 700; color: var(--blue-text); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 5px; }
+.sac-name { font-size: 13px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sac-models { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+.sidebar-quick-stats { padding: 0 8px 12px; }
+.sqs-item { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+.sqs-item:last-child { border-bottom: none; }
+.sqs-label { font-size: 10px; color: var(--text4); font-weight: 600; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 4px; }
+.sqs-val { font-size: 15px; font-weight: 700; font-family: 'Outfit', sans-serif; color: var(--text); }
+
 .sidebar-footer {
   padding: 12px 16px; border-top: 1px solid var(--border); flex-shrink: 0;
 }
@@ -184,7 +201,7 @@ body{
   padding: 0 32px; height: 56px; flex-shrink: 0;
   border-bottom: 1px solid var(--border);
   position: sticky; top: 0; z-index: 30;
-  background: rgba(10,12,18,.88);
+  background: var(--topbar-bg);
   backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
 }
 .page-title { font-size: 15px; font-weight: 700; letter-spacing: -.02em; }
@@ -262,8 +279,15 @@ body{
   animation: fadeUp var(--dur-slow) var(--ease-out) both;
 }
 .partner-card:hover { transform: translateY(-2px); }
-.partner-card.blue { border-color: rgba(99,102,241,.2); box-shadow: var(--shadow-glow-blue); }
-.partner-card.green { border-color: rgba(16,185,129,.15); box-shadow: var(--shadow-glow-green); animation-delay: 60ms; }
+.partner-card.blue {
+  border: 1px solid rgba(99,102,241,.25);
+  box-shadow: 0 0 0 1px rgba(99,102,241,.1), 0 4px 24px rgba(99,102,241,.1);
+}
+.partner-card.green {
+  border: 1px solid rgba(16,185,129,.2);
+  box-shadow: 0 0 0 1px rgba(16,185,129,.08), 0 4px 24px rgba(16,185,129,.08);
+  animation-delay: 60ms;
+}
 .partner-card.blue::after {
   content: ''; position: absolute; top: -50px; right: -50px;
   width: 180px; height: 180px; border-radius: 50%;
@@ -286,7 +310,7 @@ body{
 .partner-card.green .pname-dot { background: var(--green); box-shadow: 0 0 8px var(--green-glow); }
 .partner-eur {
   font-size: 38px; font-weight: 800; letter-spacing: -.06em; line-height: 1;
-  font-variant-numeric: tabular-nums; font-family: 'DM Mono', monospace; margin-bottom: 22px;
+  font-variant-numeric: tabular-nums; font-family: 'Outfit', sans-serif; margin-bottom: 22px;
 }
 .partner-card.blue .partner-eur { color: var(--blue-text); }
 .partner-card.green .partner-eur { color: var(--green-text); }
@@ -298,7 +322,7 @@ body{
 }
 .partner-rem {
   font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums;
-  font-family: 'DM Mono', monospace; color: var(--text2);
+  font-family: 'Outfit', sans-serif; color: var(--text2);
 }
 
 /* ============================================================
@@ -320,7 +344,7 @@ body{
 }
 .stat-val {
   font-size: 19px; font-weight: 700; letter-spacing: -.03em;
-  font-variant-numeric: tabular-nums; font-family: 'DM Mono', monospace;
+  font-variant-numeric: tabular-nums; font-family: 'Outfit', sans-serif;
 }
 .stat-val.blue { color: var(--blue-text); }
 .stat-val.green { color: var(--green-text); }
@@ -374,7 +398,7 @@ body{
 .rtx-type { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .rtx-meta { font-size: 11px; color: var(--text3); }
 .rtx-right { text-align: right; flex-shrink: 0; }
-.rtx-amount { font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; font-family: 'DM Mono', monospace; }
+.rtx-amount { font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; font-family: 'Outfit', sans-serif; }
 .rtx-amount.pos { color: var(--green-text); }
 .rtx-amount.neg { color: var(--red-text); }
 .rtx-date { font-size: 11px; color: var(--text4); margin-top: 2px; }
@@ -798,6 +822,38 @@ body{
 .list-section-label:first-child{margin-top:0}
 .hist-summary{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
 
+/* ---- C5: Withdrawal row redesign ---- */
+.wd-row {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  padding: 18px 0; border-bottom: 1px solid var(--border); gap: 16px;
+}
+.wd-row:last-child { border-bottom: none; }
+.wd-left { flex: 1; min-width: 0; }
+.wd-amount {
+  font-size: 22px; font-weight: 700; font-family: 'Outfit', sans-serif;
+  letter-spacing: -.03em; margin-bottom: 6px; font-variant-numeric: tabular-nums;
+}
+.wd-meta-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 5px; }
+.wd-badge {
+  font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 8px;
+  text-transform: uppercase; letter-spacing: .06em;
+}
+.wd-badge.confirmed { background: var(--green-bg); color: var(--green-text); }
+.wd-badge.pending { background: rgba(251,191,36,.12); color: var(--yellow-text); }
+.wd-badge.platform { background: var(--card2); color: var(--text3); border: 1px solid var(--border); }
+.wd-badge.model-b { background: var(--blue-bg); color: var(--blue-text); }
+.wd-loss { font-size: 11px; color: var(--red-text); }
+.wd-detail { font-size: 11px; color: var(--text3); }
+.wd-right { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; flex-shrink: 0; }
+.wd-splits { font-size: 11px; color: var(--text3); text-align: right; line-height: 1.8; }
+.wd-delete-btn {
+  width: 28px; height: 28px; border-radius: 8px; border: none;
+  background: transparent; color: var(--text4); cursor: pointer;
+  display: flex; align-items: center; justify-content: center; font-size: 16px;
+  transition: all var(--dur-fast); font-family: inherit;
+}
+.wd-delete-btn:hover { background: var(--red-bg); color: var(--red-text); }
+
 /* ============================================================
    WITHDRAWAL EXPAND FORM
 ============================================================ */
@@ -1158,16 +1214,22 @@ body{
 /* ============================================================
    STAGE 7 — SETTINGS SECTION ICONS
 ============================================================ */
+.settings-section { margin-bottom: 48px; }
+.settings-section > .card { margin-bottom: 12px; }
+.settings-section > .card:last-child { margin-bottom: 0; }
 .settings-section-header {
-  display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px;
+  display: flex; align-items: center; gap: 14px; margin-bottom: 18px;
 }
 .settings-section-icon {
-  width: 34px; height: 34px; border-radius: var(--r-sm);
+  width: 36px; height: 36px; border-radius: 10px;
   background: var(--card2); border: 1px solid var(--border2);
-  display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
-.settings-section-icon svg { width: 15px; height: 15px; color: var(--text2); }
-.settings-section-header .settings-section-title { margin-bottom: 3px; padding-left: 0; }
+.settings-section-icon svg { width: 16px; height: 16px; color: var(--text2); }
+.settings-section-title {
+  font-size: 16px; font-weight: 700; letter-spacing: -.03em; color: var(--text); margin-bottom: 3px;
+}
+.settings-section-subtitle { font-size: 13px; color: var(--text3); line-height: 1.5; }
 
 /* ============================================================
    STAGE 8 — IMPROVED TOASTS
@@ -1381,6 +1443,25 @@ body{
         Settings
       </button>
     </nav>
+
+    <!-- Agency card -->
+    <div class="sidebar-agency-card">
+      <div class="sac-label">Agency</div>
+      <div class="sac-name" id="sidebarAgencyName">—</div>
+      <div class="sac-models" id="sidebarModelsCount">— models</div>
+    </div>
+
+    <!-- Quick stats -->
+    <div class="sidebar-quick-stats">
+      <div class="sqs-item">
+        <div class="sqs-label">This month</div>
+        <div class="sqs-val" id="sidebarThisMonth">—</div>
+      </div>
+      <div class="sqs-item">
+        <div class="sqs-label">Total withdrawn</div>
+        <div class="sqs-val" id="sidebarTotalWithdrawn">—</div>
+      </div>
+    </div>
 
     <div class="sidebar-footer">
       <div class="live-indicator">
@@ -1687,8 +1768,11 @@ body{
         <!-- SECTION: AGENCY -->
         <div class="settings-section" id="agencyCard" style="display:none">
           <div class="settings-section-header">
-            <div class="settings-section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 12h8M8 8h8M8 16h5"/></svg></div>
-            <div class="settings-section-title">Agency</div>
+            <div class="settings-section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></div>
+            <div>
+              <div class="settings-section-title">Agency</div>
+              <div class="settings-section-subtitle">Your agency name and basic configuration</div>
+            </div>
           </div>
           <div class="card">
             <div class="sec-label">Agency name</div>
@@ -1704,15 +1788,18 @@ body{
         <!-- SECTION: TEAM -->
         <div class="settings-section" id="partnersCard" style="display:none">
           <div class="settings-section-header">
-            <div class="settings-section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
-            <div class="settings-section-title">Team</div>
+            <div class="settings-section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+            <div>
+              <div class="settings-section-title">Team</div>
+              <div class="settings-section-subtitle">Invite co-owners and configure revenue splits per model</div>
+            </div>
           </div>
           <div class="card">
             <div class="sec-label">Partners</div>
             <div id="partnersList"></div>
           </div>
           <!-- Invite form (admin only) -->
-          <div class="card" id="invitePartnerForm" style="display:none;margin-top:2px">
+          <div class="card" id="invitePartnerForm" style="display:none">
             <div class="sec-label">Invite new partner</div>
             <div class="field">
               <label>Name</label>
@@ -1748,8 +1835,11 @@ body{
         <!-- SECTION: INTEGRATIONS -->
         <div class="settings-section">
           <div class="settings-section-header">
-            <div class="settings-section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></div>
-            <div class="settings-section-title">Integrations</div>
+            <div class="settings-section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></div>
+            <div>
+              <div class="settings-section-title">Integrations</div>
+              <div class="settings-section-subtitle">Connect Fanvue to sync earnings automatically in real-time</div>
+            </div>
           </div>
           <div class="card">
             <div class="sec-label">Fanvue Account</div>
@@ -1769,8 +1859,20 @@ body{
         <!-- SECTION: PREFERENCES -->
         <div class="settings-section">
           <div class="settings-section-header">
-            <div class="settings-section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg></div>
-            <div class="settings-section-title">Preferences</div>
+            <div class="settings-section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg></div>
+            <div>
+              <div class="settings-section-title">Preferences</div>
+              <div class="settings-section-subtitle">Display currency and platform customization</div>
+            </div>
+          </div>
+          <div class="card" style="margin-bottom:2px">
+            <div class="sec-label">Withdrawal currency</div>
+            <p style="font-size:12px;color:var(--text3);margin-bottom:14px;line-height:1.6">Currency your withdrawals are received in. Used for approximate calculations.</p>
+            <div style="display:flex;gap:8px" id="wdCurrencyBtns">
+              <button class="btn" onclick="setWdCurrency('EUR')">EUR €</button>
+              <button class="btn" onclick="setWdCurrency('GBP')">GBP £</button>
+              <button class="btn" onclick="setWdCurrency('USD')">USD $</button>
+            </div>
           </div>
           <div class="card" style="margin-bottom:2px">
             <div class="sec-label">Display currency</div>
@@ -1798,16 +1900,77 @@ body{
         <!-- SECTION: ABOUT -->
         <div class="settings-section">
           <div class="settings-section-header">
-            <div class="settings-section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
-            <div class="settings-section-title">About</div>
+            <div class="settings-section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+            <div>
+              <div class="settings-section-title">About</div>
+              <div class="settings-section-subtitle">Product information and support</div>
+            </div>
           </div>
           <div class="card">
-            <div class="sec-label">Rates &amp; Info</div>
-            <p id="infoCard" style="font-size:13px;color:var(--text2);line-height:2">
-              Real-time sync via Supabase<br>
-              <span style="color:var(--text3);font-size:12px">Revolut reference: 1 USD = 0.8547 EUR</span><br>
-              <span id="wiseRateLine" style="color:var(--text3);font-size:12px">Wise mid-market: loading…</span>
-            </p>
+            <div class="sec-label">Product</div>
+            <div class="setting-row">
+              <div class="setting-info">
+                <div class="setting-label">Payout Manager</div>
+                <div class="setting-desc">Financial OS for Fanvue agencies</div>
+              </div>
+              <div style="font-size:12px;color:var(--text3)">v1.0</div>
+            </div>
+            <div class="setting-row">
+              <div class="setting-info">
+                <div class="setting-label">Real-time sync</div>
+                <div class="setting-desc">Earnings sync via Fanvue webhooks + 15-min polling fallback</div>
+              </div>
+              <div class="integration-badge connected"><span class="ibadge-dot"></span>Active</div>
+            </div>
+            <div class="setting-row">
+              <div class="setting-info">
+                <div class="setting-label">Exchange rate (USD → EUR)</div>
+                <div class="setting-desc">Wise mid-market rate, updated at app load</div>
+              </div>
+              <div style="font-size:14px;font-weight:700;font-family:'Outfit',sans-serif" id="wiseRateAbout">—</div>
+            </div>
+            <div class="setting-row" id="wiseGbpRow" style="display:none">
+              <div class="setting-info">
+                <div class="setting-label">Exchange rate (USD → GBP)</div>
+                <div class="setting-desc">Wise mid-market rate</div>
+              </div>
+              <div style="font-size:14px;font-weight:700;font-family:'Outfit',sans-serif" id="wiseGbpAbout">—</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="sec-label">Support</div>
+            <div class="setting-row">
+              <div class="setting-info">
+                <div class="setting-label">Report a bug or request a feature</div>
+                <div class="setting-desc">We respond within 24 hours</div>
+              </div>
+              <a href="mailto:support@payoutmanager.app" class="btn-primary" style="text-decoration:none">Contact support →</a>
+            </div>
+            <div class="setting-row">
+              <div class="setting-info">
+                <div class="setting-label">Documentation</div>
+                <div class="setting-desc">How to set up splits, connect models, and record withdrawals</div>
+              </div>
+              <a href="https://payoutmanager.app" target="_blank" class="btn" style="text-decoration:none">View docs ↗</a>
+            </div>
+          </div>
+          <div class="card">
+            <div class="sec-label">Legal</div>
+            <div class="setting-row">
+              <div class="setting-info"><div class="setting-label">Privacy Policy</div></div>
+              <a href="/privacy.html" target="_blank" class="btn" style="text-decoration:none;font-size:12px">View ↗</a>
+            </div>
+            <div class="setting-row">
+              <div class="setting-info"><div class="setting-label">Terms of Service</div></div>
+              <a href="/terms.html" target="_blank" class="btn" style="text-decoration:none;font-size:12px">View ↗</a>
+            </div>
+            <div class="setting-row">
+              <div class="setting-info">
+                <div class="setting-label">Delete my data</div>
+                <div class="setting-desc">Permanently delete your account and all associated data (GDPR)</div>
+              </div>
+              <button class="btn btn-danger" onclick="requestDataDeletion()" style="font-size:12px">Delete account</button>
+            </div>
           </div>
         </div>
 
@@ -1946,7 +2109,7 @@ async function login(){
   if(res.error){
     err.textContent=res.error.message==='Invalid login credentials'
       ?'Wrong email or password.'
-      :res.error.message;
+      :friendlyError(res.error);
     btn.disabled=false;btn.textContent='Sign in';
     return;
   }
@@ -1961,11 +2124,12 @@ async function login(){
 
   btn.disabled=false;btn.textContent='Sign in';
   showApp(res.data.user,roleData);
+  // Сначала загружаем agency чтобы _agencyId был установлен для RLS
+  if(currentRole==='admin')await loadAgencySettings();
   await Promise.all([loadPartners(),loadModels()]);
   handleCallbackParams();
   init();
   loadFanvueConnection();
-  if(currentRole==='admin')loadAgencySettings();
   if(ALL_MODELS.length===0&&currentRole==='admin'&&!localStorage.getItem('onboarding_skipped_'+res.data.user.id)){
     showOnboardingOverlay();
   }
@@ -1993,7 +2157,7 @@ async function signup(){
   btn.disabled=true;btn.textContent='Creating account…';
   var res=await db.auth.signUp({email:email,password:pass});
   if(res.error){
-    err.textContent=res.error.message;
+    err.textContent=friendlyError(res.error);
     btn.disabled=false;btn.textContent='Create account';
     return;
   }
@@ -2048,6 +2212,11 @@ var ALL_MODELS=[];
 var MODEL_SPLITS={};
 
 async function loadModels(){
+  // Если _agencyId ещё не установлен — запросить через RPC
+  if(!_agencyId){
+    var agRes=await db.rpc('get_my_agency_id');
+    if(agRes.data)_agencyId=agRes.data;
+  }
   var res=await db.from('models')
     .select('id,name,fanvue_connections(model_id)')
     .order('created_at',{ascending:true});
@@ -2132,7 +2301,7 @@ async function createAndConnectModel(){
   btn.disabled=true;btn.textContent='Creating…';st.textContent='';
   var res=await db.from('models').insert({name:name,agency_id:_agencyId}).select('id,name').single();
   if(res.error){
-    st.innerHTML='<span style="color:var(--red)">'+res.error.message+'</span>';
+    st.innerHTML='<span style="color:var(--red)">'+friendlyError(res.error)+'</span>';
     btn.disabled=false;btn.textContent='Create';return;
   }
   var newModelId=res.data.id;
@@ -2182,8 +2351,8 @@ function renderModelSplitSection(){
     if(_editingSplits){
       html+='<div class="split-row">'
         +'<div class="split-row-name">'+escHtml(p.name)+'</div>'
-        +'<input class="split-input" type="number" min="0" max="100" value="'+pct+'" '
-        +'oninput="updateSplitDraftTotal(\''+p.id+'\',this.value)">'
+        +'<input class="split-input" type="number" id="split_'+p.id+'" min="0" max="100" value="'+pct+'" '
+        +'oninput="onSplitInput(\''+p.id+'\',this.value)">'
         +'</div>';
     }else{
       html+='<div class="split-row">'
@@ -2227,25 +2396,59 @@ function updateSplitDraftTotal(partnerId,val){
   var total=PARTNERS.reduce(function(s,p){return s+(_splitDraft[p.id]||0);},0);
   var lbl=g('splitTotalLabel');
   if(lbl){
-    lbl.textContent=total+'%';
+    lbl.textContent=Math.round(total*100)/100+'%';
     lbl.className='split-total-row';
     lbl.classList.add(Math.abs(total-100)<0.01?'split-total-ok':'split-total-err');
   }
+}
+
+function onSplitInput(changedPartnerId,newValue){
+  var val=Math.min(100,Math.max(0,parseFloat(newValue)||0));
+  _splitDraft[changedPartnerId]=val;
+  var otherPartners=PARTNERS.filter(function(p){return p.id!==changedPartnerId;});
+  if(otherPartners.length===1){
+    // 2 партнёра — второй = 100 - первый
+    var otherId=otherPartners[0].id;
+    var otherVal=Math.max(0,100-val);
+    _splitDraft[otherId]=otherVal;
+    var otherInput=document.getElementById('split_'+otherId);
+    if(otherInput)otherInput.value=otherVal;
+  }else if(otherPartners.length>1){
+    // 3+ партнёров — пропорциональное распределение остатка
+    var remaining=Math.max(0,100-val);
+    var currentOtherTotal=otherPartners.reduce(function(sum,p){return sum+(_splitDraft[p.id]||0);},0);
+    otherPartners.forEach(function(p){
+      var ratio=currentOtherTotal>0?(_splitDraft[p.id]||0)/currentOtherTotal:1/otherPartners.length;
+      var newPct=Math.round(remaining*ratio);
+      _splitDraft[p.id]=newPct;
+      var inp=document.getElementById('split_'+p.id);
+      if(inp)inp.value=newPct;
+    });
+  }
+  updateSplitDraftTotal();
 }
 
 async function saveModelSplits(){
   var total=PARTNERS.reduce(function(s,p){return s+(_splitDraft[p.id]||0);},0);
   if(Math.abs(total-100)>0.01){showToast('Splits must add up to 100%','error');return;}
   var btn=g('saveSplitsBtn');btn.disabled=true;btn.textContent='Saving…';
-  var rows=PARTNERS.map(function(p){return{model_id:ACTIVE_MODEL_ID,partner_id:p.id,split_pct:_splitDraft[p.id]||0};});
-  var res=await db.from('model_splits').upsert(rows,{onConflict:'model_id,partner_id'});
-  if(res.error){showToast(res.error.message,'error');}
+
+  // DELETE + INSERT надёжнее чем upsert (не требует UNIQUE constraint)
+  var delRes=await db.from('model_splits').delete().eq('model_id',ACTIVE_MODEL_ID);
+  if(delRes.error){showToast(friendlyError(delRes.error),'error');btn.disabled=false;btn.textContent='Save splits';return;}
+
+  var rows=PARTNERS.map(function(p){
+    return{model_id:ACTIVE_MODEL_ID,partner_id:p.id,split_pct:_splitDraft[p.id]||0,effective_from:new Date().toISOString()};
+  });
+  var res=await db.from('model_splits').insert(rows);
+  if(res.error){showToast(friendlyError(res.error),'error');}
   else{
     MODEL_SPLITS[ACTIVE_MODEL_ID]={};
     rows.forEach(function(r){MODEL_SPLITS[ACTIVE_MODEL_ID][r.partner_id]=r.split_pct;});
     _editingSplits=false;_splitDraft={};
-    showToast('Splits saved','success');
     renderModelSplitSection();
+    renderBal();
+    showToast('Splits updated successfully','success');
   }
   btn.disabled=false;btn.textContent='Save splits';
 }
@@ -2284,16 +2487,37 @@ async function loadFanvueConnection(){
 
 function renderFanvueStatus(){
   var el=g('fanvueStatusBlock');if(!el)return;
-  if(FANVUE_CONNECTION){
-    var name=FANVUE_CONNECTION.fanvue_username||'Connected';
-    el.innerHTML='<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><div class="integration-badge connected"><span class="ibadge-dot"></span>@'+name+'</div><button class="btn btn-danger" onclick="disconnectFanvue()">Disconnect</button></div>';
+  if(FANVUE_CONNECTION&&FANVUE_CONNECTION.fanvue_username){
+    var name=FANVUE_CONNECTION.fanvue_username;
+    el.innerHTML='<div class="setting-row">'
+      +'<div class="setting-info">'
+      +'<div class="setting-label">Connected account</div>'
+      +'<div class="setting-desc">@'+escHtml(name)+' &middot; Earnings sync active</div>'
+      +'</div>'
+      +'<button class="btn btn-danger" onclick="disconnectFanvue()">Disconnect</button>'
+      +'</div>';
+  }else if(ACTIVE_MODEL_ID){
+    var mName=(ALL_MODELS.find(function(m){return m.id===ACTIVE_MODEL_ID;})||{}).name||'this model';
+    el.innerHTML='<div class="setting-row">'
+      +'<div class="setting-info">'
+      +'<div class="setting-label">Not connected</div>'
+      +'<div class="setting-desc">Connect to sync earnings automatically for <strong>'+escHtml(mName)+'</strong></div>'
+      +'</div>'
+      +'<button class="btn-primary" onclick="connectFanvue()">Connect Fanvue →</button>'
+      +'</div>';
   }else{
-    el.innerHTML='<button class="btn-primary" id="connectBtn" onclick="connectFanvue()">Connect Fanvue →</button>';
+    el.innerHTML='<div class="setting-row">'
+      +'<div class="setting-info">'
+      +'<div class="setting-label">Select a model first</div>'
+      +'<div class="setting-desc">Choose a model from the switcher above, then connect its Fanvue account here.</div>'
+      +'</div>'
+      +'</div>';
   }
 }
 
 /* ---- Settings: Agency + Partners ---- */
 var _agencyId='';
+var _agencyName='';
 var _agencyTrialEndsAt=null;
 var _partnersSplitTotal=0;
 
@@ -2311,10 +2535,12 @@ async function loadAgencySettings(){
 
   var agData=await db.from('agencies').select('name,trial_ends_at').eq('id',_agencyId).single();
   if(!agData.error&&agData.data){
+    _agencyName=agData.data.name||'';
     var inp=g('agencyNameInput');
-    if(inp)inp.value=agData.data.name||'';
+    if(inp)inp.value=_agencyName;
     _agencyTrialEndsAt=agData.data.trial_ends_at||null;
     renderSubBanners();
+    updateSidebarStats();
   }
   await loadPartnersList();
 }
@@ -2545,7 +2771,7 @@ async function submitInviteAccept(){
       btn.dataset.mode='existing';
       btn.disabled=false;btn.textContent='Sign in';
     }else{
-      err.textContent=signInRes.error.message;
+      err.textContent=friendlyError(signInRes.error);
       btn.disabled=false;btn.textContent='Join Agency';
     }
     return;
@@ -2561,6 +2787,7 @@ async function submitInviteAccept(){
     return;
   }
   showApp(signInRes.data.user,roleData);
+  if(currentRole==='admin')await loadAgencySettings();
   await Promise.all([loadPartners(),loadModels()]);
   handleCallbackParams();
   init();
@@ -2711,6 +2938,7 @@ function handleCallbackParams(){
 }
 
 var WISE_RATE=0.855;
+var WD_CURRENCY=localStorage.getItem('wd_currency')||'EUR';
 var DISPLAY_CURRENCY=localStorage.getItem('displayCurrency')||'USD';
 var FX_RATES={USD:1,EUR:0.855,GBP:0.73};
 var CURRENCY_SYMBOLS={USD:'$',EUR:'€',GBP:'£'};
@@ -2751,6 +2979,23 @@ function fu(n){return '$'+Math.abs(n).toFixed(2);}
 function g(id){return document.getElementById(id);}
 function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,5);}
+
+/* ---- B5: User-friendly error messages ---- */
+function friendlyError(err){
+  if(!err)return'An error occurred. Please try again.';
+  var msg=err.message||err.toString();
+  if(msg.includes('model_id')&&msg.includes('schema cache'))
+    return'Database update required. Please contact support at support@payoutmanager.app';
+  if(msg.includes('ON CONFLICT')||msg.includes('constraint'))
+    return'Could not save. Please contact support if this persists.';
+  if(msg.includes('JWT')||msg.includes('UNAUTHORIZED'))
+    return'Session expired. Please sign in again.';
+  if(msg.includes('network')||msg.includes('fetch'))
+    return'Connection error. Check your internet and try again.';
+  if(msg.includes('row-level security')||msg.includes('RLS'))
+    return'Access denied. Please sign out and sign in again.';
+  return'Something went wrong. Please try again or contact support.';
+}
 function slug(p){return p.toLowerCase().replace(/[^a-z0-9]/g,'_');}
 function fdate(d){if(!d)return'';var p=d.split('-');return p[2]+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+p[1]-1];}
 
@@ -2813,9 +3058,38 @@ function catClass(cat){
 }
 
 /* ---- Withdrawal confirm ---- */
+/* ---- B7: Withdrawal currency preference ---- */
+function setWdCurrency(cur){
+  WD_CURRENCY=cur;
+  localStorage.setItem('wd_currency',cur);
+  renderWdCurrencyBtns();
+}
+function renderWdCurrencyBtns(){
+  ['EUR','GBP','USD'].forEach(function(c){
+    var btn=document.querySelector('[onclick="setWdCurrency(\''+c+'\')"]');
+    if(btn)btn.className=c===WD_CURRENCY?'btn-primary':'btn';
+  });
+}
+
 function wConfirmCancel(){
   _wPending=null;
+  var ov=g('wdConfirmOverlay');if(ov)ov.remove();
   g('wConfirmModal').classList.remove('open');
+}
+function closeWithdrawalConfirm(){
+  _wPending=null;
+  var ov=g('wdConfirmOverlay');if(ov)ov.remove();
+}
+async function confirmWithdrawal(){
+  if(!_wPending)return;
+  var ov=g('wdConfirmOverlay');if(ov)ov.remove();
+  var btn=g('addBtn');
+  if(btn){btn.disabled=true;btn.textContent='Adding…';}
+  var res=await db.from('withdrawals').insert(_wPending);
+  _wPending=null;
+  if(res.error)showToast(friendlyError(res.error),'error');
+  else g('nUSD').value='';
+  if(btn){btn.disabled=false;btn.textContent='Add';}
 }
 async function wConfirmSubmit(){
   if(!_wPending)return;
@@ -2824,7 +3098,7 @@ async function wConfirmSubmit(){
   if(btn){btn.disabled=true;btn.textContent='Adding…';}
   var res=await db.from('withdrawals').insert(_wPending);
   _wPending=null;
-  if(res.error)alert('Error: '+res.error.message);
+  if(res.error)showToast(friendlyError(res.error),'error');
   else g('nUSD').value='';
   if(btn){btn.disabled=false;btn.textContent='Add';}
 }
@@ -2912,6 +3186,17 @@ async function fetchWiseRate(){
   if(el)el.innerHTML='<span style="color:var(--green-text)">Wise mid-market: 1 USD = '+WISE_RATE.toFixed(4)+' EUR</span>';
   var fxField=g('nFxRate');
   if(fxField&&!fxField.value)fxField.value=WISE_RATE.toFixed(4);
+  var rateAbout=g('wiseRateAbout');
+  if(rateAbout)rateAbout.textContent=WISE_RATE.toFixed(4);
+  var gbpAbout=g('wiseGbpAbout');
+  if(gbpAbout&&FX_RATES.GBP){gbpAbout.textContent=FX_RATES.GBP.toFixed(4);}
+  var gbpRow=g('wiseGbpRow');
+  if(gbpRow&&FX_RATES.GBP&&FX_RATES.GBP!==0.73)gbpRow.style.display='flex';
+}
+
+function requestDataDeletion(){
+  if(!confirm('This will permanently delete your account and all data. This cannot be undone.\n\nContact support@payoutmanager.app to confirm your request.'))return;
+  showToast('Data deletion request noted. Please email support@payoutmanager.app to complete it.','info');
 }
 
 /* ---- Platform management ---- */
@@ -3108,20 +3393,35 @@ async function addW(){
   var date=g('nDate').value||new Date().toISOString().slice(0,10);
   var platform=g('nPl').value;
 
-  var expEUR=r2(usd*rate);
-  var ratio=vRatio();
-  var vG=r2(expEUR*ratio);
-  var vlG=r2(expEUR-vG);
-
   var wModelId=(g('wModel')&&g('wModel').value)||null;
   _wPending={platform:platform,usd:r2(usd),request_date:date,eur:0,v_eur:0,vl_eur:0,status:'pending',model_id:wModelId||null};
 
-  g('wConfirmBody').innerHTML=
-    'Amount: <strong>'+fu(usd)+'</strong><br>'
-    +'Expected EUR: <strong>'+fe(expEUR)+'</strong><br>'
-    +'Split: '+P0().name+' — '+fe(vG)+' &nbsp;·&nbsp; '+P1().name+' — '+fe(vlG)+'<br>'
-    +'FX rate: 1 USD = '+rate.toFixed(4)+' EUR';
-  g('wConfirmModal').classList.add('open');
+  // B7: styled confirm dialog with withdrawal currency
+  var sym={EUR:'€',GBP:'£',USD:'$'}[WD_CURRENCY]||'€';
+  var wdRate=WD_CURRENCY==='GBP'?0.79:WD_CURRENCY==='USD'?1.0:WISE_RATE;
+  var received=(usd*wdRate).toFixed(2);
+  var existing=g('wdConfirmOverlay');if(existing)existing.remove();
+  var html='<div id="wdConfirmOverlay" style="position:fixed;inset:0;z-index:500;'
+    +'background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:20px">'
+    +'<div style="background:var(--card);border:1px solid var(--border2);border-radius:20px;'
+    +'padding:28px 32px;max-width:400px;width:100%;box-shadow:0 8px 40px rgba(0,0,0,.5)">'
+    +'<div style="font-size:13px;font-weight:700;color:var(--text3);text-transform:uppercase;'
+    +'letter-spacing:.1em;margin-bottom:20px">Record withdrawal</div>'
+    +'<div style="background:var(--card2);border:1px solid var(--border);border-radius:14px;'
+    +'padding:20px;margin-bottom:20px">'
+    +'<div style="font-size:11px;color:var(--text3);margin-bottom:6px">Amount to withdraw</div>'
+    +'<div style="font-size:28px;font-weight:800;letter-spacing:-.04em;color:var(--text)">$'+parseFloat(usd).toFixed(2)+'</div>'
+    +(WD_CURRENCY!=='USD'?'<div style="font-size:12px;color:var(--text3);margin-top:8px">Approx. '+sym+received+' at current rate</div>':'')
+    +'</div>'
+    +'<div style="font-size:12px;color:var(--text3);margin-bottom:20px;line-height:1.6">'
+    +'Exact amount will be confirmed when money arrives. You can edit it afterwards.'
+    +'</div>'
+    +'<div style="display:flex;gap:10px">'
+    +'<button class="btn" style="flex:1" onclick="closeWithdrawalConfirm()">Cancel</button>'
+    +'<button class="btn-primary" style="flex:2" onclick="confirmWithdrawal()">Confirm withdrawal</button>'
+    +'</div>'
+    +'</div></div>';
+  document.body.insertAdjacentHTML('beforeend',html);
 }
 
 async function confirmW(id){
@@ -3135,7 +3435,7 @@ async function confirmW(id){
     eur:r2(eur),v_eur:r2(vG),vl_eur:r2(vlG),
     status:'ok',received_date:today
   }).eq('id',id);
-  if(res.error){alert('Error: '+res.error.message);return;}
+  if(res.error){showToast(friendlyError(res.error),'error');return;}
 
   await db.from('withdrawal_splits').delete().eq('withdrawal_id',id);
   var splitsRes=await db.from('withdrawal_splits').insert([
@@ -3151,14 +3451,14 @@ async function delW(id){
   if(!confirm('Delete this withdrawal?'))return;
   await db.from('withdrawal_splits').delete().eq('withdrawal_id',id);
   var res=await db.from('withdrawals').delete().eq('id',id);
-  if(res.error)alert('Error: '+res.error.message);
+  if(res.error)showToast(friendlyError(res.error),'error');
 }
 
 async function resetAll(){
   if(!confirm('Delete ALL withdrawal history from the database?'))return;
   await db.from('withdrawal_splits').delete().neq('id','00000000-0000-0000-0000-000000000000');
   var res=await db.from('withdrawals').delete().neq('id','00000000-0000-0000-0000-000000000000');
-  if(res.error)alert('Error: '+res.error.message);
+  if(res.error)showToast(friendlyError(res.error),'error');
 }
 
 /* ---- CRUD: manual transactions ---- */
@@ -3179,7 +3479,7 @@ async function addTransaction(){
   });
 
   if(res.error){
-    statusEl.innerHTML='<span style="color:var(--red)">Error: '+res.error.message+'</span>';
+    showToast(friendlyError(res.error),'error');
   }else{
     g('txAmt').value='';
     statusEl.innerHTML='<span style="color:var(--green-text)">✓ Added '+fu(amt)+' ('+pl+') for '+fdate(date)+'</span>';
@@ -3210,7 +3510,7 @@ async function txDelete(id,source){
     :'Delete this transaction?';
   if(!confirm(msg))return;
   var res=await db.from('transactions').delete().eq('id',id);
-  if(res.error){alert('Error: '+res.error.message);return;}
+  if(res.error){showToast(friendlyError(res.error),'error');return;}
   await loadRevenueData();renderAll();
 }
 
@@ -3231,7 +3531,7 @@ async function txSave(id){
   }).eq('id',id);
 
   if(res.error){
-    alert('Error: '+res.error.message);
+    showToast(friendlyError(res.error),'error');
     if(btn){btn.disabled=false;btn.textContent='Save';}
     return;
   }
@@ -3287,7 +3587,7 @@ async function addExpense(){
   });
 
   if(res.error){
-    statusEl.innerHTML='<span style="color:var(--red)">Error: '+res.error.message+'</span>';
+    showToast(friendlyError(res.error),'error');
   }else{
     var pName=(PARTNERS.find(function(p){return p.id===partnerId;})||{name:'partner'}).name;
     g('expAmt').value='';g('expDesc').value='';
@@ -3302,7 +3602,7 @@ async function addExpense(){
 async function deleteExpense(id){
   if(!confirm('Delete this expense?'))return;
   var res=await db.from('expenses').delete().eq('id',id);
-  if(res.error){alert('Error: '+res.error.message);return;}
+  if(res.error){showToast(friendlyError(res.error),'error');return;}
   await loadRevenueData();renderAll();
 }
 
@@ -3326,7 +3626,7 @@ async function expSave(id){
   var res=await db.from('expenses').update({
     amount_usd:r2(amt),date:date,description:desc||null
   }).eq('id',id);
-  if(res.error){alert('Error: '+res.error.message);if(btn){btn.disabled=false;btn.textContent='Save';}return;}
+  if(res.error){showToast(friendlyError(res.error),'error');if(btn){btn.disabled=false;btn.textContent='Save';}return;}
   EXP_EDIT[id]=false;
   await loadRevenueData();renderAll();
 }
@@ -3821,31 +4121,45 @@ function renderMonths(){
 /* ---- Render: Withdrawal list ---- */
 function renderList(){
   var el=g('wList');
-  if(!S.ws.length){el.innerHTML='';return;}
+  if(!S.ws.length){
+    el.innerHTML='<div class="empty-state" style="padding:40px 0">'
+      +'<div class="empty-state-icon" style="font-size:32px;margin-bottom:12px">💸</div>'
+      +'<div class="empty-state-title">No withdrawals yet</div>'
+      +'<div class="empty-state-sub">Add a withdrawal request above to start tracking payouts</div>'
+      +'</div>';
+    return;
+  }
   var pend=S.ws.filter(function(w){return w.st==='pend';});
   var done=S.ws.filter(function(w){return w.st==='ok';});
   var h='';
+
+  /* ---- Pending ---- */
   if(pend.length){
     h+='<p class="list-section-label">Pending receipt</p>';
+    h+='<div style="border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;background:var(--card);padding:0 20px;margin-bottom:16px">';
     pend.forEach(function(w){
       var isE=!!EXP[w.id],expE=expectedEur(w.usd);
       var wMObj=w.model_id?ALL_MODELS.find(function(m){return m.id===w.model_id;}):null;
-      var wMBadge=(!ACTIVE_MODEL_ID&&ALL_MODELS.length>1)
-        ?'<span style="font-size:9px;font-weight:700;padding:1px 5px;border-radius:8px;background:var(--blue-bg);color:var(--blue-text)">'+(wMObj?escHtml(wMObj.name):'Agency')+'</span>'
+      var mBadge=(!ACTIVE_MODEL_ID&&ALL_MODELS.length>1)
+        ?'<span class="wd-badge model-b">'+(wMObj?escHtml(wMObj.name):'Agency')+'</span>'
         :'';
-      h+='<div class="w-item">'
-        +'<div class="w-row1">'
-        +'<div class="w-row1-left"><span class="badge badge-pend">'+w.pl+'</span>'+wMBadge+'<span class="w-amt">'+fu(w.usd)+'</span></div>'
-        +'<div style="display:flex;gap:6px;align-items:center">'
-        +'<button class="btn" style="font-size:12px;padding:6px 14px" onclick="toggleExp(\''+w.id+'\')">'+( isE?'Cancel':'Money received')+'</button>'
-        +'<button class="btn-del" onclick="delW(\''+w.id+'\')">&times;</button>'
-        +'</div></div>'
-        +'<div class="w-row2">'
-        +'<div class="w-row2-left">'+fdate(w.date)+'</div>'
-        +'<div class="w-row2-right"><span class="w-exp">≈ '+fe(expE)+'</span></div>'
+      h+='<div class="wd-row">'
+        +'<div class="wd-left">'
+        +'<div class="wd-amount">'+fu(w.usd)+'</div>'
+        +'<div class="wd-meta-row">'
+        +'<span class="wd-badge platform">'+escHtml(w.pl)+'</span>'
+        +'<span class="wd-badge pending">Pending</span>'
+        +mBadge
+        +'</div>'
+        +'<div class="wd-detail">'+fdate(w.date)+' &nbsp;·&nbsp; Expected ≈ '+fe(expE)+'</div>'
+        +'</div>'
+        +'<div class="wd-right">'
+        +'<button class="wd-delete-btn" onclick="delW(\''+w.id+'\')" title="Delete">×</button>'
+        +'<button class="btn" style="font-size:12px;padding:6px 14px" onclick="toggleExp(\''+w.id+'\')">'+(isE?'Cancel':'Money received →')+'</button>'
+        +'</div>'
         +'</div>';
       if(isE){
-        h+='<div class="w-expand">'
+        h+='<div class="w-expand" style="margin:0 -20px;padding:16px 20px">'
           +'<div class="g2" style="margin-bottom:.875rem">'
           +'<div class="field"><label>Received (EUR)</label>'
           +'<input class="num" id="e_'+w.id+'" placeholder="0.00" oninput="eurChanged(\''+w.id+'\')">'
@@ -3856,57 +4170,73 @@ function renderList(){
           +'<div class="field"><label>'+P1().name+' (EUR)</label><input class="num" id="svl_'+w.id+'" placeholder="0.00" oninput="updateVl(\''+w.id+'\')"></div>'
           +'</div>'
           +'<p class="hint" style="margin-bottom:.75rem">Enter EUR received — split fills automatically. Adjust if needed.</p>'
-          +'<button class="btn" onclick="confirmW(\''+w.id+'\')">Confirm receipt</button></div>';
+          +'<button class="btn btn-primary" style="font-size:13px" onclick="confirmW(\''+w.id+'\')">Confirm receipt</button>'
+          +'</div>';
       }
-      h+='</div>';
     });
+    h+='</div>';
   }
+
+  /* ---- History ---- */
   if(done.length){
     var tU=0,tE=0,tLoss=0,hasLoss=false;
     done.forEach(function(w){tU+=w.usd;tE+=w.eur;var l=r2(expectedEur(w.usd)-w.eur);if(l>0){tLoss+=l;hasLoss=true;}});
-    h+='<p class="list-section-label"'+(pend.length?' style="margin-top:1.25rem"':'')+'>Withdrawal history</p>';
+    h+='<p class="list-section-label"'+(pend.length?' style="margin-top:8px"':'')+'>Withdrawal history</p>';
     h+='<div class="hist-summary">'
       +'<div class="stat-box"><p class="stat-lbl">Requested</p><p class="stat-val">'+fu(r2(tU))+'</p></div>'
       +'<div class="stat-box"><p class="stat-lbl">Received</p><p class="stat-val">'+fe(r2(tE))+'</p></div>'
       +'<div class="stat-box"><p class="stat-lbl">Avg rate</p><p class="stat-val">'+(tU>0?(tE/tU).toFixed(4):'-')+'</p></div>'
       +(hasLoss?'<div class="stat-box"><p class="stat-lbl">FX loss</p><p class="stat-val red">'+fe(r2(tLoss))+'</p></div>':'')
       +'</div>';
+    h+='<div style="border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;background:var(--card);padding:0 20px">';
     done.forEach(function(w){
       var rate=w.usd>0?(w.eur/w.usd).toFixed(4):'-';
       var loss=r2(expectedEur(w.usd)-w.eur);
       var dwMObj=w.model_id?ALL_MODELS.find(function(m){return m.id===w.model_id;}):null;
-      var dwMBadge=(!ACTIVE_MODEL_ID&&ALL_MODELS.length>1)
-        ?'<span style="font-size:9px;font-weight:700;padding:1px 5px;border-radius:8px;background:var(--blue-bg);color:var(--blue-text)">'+(dwMObj?escHtml(dwMObj.name):'Agency')+'</span>'
+      var mBadge2=(!ACTIVE_MODEL_ID&&ALL_MODELS.length>1)
+        ?'<span class="wd-badge model-b">'+(dwMObj?escHtml(dwMObj.name):'Agency')+'</span>'
         :'';
-      h+='<div class="w-item">'
-        +'<div class="w-row1">'
-        +'<div class="w-row1-left" style="align-items:flex-start;flex-direction:column;gap:2px">'
-        +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'
-        +'<span class="badge" style="background:var(--card2);color:var(--text3)">'+w.pl+'</span>'
-        +'<span class="badge badge-confirmed">Confirmed</span>'
-        +dwMBadge
-        +(loss>0?'<span class="badge" style="background:var(--red-bg);color:var(--red)">loss '+fe(loss)+'</span>':'')
+      var splits=PARTNERS.length>=2
+        ?escHtml(P0().name)+' '+fe(w.vE)+'<br>'+escHtml(P1().name)+' '+fe(w.vlE)
+        :'';
+      h+='<div class="wd-row">'
+        +'<div class="wd-left">'
+        +'<div class="wd-amount">'+fe(w.eur)+'</div>'
+        +'<div class="wd-meta-row">'
+        +'<span class="wd-badge platform">'+escHtml(w.pl)+'</span>'
+        +'<span class="wd-badge confirmed">Confirmed</span>'
+        +mBadge2
+        +(loss>0?'<span class="wd-loss">FX loss '+fe(loss)+'</span>':'')
         +'</div>'
-        +'<div class="w-done-eur">'+fe(w.eur)+'</div>'
-        +'<div class="w-done-usd">'+fu(w.usd)+' &nbsp;·&nbsp; rate '+rate+'&nbsp;·&nbsp;'+fdate(w.date)+(w.rd?' → '+fdate(w.rd):'')+'</div>'
+        +'<div class="wd-detail">'+fu(w.usd)+' &nbsp;·&nbsp; rate '+rate+' &nbsp;·&nbsp; '+fdate(w.date)+(w.rd?' → '+fdate(w.rd):'')+'</div>'
         +'</div>'
-        +'<div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0">'
-        +'<button class="btn-del" onclick="delW(\''+w.id+'\')">&times;</button>'
-        +'<div style="display:flex;gap:5px">'
-        +'<span class="badge badge-v">'+P0().name+' '+fe(w.vE)+'</span>'
-        +'<span class="badge badge-vl">'+P1().name+' '+fe(w.vlE)+'</span>'
-        +'</div>'
-        +'</div>'
+        +'<div class="wd-right">'
+        +'<button class="wd-delete-btn" onclick="delW(\''+w.id+'\')" title="Delete">×</button>'
+        +(splits?'<div class="wd-splits">'+splits+'</div>':'')
         +'</div>'
         +'</div>';
     });
+    h+='</div>';
   }
   el.innerHTML=h;
+}
+
+function updateSidebarStats(){
+  var nm=g('sidebarAgencyName');
+  var mc=g('sidebarModelsCount');
+  var tm=g('sidebarThisMonth');
+  var tw=g('sidebarTotalWithdrawn');
+  if(nm&&_agencyName)nm.textContent=_agencyName;
+  if(mc)mc.textContent=ALL_MODELS.length+' model'+(ALL_MODELS.length!==1?'s':'');
+  var curM=S.months[S.am]||S.months[S.months.length-1];
+  if(tm)tm.textContent=curM?fc(mTot(curM)):'—';
+  if(tw)tw.textContent='€'+(totalVEUR()+totalVlEUR()).toFixed(2);
 }
 
 function renderAll(){
   renderBal();renderChartLegend();renderMonths();renderList();
   renderPlatformSettings();renderPlatformSelect();renderExpenses();renderRecentTx();
+  updateSidebarStats();
 }
 
 /* ---- Numeric input filter ---- */
@@ -3936,6 +4266,7 @@ async function init(){
 
   renderModelSwitcher();
   renderCurrencyButtons();
+  renderWdCurrencyBtns();
   renderExpModelSelect();
   renderWModelSelect();
   renderAll();
@@ -3966,11 +4297,11 @@ async function init(){
     var roleData=await loadUserRole(session.user.id);
     if(roleData){
       showApp(session.user,roleData);
+      if(currentRole==='admin')await loadAgencySettings();
       await Promise.all([loadPartners(),loadModels()]);
       handleCallbackParams();
       init();
       loadFanvueConnection();
-      if(currentRole==='admin')loadAgencySettings();
       if(ALL_MODELS.length===0&&currentRole==='admin'&&!localStorage.getItem('onboarding_skipped_'+session.user.id)){
         showOnboardingOverlay();
       }

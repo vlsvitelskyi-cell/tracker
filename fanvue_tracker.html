@@ -2299,6 +2299,15 @@ async function createAndConnectModel(){
   var st=g('addModelStatus'),btn=g('addModelBtn');
   if(!name){g('addModelName').focus();return;}
   btn.disabled=true;btn.textContent='Creating…';st.textContent='';
+
+  // Сначала проверяем сессию — до создания модели
+  var sessionRes=await db.auth.getSession();
+  var jwt=sessionRes.data&&sessionRes.data.session&&sessionRes.data.session.access_token;
+  if(!jwt){
+    st.innerHTML='<span style="color:var(--red)">Session expired. Please sign out and sign in again.</span>';
+    btn.disabled=false;btn.textContent='Create';return;
+  }
+
   var res=await db.from('models').insert({name:name,agency_id:_agencyId}).select('id,name').single();
   if(res.error){
     st.innerHTML='<span style="color:var(--red)">'+friendlyError(res.error)+'</span>';
@@ -2310,9 +2319,7 @@ async function createAndConnectModel(){
   closeAddModelModal();
   renderModelSwitcher();
   btn.textContent='Connecting…';
-  var sessionRes=await db.auth.getSession();
-  var jwt=sessionRes.data&&sessionRes.data.session&&sessionRes.data.session.access_token;
-  if(!jwt){showToast('Not logged in','error');btn.disabled=false;btn.textContent='Create';return;}
+  
   try{
     var oauthRes=await fetch(EDGE_URL+'/fanvue-oauth-start',{
       method:'POST',
@@ -3169,7 +3176,7 @@ function showTab(name,btn,isMobile){
     var mb=g('mob-'+name);if(mb)mb.classList.add('act');
   }
   if(name==='dashboard'||name==='revenue')setTimeout(renderChart,50);
-  if(name==='settings'){loadAgencySettings();renderModelSplitSection();}
+  if(name==='settings'){loadAgencySettings();renderModelSplitSection();loadFanvueConnection();}
 }
 
 /* ---- Wise rate ---- */

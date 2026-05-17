@@ -340,6 +340,26 @@ body{
 }
 .partner-card.blue .partner-rem { color: rgba(165,180,252,.75); }
 .partner-card.green .partner-rem { color: rgba(110,231,183,.75); }
+[data-theme="light"] .partner-card.blue {
+  background: linear-gradient(145deg, #EEF0FF 0%, #E8EAFF 100%);
+  border: 1px solid rgba(99,102,241,.2);
+  box-shadow: 0 0 0 1px rgba(99,102,241,.1), 0 4px 20px rgba(99,102,241,.08);
+}
+[data-theme="light"] .partner-card.green {
+  background: linear-gradient(145deg, #ECFDF5 0%, #E6FAF2 100%);
+  border: 1px solid rgba(16,185,129,.18);
+  box-shadow: 0 0 0 1px rgba(16,185,129,.08), 0 4px 20px rgba(16,185,129,.06);
+}
+[data-theme="light"] .partner-card.blue .partner-eur { color: #3730A3; }
+[data-theme="light"] .partner-card.green .partner-eur { color: #065F46; }
+[data-theme="light"] .partner-card.blue .partner-rem { color: rgba(55,48,163,.75); }
+[data-theme="light"] .partner-card.green .partner-rem { color: rgba(6,95,70,.75); }
+[data-theme="light"] .partner-card.blue::before {
+  background: radial-gradient(circle, rgba(99,102,241,.12) 0%, transparent 65%);
+}
+[data-theme="light"] .partner-card.green::before {
+  background: radial-gradient(circle, rgba(16,185,129,.1) 0%, transparent 65%);
+}
 
 /* ============================================================
    STATS ROW (used by JS renderBal)
@@ -525,6 +545,12 @@ body{
 .tx-check{
   width:15px;height:15px;cursor:pointer;flex-shrink:0;
   accent-color:var(--blue);
+  opacity:0;pointer-events:none;
+  transform:scale(.7);
+  transition:opacity var(--dur-fast),transform var(--dur-fast);
+}
+.select-mode .tx-check{
+  opacity:1;pointer-events:auto;transform:scale(1);
 }
 
 /* ============================================================
@@ -666,6 +692,7 @@ body{
 .btn:hover { background: var(--card3); color: var(--text); border-color: var(--border3); }
 .btn:active { transform: scale(.98); }
 .btn:disabled { opacity: .4; cursor: not-allowed; pointer-events: none; }
+.btn.act { background: var(--card3); color: var(--text); border-color: var(--border3); font-weight: 600; }
 .btn-primary {
   display: inline-flex; align-items: center; gap: 7px;
   padding: 10px 20px; border-radius: var(--r-sm);
@@ -985,11 +1012,11 @@ body{
 /* #authOverlay styles moved to STAGE 3 block below */
 .auth-box{
   width:100%;max-width:380px;
-  background:rgba(30,33,52,.92);
+  background:var(--card);
   backdrop-filter:blur(40px) saturate(160%);-webkit-backdrop-filter:blur(40px) saturate(160%);
-  border:1px solid rgba(255,255,255,.12);
+  border:1px solid var(--border2);
   border-radius:24px;padding:40px 36px;
-  box-shadow:0 24px 80px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.04);
+  box-shadow:var(--shadow-lg);
 }
 .auth-logo{display:flex;align-items:center;gap:11px;margin-bottom:6px}
 .auth-logo-icon{
@@ -1368,7 +1395,7 @@ body{
     </div>
     <!-- Step 1: Agency name -->
     <div id="obPanel1">
-      <div class="ob-icon">🏢</div>
+      <div class="ob-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color:var(--blue-text)"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></div>
       <h2 class="ob-title">Name your agency</h2>
       <p class="ob-desc">This will appear on reports and partner invites.</p>
       <div class="auth-field">
@@ -1382,7 +1409,7 @@ body{
     </div>
     <!-- Step 2: Connect Fanvue -->
     <div id="obPanel2" style="display:none">
-      <div class="ob-icon">⚡</div>
+      <div class="ob-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color:var(--blue-text)"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></div>
       <h2 class="ob-title">Connect Fanvue</h2>
       <p class="ob-desc">Link your creator account to start syncing earnings automatically.</p>
       <button class="auth-btn" id="obConnectBtn" onclick="connectFanvueOnboarding()">Connect Fanvue →</button>
@@ -1397,9 +1424,8 @@ body{
     <div class="auth-logo">
       <div class="auth-logo-icon">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
-          <path d="M12 6v2m0 8v2M8.5 9.5C8.5 8.12 10.07 7 12 7s3.5 1.12 3.5 2.5c0 2-3.5 2.5-3.5 4.5"/>
-          <circle cx="12" cy="17" r=".5" fill="#fff"/>
+          <line x1="12" y1="1" x2="12" y2="23"/>
+          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
         </svg>
       </div>
       <div class="auth-logo-text">Payout Manager</div>
@@ -1431,9 +1457,8 @@ body{
     <div class="sidebar-logo">
       <div class="logo-icon">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
-          <path d="M12 6v2m0 8v2M8.5 9.5C8.5 8.12 10.07 7 12 7s3.5 1.12 3.5 2.5c0 2-3.5 2.5-3.5 4.5"/>
-          <circle cx="12" cy="17" r=".5" fill="#fff"/>
+          <line x1="12" y1="1" x2="12" y2="23"/>
+          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
         </svg>
       </div>
       <div>
@@ -1525,7 +1550,16 @@ body{
           </svg>
         </button>
         <button class="topbar-icon-btn theme-btn" onclick="toggleTheme()" title="Toggle theme">
-          <span id="themeIcon">☀</span>
+          <svg id="iconSun" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:none">
+            <circle cx="12" cy="12" r="5"/>
+            <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+            <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+          </svg>
+          <svg id="iconMoon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
         </button>
       </div>
     </div>
@@ -1683,7 +1717,7 @@ body{
             </div>
             <button class="btn" id="txAddBtn" onclick="addTransaction()" style="align-self:flex-end">Add</button>
           </div>
-          <div class="field" id="txNoteField" style="display:none">
+          <div class="field" id="txNoteField">
             <label>Note (optional)</label>
             <input id="txNote" placeholder="e.g. Received €540 via PayPal">
           </div>
@@ -1695,6 +1729,7 @@ body{
             <div class="sec-label">Monthly Revenue</div>
             <div style="display:flex;gap:8px;align-items:center">
               <button class="btn" style="font-size:12px;padding:6px 14px" onclick="refreshRevenue()">↻ Refresh</button>
+              <button class="btn" id="selectModeBtn" style="font-size:12px;padding:6px 14px;display:none" onclick="toggleSelectMode()">Select</button>
             </div>
           </div>
           <div class="mtab-row" id="mTabs"></div>
@@ -1714,7 +1749,7 @@ body{
           </div>
           <div class="add-row" style="margin-bottom:14px">
             <div class="field">
-              <label>Who</label>
+              <label>Partner</label>
               <select id="expPartner"></select>
             </div>
             <div class="field">
@@ -1754,6 +1789,7 @@ body{
         <div class="card">
           <div class="sec-row" style="margin-bottom:14px">
             <div class="sec-label" style="margin:0">Expense History</div>
+            <span id="expTotalLabel" style="font-size:13px;font-weight:600;color:var(--red-text)"></span>
           </div>
           <div class="mtab-row" id="expMTabs"></div>
           <div id="expList"></div>
@@ -1779,14 +1815,18 @@ body{
               <input id="nUSD" class="num" placeholder="200">
             </div>
             <div class="field">
-              <label>FX Rate (USD→EUR)</label>
-              <input id="nFxRate" class="num" placeholder="0.0000">
-            </div>
-            <div class="field">
               <label>Date</label>
               <input type="date" id="nDate">
             </div>
-            <button class="btn btn-primary" id="addBtn" onclick="addW()" style="align-self:flex-end">Add</button>
+          </div>
+          <div class="add-row" style="align-items:flex-end;margin-top:10px">
+            <div class="field">
+              <label>FX Rate (USD→EUR)</label>
+              <input id="nFxRate" class="num" placeholder="0.0000">
+              <div id="fxRateHint" style="font-size:11px;color:var(--text3);margin-top:3px"></div>
+            </div>
+            <button class="btn" style="font-size:12px;padding:8px 12px;white-space:nowrap;align-self:flex-end" onclick="if(WISE_RATE){g('nFxRate').value=WISE_RATE.toFixed(4)}">Use current rate</button>
+            <button class="btn btn-primary" id="addBtn" onclick="addW()" style="align-self:flex-end">Add withdrawal</button>
           </div>
           <div class="field" style="margin-top:10px;max-width:400px">
             <label>Description (optional)</label>
@@ -1794,9 +1834,6 @@ body{
           </div>
         </div>
         <div id="wList"></div>
-        <div style="display:flex;justify-content:flex-end;margin-top:4px">
-          <button class="btn-ghost" onclick="resetAll()">⟳ Reset all withdrawals</button>
-        </div>
       </div><!-- end tab-withdrawals -->
 
       <!-- ============ SETTINGS ============ -->
@@ -1856,19 +1893,18 @@ body{
             <button class="btn btn-primary" onclick="invitePartner()">Send invite</button>
             <div id="inviteStatus" style="font-size:12px;margin-top:8px;min-height:16px"></div>
           </div>
-        </div>
-
-        <!-- Model revenue splits -->
-        <div class="card" id="modelSplitSection" style="display:none">
-          <div class="sec-label">Revenue splits per model</div>
-          <div id="modelSplitList"></div>
-          <div class="split-total-row">
-            <span style="color:var(--text3)">Total</span>
-            <span id="splitTotalLabel" class="split-total-ok">100%</span>
-          </div>
-          <div style="margin-top:14px;display:flex;gap:8px" id="splitEditActions" style="display:none">
-            <button class="btn" style="flex:1" onclick="cancelEditSplits()">Cancel</button>
-            <button class="btn btn-primary" style="flex:1" id="saveSplitsBtn" onclick="saveModelSplits()">Save splits</button>
+          <!-- Model revenue splits -->
+          <div class="card" id="modelSplitSection" style="display:none">
+            <div class="sec-label">Revenue splits per model</div>
+            <div id="modelSplitList"></div>
+            <div class="split-total-row">
+              <span style="color:var(--text3)">Total</span>
+              <span id="splitTotalLabel" class="split-total-ok">100%</span>
+            </div>
+            <div style="margin-top:14px;display:flex;gap:8px" id="splitEditActions" style="display:none">
+              <button class="btn" style="flex:1" onclick="cancelEditSplits()">Cancel</button>
+              <button class="btn btn-primary" style="flex:1" id="saveSplitsBtn" onclick="saveModelSplits()">Save splits</button>
+            </div>
           </div>
         </div>
 
@@ -1884,14 +1920,12 @@ body{
           <div class="card">
             <div class="sec-label">Fanvue Account</div>
             <div id="fanvueStatusBlock"></div>
-            <div id="lastRefreshRow" style="margin-top:8px">
+            <div style="height:1px;background:var(--border);margin:16px 0"></div>
+            <p style="font-size:13px;color:var(--text2);margin-bottom:12px">Pull full transaction history from Fanvue.</p>
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
               <button class="btn" onclick="refreshRevenue()">↻ Refresh data</button>
+              <button class="btn" id="syncBtn" onclick="syncFullHistory()">Sync full history</button>
             </div>
-          </div>
-          <div class="card">
-            <div class="sec-label">Sync</div>
-            <p style="font-size:13px;color:var(--text2);margin-bottom:14px">Pull full transaction history from Fanvue.</p>
-            <button class="btn" id="syncBtn" onclick="syncFullHistory()">Sync full history</button>
             <div id="syncStatus" style="font-size:12px;margin-top:10px;min-height:18px"></div>
           </div>
         </div>
@@ -1916,10 +1950,10 @@ body{
           </div>
           <div class="card" style="margin-bottom:2px">
             <div class="sec-label">Display currency</div>
-            <div style="display:flex;gap:6px;margin-bottom:10px">
-              <button id="curBtnUSD" class="sort-btn" onclick="setDisplayCurrency('USD')">USD $</button>
-              <button id="curBtnEUR" class="sort-btn" onclick="setDisplayCurrency('EUR')">EUR €</button>
-              <button id="curBtnGBP" class="sort-btn" onclick="setDisplayCurrency('GBP')">GBP £</button>
+            <div style="display:flex;gap:8px;margin-bottom:10px">
+              <button id="curBtnUSD" class="btn" onclick="setDisplayCurrency('USD')">USD $</button>
+              <button id="curBtnEUR" class="btn" onclick="setDisplayCurrency('EUR')">EUR €</button>
+              <button id="curBtnGBP" class="btn" onclick="setDisplayCurrency('GBP')">GBP £</button>
             </div>
             <p style="font-size:12px;color:var(--text3)">Exchange rates update automatically via Wise API.</p>
           </div>
@@ -2011,6 +2045,13 @@ body{
               </div>
               <button class="btn btn-danger" onclick="requestDataDeletion()" style="font-size:12px">Delete account</button>
             </div>
+            <div class="setting-row" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+              <div class="setting-info">
+                <div class="setting-label" style="color:var(--red-text)">Reset withdrawal history</div>
+                <div class="setting-desc">Permanently deletes all withdrawal records. Cannot be undone.</div>
+              </div>
+              <button class="btn btn-danger" onclick="resetAll()" style="font-size:12px">Reset</button>
+            </div>
           </div>
         </div>
 
@@ -2040,7 +2081,13 @@ body{
 <!-- BULK ACTION BAR -->
 <div id="bulkBar" class="bulk-bar" style="display:none">
   <span class="bulk-bar-count" id="bulkCount">0 selected</span>
-  <button class="btn" style="color:var(--red);border-color:var(--red-bg)" onclick="deleteBulkTx()">Delete selected ×</button>
+  <button class="btn" style="color:var(--red-text);border-color:rgba(239,68,68,.2);display:inline-flex;align-items:center;gap:6px" onclick="deleteBulkTx()">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+      <path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
+    </svg>
+    Delete
+  </button>
   <button class="btn btn-ghost" onclick="clearBulkSelection()">Cancel</button>
 </div>
 
@@ -2303,7 +2350,8 @@ function renderModelSwitcher(){
   ALL_MODELS.forEach(function(m){
     var act=ACTIVE_MODEL_ID===m.id?' act':'';
     var dot='<span class="mc-dot'+(m.connected?' connected':'')+'"></span>';
-    html+='<div class="model-chip'+act+'" onclick="selectModel(\''+m.id+'\')">'+dot+escHtml(m.name)+'</div>';
+    var tipText=m.connected?'Fanvue connected':'Fanvue not connected';
+    html+='<div class="model-chip'+act+'" onclick="selectModel(\''+m.id+'\')" title="'+escHtml(m.name)+' — '+tipText+'">'+dot+escHtml(m.name)+'</div>';
   });
   if(currentRole==='admin'){
     html+='<div class="model-chip model-chip-add" onclick="showAddModelModal()">+ Add model</div>';
@@ -2962,8 +3010,12 @@ function showToast(msg,type){
 
 function onTxPlatformChange(){
   var pl=g('txPl')?g('txPl').value:'';
-  var nf=g('txNoteField');
-  if(nf)nf.style.display=(pl==='Fanvue'||pl==='')?'none':'block';
+  var st=g('txStatus');
+  if(st&&pl==='Fanvue'){
+    st.innerHTML='<span style="color:var(--text3)">Fanvue transactions sync automatically — manual entry not needed.</span>';
+  }else if(st){
+    st.innerHTML='';
+  }
 }
 
 function handleCallbackParams(){
@@ -3062,6 +3114,7 @@ var TX_FILTER={platform:'all',source:'all'};
 var TX_SORT='newest';
 var currentTab='dashboard';
 var _selectedTxs=new Set();
+var _selectMode=false;
 var _wPending=null;
 
 /* ---- Bulk selection ---- */
@@ -3080,9 +3133,28 @@ function updateBulkBar(){
   }
 }
 function clearBulkSelection(){
+  _selectMode=false;
   _selectedTxs.clear();
+  var mView=g('mView');
+  if(mView)mView.classList.remove('select-mode');
+  var btn=g('selectModeBtn');
+  if(btn){btn.textContent='Select';btn.style.color='';btn.style.borderColor='';}
   updateBulkBar();
   renderMonths();
+}
+function toggleSelectMode(){
+  _selectMode=!_selectMode;
+  var mView=g('mView');
+  var btn=g('selectModeBtn');
+  if(_selectMode){
+    if(mView)mView.classList.add('select-mode');
+    if(btn){btn.textContent='Cancel';btn.style.color='var(--blue-text)';btn.style.borderColor='var(--blue)';}
+  }else{
+    if(mView)mView.classList.remove('select-mode');
+    if(btn){btn.textContent='Select';btn.style.color='';btn.style.borderColor='';}
+    _selectedTxs.clear();
+    updateBulkBar();
+  }
 }
 async function deleteBulkTx(){
   if(!_selectedTxs.size)return;
@@ -3182,11 +3254,10 @@ function toggleTheme(){
   var html=document.documentElement;
   var next=html.getAttribute('data-theme')==='dark'?'light':'dark';
   html.setAttribute('data-theme',next);
-  var icon=g('themeIcon');
-  if(icon){
-    icon.textContent=next==='dark'?'☀':'☾';
-    var btn=icon.closest('button')||icon.parentElement;
-    if(btn)btn.title=next==='dark'?'Switch to light theme':'Switch to dark theme';
+  var sun=g('iconSun'),moon=g('iconMoon');
+  if(sun&&moon){
+    sun.style.display=next==='dark'?'block':'none';
+    moon.style.display=next==='dark'?'none':'block';
   }
   localStorage.setItem('theme',next);
   if(currentTab==='dashboard'||currentTab==='revenue')renderChart();
@@ -3240,6 +3311,8 @@ async function fetchWiseRate(){
   if(el)el.innerHTML='<span style="color:var(--green-text)">Wise mid-market: 1 USD = '+WISE_RATE.toFixed(4)+' EUR</span>';
   var fxField=g('nFxRate');
   if(fxField&&!fxField.value)fxField.value=WISE_RATE.toFixed(4);
+  var hint=g('fxRateHint');
+  if(hint)hint.textContent='Current rate: '+WISE_RATE.toFixed(4)+' (via Wise)';
   var rateAbout=g('wiseRateAbout');
   if(rateAbout)rateAbout.textContent=WISE_RATE.toFixed(4);
   var gbpAbout=g('wiseGbpAbout');
@@ -3733,10 +3806,14 @@ function renderExpenses(){
     :[];
   filtered=filtered.slice().sort(function(a,b){return b.date<a.date?-1:b.date>a.date?1:0;});
 
+  var totalLabel=g('expTotalLabel');
   if(!filtered.length){
     el.innerHTML='<div style="text-align:center;padding:.75rem 0;color:var(--text3);font-size:13px">No expenses this month</div>';
+    if(totalLabel)totalLabel.textContent='';
     return;
   }
+  var totalExp=filtered.reduce(function(s,e){return s+e.amount;},0);
+  if(totalLabel)totalLabel.textContent='−'+fu(totalExp);
 
   var isAdmin=currentRole==='admin';
   el.innerHTML=filtered.map(function(exp){
@@ -3777,7 +3854,12 @@ function renderExpenses(){
       +'<div style="display:flex;align-items:center;gap:6px;flex-shrink:0">'
       +'<span class="exp-date">'+fdate(exp.date)+'</span>'
       +(isAdmin?'<button class="btn-edit" onclick="expEditStart(\''+exp.id+'\')">Edit</button>':'')
-      +(isAdmin?'<button class="btn-del" onclick="deleteExpense(\''+exp.id+'\')">×</button>':'')
+      +(isAdmin?'<button class="btn-del" onclick="deleteExpense(\''+exp.id+'\')" title="Delete">'
+        +'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
+        +'<polyline points="3 6 5 6 21 6"/>'
+        +'<path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>'
+        +'<path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>'
+        +'</svg></button>':'')
       +'</div>'
       +'</div>';
   }).join('');
@@ -3837,6 +3919,7 @@ function updateVl(id){
 function setMonth(i){
   S.am=i;
   localStorage.setItem('ft6_am',String(i));
+  if(_selectMode)toggleSelectMode();
   renderMonths();
 }
 
@@ -4069,7 +4152,10 @@ function renderMonths(){
   if(!monthTxs.length){
     html+='<div class="divider"></div>'
       +'<div class="empty-state" style="padding:32px 0">'
-      +'<div class="empty-state-icon" style="font-size:28px;margin-bottom:10px">📋</div>'
+      +'<div style="margin:0 auto 12px;display:flex;justify-content:center;opacity:.4">'
+      +'<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">'
+      +'<rect x="3" y="12" width="4" height="9" rx="1"/><rect x="10" y="7" width="4" height="14" rx="1"/><rect x="17" y="3" width="4" height="18" rx="1"/>'
+      +'</svg></div>'
       +'<div class="empty-state-title" style="font-size:15px">No transactions this month</div>'
       +'<div class="empty-state-sub" style="font-size:13px;margin-bottom:16px">Add a manual entry or sync from Fanvue</div>'
       +'<button class="btn btn-primary" onclick="g(\'txAmt\').focus();showTab(\'revenue\',document.querySelector(\'[data-tab=revenue]\'))">Add transaction</button>'
@@ -4177,7 +4263,13 @@ function renderMonths(){
           +(isAdmin
             ?'<div class="tx-actions">'
               +'<button class="btn-edit" onclick="txEditStart(\''+tx.id+'\')">Edit</button>'
-              +'<button class="btn-del" onclick="txDelete(\''+tx.id+'\',\''+tx.source+'\')">×</button>'
+              +'<button class="btn-del" onclick="txDelete(\''+tx.id+'\',\''+tx.source+'\')" title="Delete">'
+              +'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
+              +'<polyline points="3 6 5 6 21 6"/>'
+              +'<path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>'
+              +'<path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>'
+              +'</svg>'
+              +'</button>'
               +'</div>'
             :'')
           +'</div>'
@@ -4188,6 +4280,9 @@ function renderMonths(){
   }
 
   g('mView').innerHTML=html;
+  if(_selectMode){var mView=g('mView');if(mView)mView.classList.add('select-mode');}
+  var selBtn=g('selectModeBtn');
+  if(selBtn)selBtn.style.display=(monthTxs&&monthTxs.length&&currentRole==='admin')?'inline-flex':'none';
   if(currentTab==='revenue')renderChart();
 }
 
@@ -4196,7 +4291,10 @@ function renderList(){
   var el=g('wList');
   if(!S.ws.length){
     el.innerHTML='<div class="empty-state" style="padding:40px 0">'
-      +'<div class="empty-state-icon" style="font-size:32px;margin-bottom:12px">💸</div>'
+      +'<div style="margin:0 auto 12px;display:flex;justify-content:center;opacity:.4">'
+      +'<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">'
+      +'<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>'
+      +'</svg></div>'
       +'<div class="empty-state-title">No withdrawals yet</div>'
       +'<div class="empty-state-sub">Add a withdrawal request above to start tracking payouts</div>'
       +'</div>';
@@ -4231,7 +4329,13 @@ function renderList(){
         +descHtmlPend
         +'</div>'
         +'<div class="wd-right">'
-        +'<button class="wd-delete-btn" onclick="delW(\''+w.id+'\')" title="Delete">×</button>'
+        +'<button class="wd-delete-btn" onclick="delW(\''+w.id+'\')" title="Delete">'
+        +'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
+        +'<polyline points="3 6 5 6 21 6"/>'
+        +'<path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>'
+        +'<path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>'
+        +'</svg>'
+        +'</button>'
         +'<button class="btn" style="font-size:12px;padding:6px 14px" onclick="toggleExp(\''+w.id+'\')">'+(isE?'Cancel':'Money received →')+'</button>'
         +'</div>'
         +'</div>';
@@ -4292,7 +4396,13 @@ function renderList(){
         +descHtmlDone
         +'</div>'
         +'<div class="wd-right">'
-        +'<button class="wd-delete-btn" onclick="delW(\''+w.id+'\')" title="Delete">×</button>'
+        +'<button class="wd-delete-btn" onclick="delW(\''+w.id+'\')" title="Delete">'
+        +'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
+        +'<polyline points="3 6 5 6 21 6"/>'
+        +'<path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>'
+        +'<path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>'
+        +'</svg>'
+        +'</button>'
         +'<button class="btn" style="font-size:11px;padding:5px 10px" onclick="editWdDesc(\''+w.id+'\')">Edit note</button>'
         +(splits?'<div class="wd-splits">'+splits+'</div>':'')
         +'</div>'
@@ -4370,7 +4480,8 @@ async function init(){
 (async function startup(){
   var saved=localStorage.getItem('theme')||'dark';
   document.documentElement.setAttribute('data-theme',saved);
-  var icon=g('themeIcon');if(icon)icon.textContent=saved==='dark'?'☀':'☾';
+  var sun=g('iconSun'),moon=g('iconMoon');
+  if(sun&&moon){sun.style.display=saved==='dark'?'block':'none';moon.style.display=saved==='dark'?'none':'block';}
 
   var _startParams=new URLSearchParams(window.location.search);
   var _invToken=_startParams.get('invite');
@@ -4396,6 +4507,13 @@ async function init(){
     await db.auth.signOut();
   }
 
+  var _sp=new URLSearchParams(window.location.search);
+  if(_sp.get('signup')==='1'){
+    showLogin();
+    setAuthMode('signup');
+    history.replaceState({},'',window.location.pathname);
+    return;
+  }
   showLogin();
 })();
 /* ---- Sync full history ---- */

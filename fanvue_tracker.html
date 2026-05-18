@@ -1510,6 +1510,10 @@ body{
     </div>
     <h2 style="font-size:18px;font-weight:700;margin:0 0 6px;letter-spacing:-.02em">You've been invited!</h2>
     <p class="auth-sub">Create your account to join the agency</p>
+    <div style="display:flex;gap:6px;margin-bottom:18px;background:var(--card2);border-radius:8px;padding:3px">
+      <button id="invTabNew" onclick="setInvTab('new')" style="flex:1;padding:7px 12px;border-radius:6px;border:none;cursor:pointer;font-size:13px;font-weight:600;background:var(--indigo);color:#fff;transition:.15s">Create account</button>
+      <button id="invTabExisting" onclick="setInvTab('existing')" style="flex:1;padding:7px 12px;border-radius:6px;border:none;cursor:pointer;font-size:13px;font-weight:600;background:transparent;color:var(--text2);transition:.15s">Sign in</button>
+    </div>
     <div class="auth-field">
       <label>Email</label>
       <input type="email" id="invEmail" placeholder="your@email.com">
@@ -2085,18 +2089,18 @@ body{
                 <div class="setting-label">Documentation</div>
                 <div class="setting-desc">How to set up splits, connect models, and record withdrawals</div>
               </div>
-              <a href="https://payoutmanager.app" target="_blank" class="btn" style="text-decoration:none">View docs ↗</a>
+              <a href="mailto:support@payoutmanager.app" class="btn" style="text-decoration:none">Email us ↗</a>
             </div>
           </div>
           <div class="card">
             <div class="sec-label">Legal</div>
             <div class="setting-row">
               <div class="setting-info"><div class="setting-label">Privacy Policy</div></div>
-              <a href="/privacy.html" target="_blank" class="btn" style="text-decoration:none;font-size:12px">View ↗</a>
+              <a href="/privacy" target="_blank" class="btn" style="text-decoration:none;font-size:12px">View ↗</a>
             </div>
             <div class="setting-row">
               <div class="setting-info"><div class="setting-label">Terms of Service</div></div>
-              <a href="/terms.html" target="_blank" class="btn" style="text-decoration:none;font-size:12px">View ↗</a>
+              <a href="/terms" target="_blank" class="btn" style="text-decoration:none;font-size:12px">View ↗</a>
             </div>
             <div class="setting-row">
               <div class="setting-info">
@@ -2210,6 +2214,7 @@ var db=supabase.createClient(SUPA_URL,SUPA_KEY);
 /* ---- Auth state ---- */
 var currentUser=null;
 var currentRole=null;
+var currentPartnerId='';
 
 async function loadUserRole(userId){
   var res=await db.from('user_roles').select('role,partner_id,operator_id').eq('user_id',userId).single();
@@ -2220,6 +2225,7 @@ async function loadUserRole(userId){
 function showApp(user,roleData){
   currentUser=user;
   currentRole=roleData?roleData.role:'partner';
+  currentPartnerId=roleData?roleData.partner_id||'':'';
 
   var ov=g('authOverlay');
   ov.classList.add('hidden');
@@ -2383,6 +2389,7 @@ async function loadModels(){
   }
   var res=await db.from('models')
     .select('id,name')
+    .eq('agency_id',_agencyId)
     .order('created_at',{ascending:true});
   if(res.error||!res.data||!res.data.length){
     console.error('loadModels failed:',res.error);
@@ -2393,6 +2400,13 @@ async function loadModels(){
     name:m.name,
     connected:!!(m.fanvue_connections&&m.fanvue_connections.length>0)
   };});
+  if(currentRole==='partner'&&currentPartnerId){
+    var splitsRes=await db.from('model_splits').select('model_id').eq('partner_id',currentPartnerId);
+    if(!splitsRes.error&&splitsRes.data){
+      var allowed=splitsRes.data.map(function(r){return r.model_id;});
+      if(allowed.length)ALL_MODELS=ALL_MODELS.filter(function(m){return allowed.includes(m.id);});
+    }
+  }
   if(!ACTIVE_MODEL_ID&&ALL_MODELS.length>0)ACTIVE_MODEL_ID=ALL_MODELS[0].id;
 }
 
@@ -2516,8 +2530,13 @@ function renderModelSplitSection(){
   sec.style.display='block';
   var listEl=g('modelSplitList');
   var activePartners=PARTNERS.filter(function(p){return p.status==='active';});
+  var pendingPartners=PARTNERS.filter(function(p){return p.status==='pending';});
   if(!activePartners.length){
-    listEl.innerHTML='<div style="font-size:12px;color:var(--text3);padding:8px 0">No active partners yet. Splits will appear after partners accept their invites.</div>';
+    if(pendingPartners.length){
+      listEl.innerHTML='<div style="font-size:12px;color:var(--yellow);padding:8px 0">⏳ '+pendingPartners.length+' invite(s) pending. Splits will unlock after partners join.</div>';
+    } else {
+      listEl.innerHTML='<div style="font-size:12px;color:var(--text3);padding:8px 0">No partners yet. Invite partners in the Team section above.</div>';
+    }
     var actions=g('splitEditActions');if(actions)actions.style.display='none';
     sec.querySelectorAll('.split-edit-btn').forEach(function(b){b.remove();});
     return;
@@ -2678,12 +2697,12 @@ function renderPartnerCards(){
   var container=g('partnerRow');
   if(!container)return;
   if(!PARTNERS||!PARTNERS.length){
-    container.innerHTML='<div style="padding:20px;color:var(--text3);font-size:13px">No partners configured yet. Add partners in Settings → Team.</div>';
+    container.innerHTML='<div style="padding:20px;color:var(--text3);font-size:13px">No partners yet. <a href="#" onclick="showTab(\'settings\',document.querySelector(\'[data-tab=settings]\'));scrollToSection(\'partnersCard\',null);return false" style="color:var(--indigo-l)">Invite your first partner →</a></div>';
     return;
   }
   var activePartners=PARTNERS.filter(function(p){return p.status==='active';});
   if(!activePartners.length){
-    container.innerHTML='<div style="padding:20px;color:var(--text3);font-size:13px">No active partners.</div>';
+    container.innerHTML='<div style="padding:20px;color:var(--text3);font-size:13px">No active partners yet. <a href="#" onclick="showTab(\'settings\',document.querySelector(\'[data-tab=settings]\'));scrollToSection(\'partnersCard\',null);return false" style="color:var(--indigo-l)">Invite your first partner →</a></div>';
     return;
   }
   var html=activePartners.map(function(p,i){
@@ -2892,20 +2911,19 @@ async function saveSplit(partnerId,otherTotal){
 async function removePartner(partnerId,status,name){
   if(currentRole!=='admin')return;
   var msg=status==='active'
-    ?'Remove '+name+'? Their account will be deactivated.'
+    ?'Remove '+name+' from the agency? Their account will be deactivated.'
     :'Cancel invite for '+name+'?';
   if(!confirm(msg))return;
   if(status==='pending'){
     await db.from('partner_invites').delete().eq('partner_id',partnerId);
-    await db.from('partners').delete().eq('id',partnerId);
+    await db.from('partners').update({status:'removed'}).eq('id',partnerId);
   }else{
-    if(_agencyId){
-      var partnerRes=await db.from('partners').select('user_id').eq('id',partnerId).single();
-      if(partnerRes.data&&partnerRes.data.user_id){
-        await db.from('user_roles').delete()
-          .eq('user_id',partnerRes.data.user_id)
-          .eq('agency_id',_agencyId);
-      }
+    await db.from('model_splits').delete().eq('partner_id',partnerId);
+    var pRes=await db.from('partners').select('user_id').eq('id',partnerId).single();
+    if(pRes.data&&pRes.data.user_id&&_agencyId){
+      await db.from('user_roles').delete()
+        .eq('user_id',pRes.data.user_id)
+        .eq('agency_id',_agencyId);
     }
     await db.from('partners').update({status:'inactive',split_pct:0}).eq('id',partnerId);
   }
@@ -2976,15 +2994,32 @@ function renderSubBanners(){
 /* ---- Accept invite ---- */
 var _inviteToken='';
 
-function showInviteOverlay(token){
+async function showInviteOverlay(token){
   _inviteToken=token;
-  var ov=g('inviteOverlay');
-  ov.style.display='flex';
+  g('inviteOverlay').style.display='flex';
   g('invConfirmField').style.display='flex';
   g('invSubmitBtn').textContent='Join Agency';
+  g('invSubmitBtn').dataset.mode='';
   g('invErr').textContent='';
   g('invErr').style.color='var(--red)';
-  setTimeout(function(){var el=g('invEmail');if(el)el.focus();},50);
+  setInvTab('new');
+  var invRes=await db.from('partner_invites').select('email').eq('token',token).single();
+  if(!invRes.error&&invRes.data){
+    var ef=g('invEmail');
+    if(ef){ef.value=invRes.data.email;ef.readOnly=true;ef.style.opacity='.7';}
+  }
+  setTimeout(function(){var p=g('invPass');if(p)p.focus();},50);
+}
+
+function setInvTab(mode){
+  var isNew=mode==='new';
+  g('invConfirmField').style.display=isNew?'flex':'none';
+  g('invSubmitBtn').dataset.mode=isNew?'':'existing';
+  g('invSubmitBtn').textContent=isNew?'Join Agency':'Sign in & Join';
+  g('invTabNew').style.background=isNew?'var(--indigo)':'transparent';
+  g('invTabNew').style.color=isNew?'#fff':'var(--text2)';
+  g('invTabExisting').style.background=isNew?'transparent':'var(--indigo)';
+  g('invTabExisting').style.color=isNew?'var(--text2)':'#fff';
 }
 
 async function submitInviteAccept(){
@@ -3069,6 +3104,18 @@ function skipOnboarding(){
 }
 
 async function onboardingNext(){
+  var sess=await db.auth.getSession();
+  if(sess.data&&sess.data.session){
+    var existing=await loadUserRole(sess.data.session.user.id);
+    if(existing){
+      g('onboardingOverlay').style.display='none';
+      showApp(sess.data.session.user,existing);
+      if(currentRole==='admin')await loadAgencySettings();
+      await Promise.all([loadPartners(),loadModels()]);
+      init();loadFanvueConnection();
+      return;
+    }
+  }
   if(_obStep!==1)return;
   var name=(g('obAgencyName').value||'').trim();
   var err=g('obErr1');
@@ -3488,24 +3535,15 @@ async function requestDataDeletion(){
   if(!confirm('This will permanently delete your account and all data. This cannot be undone.'))return;
   var btn=document.querySelector('[onclick="requestDataDeletion()"]');
   if(btn){btn.disabled=true;btn.textContent='Deleting…';}
-  if(_agencyId){
-    await db.from('withdrawals').delete().eq('agency_id',_agencyId);
-    await db.from('expenses').delete().eq('agency_id',_agencyId);
-    await db.from('transactions').delete().eq('agency_id',_agencyId);
-    await db.from('partners').delete().eq('agency_id',_agencyId);
-    await db.from('models').delete().eq('agency_id',_agencyId);
-    await db.from('agencies').delete().eq('id',_agencyId);
-  }
-  var sessionRes=await db.auth.getSession();
-  var jwt=sessionRes.data&&sessionRes.data.session&&sessionRes.data.session.access_token;
-  if(jwt){
-    await fetch(EDGE_URL+'/delete-account',{
-      method:'POST',
-      headers:{'Authorization':'Bearer '+jwt,'Content-Type':'application/json'}
-    });
-  }
-  await db.auth.signOut();
-  location.reload();
+  var sess=await db.auth.getSession();
+  var jwt=sess.data&&sess.data.session&&sess.data.session.access_token;
+  if(!jwt){showToast('Session expired. Please log in again.','error');return;}
+  var res=await fetch(EDGE_URL+'/delete-account',{
+    method:'POST',
+    headers:{'Authorization':'Bearer '+jwt,'Content-Type':'application/json'}
+  });
+  if(res.ok){await db.auth.signOut();location.reload();}
+  else{showToast('Failed to delete. Contact support@payoutmanager.app','error');if(btn){btn.disabled=false;btn.textContent='Delete account';}}
 }
 
 /* ---- Platform management ---- */
@@ -4753,30 +4791,36 @@ async function init(){
   var _invToken=_startParams.get('invite');
 
   if(_invToken){
-    var _sessionCheck=await db.auth.getSession();
-    var _existingSession=_sessionCheck.data&&_sessionCheck.data.session;
-    if(_existingSession&&_existingSession.user){
-      var _acceptRes=await fetch(EDGE_URL+'/accept-invite',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({token:_invToken,user_id:_existingSession.user.id})
-      });
-      history.replaceState({},'',window.location.pathname);
-      var _roleData=await loadUserRole(_existingSession.user.id);
-      if(_roleData){
-        showApp(_existingSession.user,_roleData);
-        if(currentRole==='admin')await loadAgencySettings();
-        await Promise.all([loadPartners(),loadModels()]);
-        init();
-        loadFanvueConnection();
+    var _preCheck=await db.auth.getSession();
+    var _preSession=_preCheck.data&&_preCheck.data.session;
+    if(_preSession&&_preSession.user){
+      var _invInfo=await db.from('partner_invites')
+        .select('email,agency_id')
+        .eq('token',_invToken)
+        .single();
+      if(!_invInfo.error&&_invInfo.data&&_preSession.user.email===_invInfo.data.email){
+        await fetch(EDGE_URL+'/accept-invite',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({token:_invToken,user_id:_preSession.user.id})
+        });
+        history.replaceState({},'',window.location.pathname);
+        var _rd=await loadUserRole(_preSession.user.id);
+        if(_rd){
+          showApp(_preSession.user,_rd);
+          if(currentRole==='admin')await loadAgencySettings();
+          await Promise.all([loadPartners(),loadModels()]);
+          handleCallbackParams();init();loadFanvueConnection();
+        }
+        return;
       } else {
-        showLogin();
-        setTimeout(function(){g('authErr').textContent='Invite link may be invalid or expired.';},100);
+        history.replaceState({},'',window.location.pathname);
+        // Не его инвайт — продолжаем в обычный session flow
       }
+    } else {
+      showInviteOverlay(_invToken);
       return;
     }
-    showInviteOverlay(_invToken);
-    return;
   }
 
   var sessionRes=await db.auth.getSession();
@@ -4789,6 +4833,14 @@ async function init(){
       if(currentRole==='admin')await loadAgencySettings();
       await Promise.all([loadPartners(),loadModels()]);
       if(currentRole!=='admin')await loadPlatformsForPartner();
+      if(currentRole==='partner'&&!_agencyName&&_agencyId){
+        var agNameRes=await db.from('agencies').select('name').eq('id',_agencyId).single();
+        if(!agNameRes.error&&agNameRes.data){
+          _agencyName=agNameRes.data.name||'';
+          var nm=g('sidebarAgencyName');
+          if(nm&&_agencyName)nm.textContent=_agencyName;
+        }
+      }
       handleCallbackParams();
       init();
       loadFanvueConnection();

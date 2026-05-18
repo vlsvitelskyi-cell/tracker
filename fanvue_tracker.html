@@ -11,19 +11,19 @@
    DESIGN TOKENS
 ============================================================ */
 :root {
-  --bg: #0F1117;
-  --bg2: #131620;
+  --bg: #0D1018;
+  --bg2: #111520;
   --bg3: #171B28;
-  --card: #1C1F2E;
-  --card2: #222638;
-  --card3: #272C42;
-  --border: rgba(255,255,255,.10);
-  --border2: rgba(255,255,255,.16);
-  --border3: rgba(255,255,255,.22);
+  --card: #1A1D2B;
+  --card2: #21263A;
+  --card3: #262D42;
+  --border: rgba(255,255,255,.13);
+  --border2: rgba(255,255,255,.20);
+  --border3: rgba(255,255,255,.28);
   --text: #F0F4FF;
   --text2: #8892B0;
-  --text3: #4E5775;
-  --text4: #2E3550;
+  --text3: #6B7A9E;
+  --text4: #4E5775;
   --blue: #6366F1;
   --blue-dim: #4C4FBF;
   --blue-bg: rgba(99,102,241,.12);
@@ -126,7 +126,8 @@ body{
 .sidebar {
   width: 220px; flex-shrink: 0;
   background: var(--bg2);
-  border-right: 1px solid var(--border);
+  border-right: 1px solid rgba(255,255,255,.14);
+  box-shadow: 1px 0 0 rgba(255,255,255,.06);
   display: flex; flex-direction: column;
   position: sticky; top: 0; height: 100vh; overflow-y: auto; z-index: 40;
 }
@@ -718,12 +719,14 @@ body{
   font-size: 14px; font-family: inherit; outline: none;
   transition: border-color var(--dur-fast), box-shadow var(--dur-fast);
   appearance: none; -webkit-appearance: none;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,.25);
 }
 .field input:focus, .field select:focus {
   border-color: var(--blue);
   box-shadow: 0 0 0 3px var(--blue-bg2);
 }
-.field input::placeholder { color: var(--text4); }
+.field input::placeholder { color: var(--text3); }
+.auth-field input::placeholder { color: var(--text3); }
 .sub-hint{font-size:11px;color:var(--text3);margin-top:2px}
 .hint{font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:14px}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -737,7 +740,7 @@ body{
 .btn {
   display: inline-flex; align-items: center; gap: 7px;
   padding: 9px 18px; border-radius: var(--r-sm);
-  background: var(--card2); color: var(--text2);
+  background: var(--card2); color: var(--text);
   border: 1px solid var(--border2);
   font-size: 13px; font-weight: 500;
   cursor: pointer; font-family: inherit;
@@ -958,7 +961,7 @@ body{
 .wd-splits { font-size: 11px; color: var(--text3); text-align: right; line-height: 1.8; }
 .wd-delete-btn {
   width: 30px; height: 30px; border-radius: 8px; border: none;
-  background: transparent; color: var(--text4); cursor: pointer;
+  background: transparent; color: var(--text3); cursor: pointer;
   display: flex; align-items: center; justify-content: center; font-size: 16px;
   transition: all var(--dur-fast); font-family: inherit;
 }
@@ -1092,6 +1095,7 @@ body{
   border:1px solid var(--border2);border-radius:11px;
   font-size:14px;color:var(--text);background:var(--card2);
   font-family:inherit;outline:none;transition:border-color .13s;
+  box-shadow:inset 0 1px 3px rgba(0,0,0,.25);
 }
 .auth-field input:focus{border-color:var(--blue)}
 .auth-btn{
@@ -1401,7 +1405,7 @@ body{
       <div class="auth-brand-logo">
         <div class="auth-brand-icon">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+            <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
           </svg>
         </div>
         <div class="auth-brand-name">Payout Manager</div>
@@ -1421,7 +1425,7 @@ body{
         <div class="auth-logo">
           <div class="auth-logo-icon">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+              <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
             </svg>
           </div>
           <div class="auth-logo-text">Payout Manager</div>
@@ -2641,9 +2645,13 @@ function partnerRemaining(partnerId){
 }
 
 async function loadPartners(){
-  var res=await db.from('partners').select('id,name,status,invited_email,user_id').order('created_at',{ascending:true});
-  if(res.error||!res.data||!res.data.length){console.error('loadPartners:',res.error);return;}
-  PARTNERS=res.data.map(function(p,i){return{id:p.id,name:p.name,status:p.status||'active',invited_email:p.invited_email||null,user_id:p.user_id||null,color:i===0?'blue':'green'};});
+  var res=await db.from('partners')
+    .select('id,name,status,invited_email,user_id,split_pct')
+    .eq('agency_id',_agencyId||'00000000-0000-0000-0000-000000000001')
+    .order('created_at',{ascending:true});
+  if(res.error){console.error('loadPartners:',res.error);return;}
+  if(!res.data||!res.data.length){console.warn('loadPartners: no partners found');return;}
+  PARTNERS=res.data.map(function(p){return{id:p.id,name:p.name,status:p.status||'active',invited_email:p.invited_email||null,user_id:p.user_id||null,split_pct:p.split_pct||0};});
   renderPartnerCards();
   renderPartnerSelect();
 }
@@ -2914,7 +2922,13 @@ async function invitePartner(){
   var data=await res.json();
   if(!res.ok||data.error){
     var msg=data.error||'Failed to send invite.';
-    if(data.current_total!==undefined)msg='Total split would be '+(data.current_total+split)+'%. Max is 100%.';
+    if(data.current_total!==undefined){
+      msg='Split total would be '+(data.current_total+split)+'% — max is 100%. Available: '+(100-data.current_total)+'%.';
+    }else if(msg.toLowerCase().includes('duplicate')||msg.toLowerCase().includes('already')){
+      msg='A partner with this email already exists in your agency.';
+    }else if(msg.toLowerCase().includes('partner')||msg.toLowerCase().includes('create')){
+      msg='Could not create partner — check your agency settings or contact support.';
+    }
     st.textContent=msg;
     if(btn){btn.disabled=false;btn.textContent='Send invite';}
     return;

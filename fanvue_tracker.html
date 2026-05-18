@@ -62,44 +62,6 @@
   --dur-slow: 350ms;
   --topbar-bg: rgba(15,17,23,.92);
 }
-[data-theme="light"] {
-  --bg: #F5F7FC;
-  --bg2: #ECEEF7;
-  --bg3: #E4E7F2;
-  --card: #FFFFFF;
-  --card2: #F8F9FE;
-  --card3: #F0F2FA;
-  --border: rgba(0,0,0,.08);
-  --border2: rgba(0,0,0,.13);
-  --border3: rgba(0,0,0,.20);
-  --text: #111827;
-  --text2: #4B5563;
-  --text3: #9CA3AF;
-  --text4: #D1D5DB;
-  --blue: #4F52D0;
-  --blue-bg: rgba(79,82,208,.08);
-  --blue-bg2: rgba(79,82,208,.14);
-  --blue-text: #3730A3;
-  --blue-glow: rgba(79,82,208,.3);
-  --green: #059669;
-  --green-bg: rgba(5,150,105,.08);
-  --green-bg2: rgba(5,150,105,.14);
-  --green-text: #065F46;
-  --green-glow: rgba(5,150,105,.25);
-  --purple-text: #5B21B6;
-  --amber-text: #92400E;
-  --pink-text: #9D174D;
-  --red: #DC2626;
-  --red-bg: rgba(220,38,38,.08);
-  --red-text: #B91C1C;
-  --shadow-xs: 0 1px 2px rgba(0,0,0,.06);
-  --shadow-sm: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.04);
-  --shadow-md: 0 4px 16px rgba(0,0,0,.1), 0 2px 4px rgba(0,0,0,.06);
-  --shadow-lg: 0 8px 40px rgba(0,0,0,.12), 0 4px 12px rgba(0,0,0,.08);
-  --shadow-glow-blue: 0 0 0 1px rgba(79,82,208,.15), 0 4px 20px rgba(79,82,208,.1);
-  --shadow-glow-green: 0 0 0 1px rgba(5,150,105,.12), 0 4px 20px rgba(5,150,105,.08);
-  --topbar-bg: rgba(245,247,252,.92);
-}
 
 /* ============================================================
    RESET & BASE
@@ -349,26 +311,6 @@ body{
 }
 .partner-card.blue .partner-rem { color: rgba(165,180,252,.75); }
 .partner-card.green .partner-rem { color: rgba(110,231,183,.75); }
-[data-theme="light"] .partner-card.blue {
-  background: linear-gradient(145deg, #EEF0FF 0%, #E8EAFF 100%);
-  border: 1px solid rgba(99,102,241,.2);
-  box-shadow: 0 0 0 1px rgba(99,102,241,.1), 0 4px 20px rgba(99,102,241,.08);
-}
-[data-theme="light"] .partner-card.green {
-  background: linear-gradient(145deg, #ECFDF5 0%, #E6FAF2 100%);
-  border: 1px solid rgba(16,185,129,.18);
-  box-shadow: 0 0 0 1px rgba(16,185,129,.08), 0 4px 20px rgba(16,185,129,.06);
-}
-[data-theme="light"] .partner-card.blue .partner-eur { color: #3730A3; }
-[data-theme="light"] .partner-card.green .partner-eur { color: #065F46; }
-[data-theme="light"] .partner-card.blue .partner-rem { color: rgba(55,48,163,.75); }
-[data-theme="light"] .partner-card.green .partner-rem { color: rgba(6,95,70,.75); }
-[data-theme="light"] .partner-card.blue::before {
-  background: radial-gradient(circle, rgba(99,102,241,.12) 0%, transparent 65%);
-}
-[data-theme="light"] .partner-card.green::before {
-  background: radial-gradient(circle, rgba(16,185,129,.1) 0%, transparent 65%);
-}
 
 /* ============================================================
    STATS ROW (used by JS renderBal)
@@ -466,12 +408,6 @@ body{
 .partner-card.pink .pname-dot{background:#EC4899;box-shadow:0 0 8px rgba(236,72,153,.5);}
 .partner-card.pink .partner-eur{color:#FCE7F3;}
 .partner-card.pink .partner-rem{color:rgba(249,168,212,.75);}
-[data-theme="light"] .partner-card.purple{background:linear-gradient(135deg,rgba(139,92,246,.1) 0%,rgba(139,92,246,.03) 100%);border-color:rgba(139,92,246,.2);}
-[data-theme="light"] .partner-card.purple .partner-eur{color:#5B21B6;}
-[data-theme="light"] .partner-card.amber{background:linear-gradient(135deg,rgba(245,158,11,.1) 0%,rgba(245,158,11,.03) 100%);border-color:rgba(245,158,11,.2);}
-[data-theme="light"] .partner-card.amber .partner-eur{color:#92400E;}
-[data-theme="light"] .partner-card.pink{background:linear-gradient(135deg,rgba(236,72,153,.1) 0%,rgba(236,72,153,.03) 100%);border-color:rgba(236,72,153,.2);}
-[data-theme="light"] .partner-card.pink .partner-eur{color:#9D174D;}
 
 /* ============================================================
    DASHBOARD TWO-COLUMN MID-ROW
@@ -1653,18 +1589,6 @@ body{
             <line x1="21" y1="12" x2="9" y2="12"/>
           </svg>
         </button>
-        <button class="topbar-icon-btn theme-btn" onclick="toggleTheme()" title="Toggle theme">
-          <svg id="iconSun" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:none">
-            <circle cx="12" cy="12" r="5"/>
-            <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
-            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-            <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
-            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-          </svg>
-          <svg id="iconMoon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-          </svg>
-        </button>
       </div>
     </div>
 
@@ -1809,7 +1733,7 @@ body{
             <div class="sec-label" style="margin:0">Add Expense</div>
           </div>
           <div class="add-row" style="margin-bottom:14px">
-            <div class="field">
+            <div class="field" id="expPartnerRow">
               <label>Partner</label>
               <select id="expPartner"></select>
               <div style="font-size:11px;color:var(--text3);margin-top:2px;line-height:1.5">This expense is deducted from the partner's share of revenue.</div>
@@ -2079,7 +2003,7 @@ body{
                 <div class="setting-label">Real-time sync</div>
                 <div class="setting-desc">Earnings sync via Fanvue webhooks + 15-min polling fallback</div>
               </div>
-              <div class="integration-badge connected"><span class="ibadge-dot"></span>Active</div>
+              <div id="syncStatusText" style="font-size:12px;color:var(--text3)">—</div>
             </div>
             <div class="setting-row">
               <div class="setting-info">
@@ -2391,7 +2315,7 @@ async function forgotPassword(){
 
 async function logout(){
   await db.auth.signOut();
-  PARTNERS=[];ALL_MODELS=[];ACTIVE_MODEL_ID='';MODEL_SPLITS={};FANVUE_CONNECTION=null;
+  PARTNERS=[];ALL_MODELS=[];ACTIVE_MODEL_ID='';MODEL_SPLITS={};PARTNER_SPLITS={};FANVUE_CONNECTION=null;
   showLogin();
   S={months:[],ws:[],txs:[],exps:[],am:0,platforms:DEFAULT_PLATFORMS.slice()};
   renderAll();
@@ -2520,8 +2444,18 @@ async function createAndConnectModel(){
   var newModelId=res.data.id;
   ALL_MODELS.push({id:newModelId,name:res.data.name,connected:false});
   ACTIVE_MODEL_ID=newModelId;
+  var adminPartner=PARTNERS.find(function(p){return currentUser&&p.user_id===currentUser.id;});
+  if(adminPartner){
+    await db.from('model_splits').insert({
+      model_id:newModelId,
+      partner_id:adminPartner.id,
+      split_pct:100,
+      effective_from:new Date().toISOString()
+    });
+  }
   closeAddModelModal();
   renderModelSwitcher();
+  renderInviteModelRows();
   btn.textContent='Connecting…';
   
   try{
@@ -2678,6 +2612,7 @@ async function saveModelSplits(){
 
 /* ---- Partners ---- */
 var PARTNERS=[];
+var PARTNER_SPLITS={};
 var PARTNER_COLORS=['blue','green','purple','amber','pink'];
 function P0(){return PARTNERS[0]||{id:'',name:'Partner 1'};}
 function P1(){return PARTNERS[1]||{id:'',name:'Partner 2'};}
@@ -2714,8 +2649,23 @@ async function loadPartners(){
   if(res.error){console.error('loadPartners:',res.error);return;}
   if(!res.data||!res.data.length){console.warn('loadPartners: no partners found');return;}
   PARTNERS=res.data.map(function(p){return{id:p.id,name:p.name,status:p.status||'active',invited_email:p.invited_email||null,user_id:p.user_id||null,split_pct:p.split_pct||0};});
+  await loadPartnerSplits();
   renderPartnerCards();
   renderPartnerSelect();
+}
+
+async function loadPartnerSplits(){
+  if(!ALL_MODELS.length)return;
+  var res=await db.from('model_splits')
+    .select('model_id,partner_id,split_pct')
+    .in('model_id',ALL_MODELS.map(function(m){return m.id;}));
+  if(res.error||!res.data)return;
+  PARTNER_SPLITS={};
+  res.data.forEach(function(s){
+    if(!PARTNER_SPLITS[s.partner_id])PARTNER_SPLITS[s.partner_id]=[];
+    var model=ALL_MODELS.find(function(m){return m.id===s.model_id;});
+    if(model&&s.split_pct>0)PARTNER_SPLITS[s.partner_id].push({name:model.name,split_pct:s.split_pct});
+  });
 }
 
 function renderPartnerCards(){
@@ -2740,12 +2690,18 @@ function renderPartnerCards(){
     var wEUR=totalPartnerWithdrawnEUR(p.id);
     var rem=partnerRemaining(p.id);
     var splitPct=getCurrentSplit(ACTIVE_MODEL_ID,p.id);
+    var splits=PARTNER_SPLITS[p.id]||[];
+    var splitText=splits.map(function(s){return escHtml(s.name)+' '+s.split_pct+'%';}).join(' · ');
+    var splitLine=splitText?(isMe
+      ?'<div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:3px">Your splits: '+splitText+'</div>'
+      :'<div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:3px">'+splitText+'</div>'):'';
     return '<div class="partner-card '+colorClass+'">'
       +'<div class="partner-name"><span class="pname-dot"></span>'+nameLabel
       +(splitPct?'<span class="partner-split-badge">'+splitPct+'%</span>':'')
       +'</div>'
       +'<div class="partner-eur">'+fc(share)+'</div>'
       +'<div class="partner-earned-label">Earned (USD) · your share</div>'
+      +splitLine
       +'<div class="partner-divider"></div>'
       +'<div class="partner-rem-grid">'
         +'<div>'
@@ -2773,11 +2729,35 @@ async function loadFanvueConnection(){
   FANVUE_CONNECTION=(res.data&&res.data.fanvue_creator_id)?res.data:null;
   renderFanvueStatus();
   renderSubBanners();
+  renderSyncStatus();
   if(FANVUE_CONNECTION&&ACTIVE_MODEL_ID){
     var modelObj=ALL_MODELS.find(function(x){return x.id===ACTIVE_MODEL_ID;});
     if(modelObj)modelObj.subscription_active=FANVUE_CONNECTION.subscription_active!==false;
   }
   checkSubscriptionGate();
+}
+
+function renderSyncStatus(){
+  var el=g('syncStatusText');if(!el)return;
+  if(!FANVUE_CONNECTION){
+    el.textContent='Connect Fanvue to enable sync';
+    el.style.color='var(--text3)';
+    return;
+  }
+  var updatedAt=FANVUE_CONNECTION.updated_at;
+  if(updatedAt){
+    var mins=Math.round((Date.now()-new Date(updatedAt).getTime())/60000);
+    if(mins<20){
+      el.textContent='Synced '+mins+' min ago';
+      el.style.color='var(--green-text)';
+    }else{
+      el.textContent='Last synced '+mins+' min ago — sync may be delayed';
+      el.style.color='var(--yellow)';
+    }
+  }else{
+    el.textContent='Sync status unknown';
+    el.style.color='var(--text3)';
+  }
 }
 
 function renderFanvueStatus(){
@@ -2843,6 +2823,24 @@ async function loadAgencySettings(){
     }
   }
   await loadPartnersList();
+  await ensureAdminPartnerExists();
+}
+
+async function ensureAdminPartnerExists(){
+  if(currentRole!=='admin'||!_agencyId||!currentUser)return;
+  var existing=PARTNERS.find(function(p){return p.user_id===currentUser.id;});
+  if(!existing){
+    var adminName=(currentUser.email||'').split('@')[0];
+    var ins=await db.from('partners').insert({
+      agency_id:_agencyId,
+      user_id:currentUser.id,
+      name:adminName,
+      split_pct:0,
+      status:'active',
+      invited_email:currentUser.email
+    });
+    if(!ins.error)await loadPartners();
+  }
 }
 
 async function saveAgencyName(){
@@ -2887,10 +2885,15 @@ async function loadPartnersList(){
         :'<span class="badge badge-pend">Invite sent</span>';
     var editing=!!_splitEditing[p.id];
     var otherTotal=_partnersSplitTotal-(active?p.split_pct||0:0);
+    var isAdminPartner=currentUser&&p.user_id===currentUser.id&&currentRole==='admin';
+    var canRemove=isAdmin&&!isAdminPartner;
+    var nameDisplay=escHtml(p.name)+(isAdminPartner
+      ?'<span style="font-size:11px;color:var(--text3);font-weight:400;margin-left:6px">You · Admin</span>'
+      :'');
     return '<div class="partner-list-row">'
       +'<div class="partner-avatar '+avatarColor+'">'+initials+'</div>'
       +'<div class="partner-list-info">'
-      +'<div class="partner-list-name">'+p.name+'</div>'
+      +'<div class="partner-list-name">'+nameDisplay+'</div>'
       +(p.invited_email?'<div class="partner-list-email">'+p.invited_email+'</div>':'')
       +(editing&&active&&isAdmin
         ?'<div class="split-inline-edit">'
@@ -2903,8 +2906,8 @@ async function loadPartnersList(){
       +'<div class="partner-list-actions">'
       +(p.split_pct&&!editing?'<span style="font-size:13px;color:var(--text2);font-weight:600;min-width:36px;text-align:right">'+p.split_pct+'%</span>':'')
       +statusBadge
-      +(isAdmin&&active&&!editing?'<button class="btn-edit" onclick="editSplitStart(\''+p.id+'\')">Edit split</button>':'')
-      +(isAdmin?'<button class="btn-del" title="Remove" onclick="removePartner(\''+p.id+'\',\''+p.status+'\',\''+p.name+'\')">&times;</button>':'')
+      +(isAdmin&&active&&!editing&&!isAdminPartner?'<button class="btn-edit" onclick="editSplitStart(\''+p.id+'\')">Edit split</button>':'')
+      +(canRemove?'<button class="btn-del" title="Remove" onclick="removePartner(\''+p.id+'\',\''+p.status+'\',\''+p.name+'\')">&times;</button>':'')
       +'</div>'
       +'</div>';
   }).join('');
@@ -3203,6 +3206,19 @@ async function onboardingNext(){
   var agRes=await db.rpc('get_my_agency_id');
   if(!agRes.error&&agRes.data){
     await db.from('agencies').update({name:name}).eq('id',agRes.data);
+    _agencyId=agRes.data;
+    var obUser=currentUser||(await db.auth.getUser()).data.user;
+    if(obUser){
+      await db.from('partners').insert({
+        agency_id:_agencyId,
+        user_id:obUser.id,
+        name:(obUser.email||'').split('@')[0],
+        split_pct:0,
+        status:'active',
+        invited_email:obUser.email
+      });
+      await loadPartners();
+    }
   }
   _obStep=2;
   g('obPanel1').style.display='none';
@@ -4009,9 +4025,12 @@ async function txSave(id){
 /* ---- Expenses UI ---- */
 function renderPartnerSelect(){
   var sel=g('expPartner');
-  if(!sel||!PARTNERS.length)return;
-  sel.innerHTML=PARTNERS.map(function(p){
-    return '<option value="'+p.id+'">'+p.name+'</option>';
+  var row=g('expPartnerRow');
+  if(!sel)return;
+  var activePartners=PARTNERS.filter(function(p){return p.status==='active';});
+  if(row)row.style.display=activePartners.length>1?'':'none';
+  sel.innerHTML=activePartners.map(function(p){
+    return '<option value="'+p.id+'">'+escHtml(p.name)+'</option>';
   }).join('');
 }
 
@@ -4038,7 +4057,8 @@ function renderWModelSelect(){
 async function addExpense(){
   var amt=pn(g('expAmt').value);
   if(!amt||amt<=0){g('expAmt').focus();return;}
-  var partnerId=g('expPartner').value;
+  var activePartners=PARTNERS.filter(function(p){return p.status==='active';});
+  var partnerId=activePartners.length===1?activePartners[0].id:(g('expPartner').value||'');
   if(!partnerId)return;
   var date=g('expDate').value||new Date().toISOString().slice(0,10);
   var cat=(g('expCat')&&g('expCat').value)||'';
@@ -4863,10 +4883,8 @@ async function init(){
 
 /* ---- Auth-aware startup ---- */
 (async function startup(){
-  var saved=localStorage.getItem('theme')||'dark';
-  document.documentElement.setAttribute('data-theme',saved);
-  var sun=g('iconSun'),moon=g('iconMoon');
-  if(sun&&moon){sun.style.display=saved==='dark'?'block':'none';moon.style.display=saved==='dark'?'none':'block';}
+  localStorage.removeItem('theme');
+  document.documentElement.setAttribute('data-theme','dark');
 
   var _startParams=new URLSearchParams(window.location.search);
   var _invToken=_startParams.get('invite');

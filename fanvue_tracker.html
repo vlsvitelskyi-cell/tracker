@@ -1620,7 +1620,23 @@ body{
   </aside>
 
   <!-- MAIN AREA -->
-  <main class="main-area">
+  <main class="main-area" style="position:relative">
+
+    <div id="subscriptionGate" style="display:none;position:absolute;inset:0;z-index:50;
+      background:rgba(13,16,24,.93);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+      align-items:center;justify-content:center;flex-direction:column;gap:16px;
+      text-align:center;padding:32px">
+      <div style="font-size:36px">🔒</div>
+      <div class="gate-title" style="font-size:20px;font-weight:700;color:var(--text)">Subscription required</div>
+      <div style="font-size:14px;color:var(--text2);max-width:360px;line-height:1.6">
+        This model's subscription is inactive. Subscribe via Fanvue App Store to access earnings data.
+      </div>
+      <a href="https://www.fanvue.com/app-store" target="_blank"
+        style="display:inline-block;padding:12px 24px;background:var(--blue);color:#fff;
+        border-radius:8px;font-weight:600;font-size:14px;text-decoration:none;margin-top:4px">
+        Go to Fanvue App Store →
+      </a>
+    </div>
 
     <!-- TOP BAR -->
     <div class="topbar">
@@ -1940,22 +1956,27 @@ body{
             <div id="partnersList"></div>
           </div>
           <!-- Invite form (admin only) -->
-          <div class="card" id="invitePartnerForm" style="display:none">
-            <div class="sec-label">Invite new partner</div>
-            <div class="field">
-              <label>Name</label>
-              <input id="inviteName" placeholder="Partner name">
+          <div class="card" id="inviteNewPartner" style="display:none">
+            <div class="sec-label">INVITE NEW PARTNER</div>
+
+            <div class="form-row" style="margin-bottom:12px">
+              <label class="form-label">NAME</label>
+              <input id="inviteName" class="input" placeholder="Partner name" maxlength="60">
             </div>
-            <div class="field">
-              <label>Email</label>
-              <input id="inviteEmail" type="email" placeholder="partner@example.com">
+
+            <div class="form-row" style="margin-bottom:12px">
+              <label class="form-label">EMAIL</label>
+              <input id="inviteEmail" type="email" class="input" placeholder="partner@example.com">
             </div>
-            <div class="field">
-              <label>Split % <span id="splitRemaining" class="split-remaining"></span></label>
-              <input id="inviteSplit" type="number" min="1" max="100" placeholder="50" oninput="updateSplitRemaining()">
+
+            <div class="form-row" style="margin-bottom:12px">
+              <label class="form-label">MODELS &amp; SPLITS</label>
+              <div id="inviteModelSplits" style="display:flex;flex-direction:column;gap:8px;margin-top:4px"></div>
+              <div style="font-size:11px;color:var(--text3);margin-top:6px">Select models and set split % for each.</div>
             </div>
-            <button class="btn btn-primary" onclick="invitePartner()">Send invite</button>
-            <div id="inviteStatus" style="font-size:12px;margin-top:8px;min-height:16px"></div>
+
+            <button class="btn btn-primary" onclick="invitePartner()" style="margin-top:4px">Send invite</button>
+            <div id="inviteStatus" style="font-size:13px;margin-top:8px;min-height:18px"></div>
           </div>
           <!-- Model revenue splits -->
           <div class="card" id="modelSplitSection" style="display:none">
@@ -2442,7 +2463,10 @@ function renderModelSwitcher(){
     var act=ACTIVE_MODEL_ID===m.id?' act':'';
     var dot='<span class="mc-dot'+(m.connected?' connected':'')+'"></span>';
     var tipText=m.connected?'Fanvue connected':'Fanvue not connected';
-    html+='<div class="model-chip'+act+'" onclick="selectModel(\''+m.id+'\')" title="'+escHtml(m.name)+' — '+tipText+'">'+dot+escHtml(m.name)+'</div>';
+    var subDot=m.subscription_active===false
+      ?'<span style="width:6px;height:6px;border-radius:50%;background:var(--red);display:inline-block;margin-right:5px;flex-shrink:0;vertical-align:middle"></span>'
+      :'';
+    html+='<div class="model-chip'+act+'" onclick="selectModel(\''+m.id+'\')" title="'+escHtml(m.name)+' — '+tipText+'">'+dot+subDot+escHtml(m.name)+'</div>';
   });
   if(currentRole==='admin'){
     html+='<div class="model-chip model-chip-add" onclick="showAddModelModal()">+ Add model</div>';
@@ -2458,6 +2482,7 @@ async function selectModel(modelId){
   renderWModelSelect();
   await Promise.all([loadRevenueData(),loadWithdrawals()]);
   renderAll();
+  checkSubscriptionGate();
 }
 
 /* ---- Add model modal ---- */
@@ -2748,6 +2773,11 @@ async function loadFanvueConnection(){
   FANVUE_CONNECTION=(res.data&&res.data.fanvue_creator_id)?res.data:null;
   renderFanvueStatus();
   renderSubBanners();
+  if(FANVUE_CONNECTION&&ACTIVE_MODEL_ID){
+    var modelObj=ALL_MODELS.find(function(x){return x.id===ACTIVE_MODEL_ID;});
+    if(modelObj)modelObj.subscription_active=FANVUE_CONNECTION.subscription_active!==false;
+  }
+  checkSubscriptionGate();
 }
 
 function renderFanvueStatus(){
@@ -2790,7 +2820,7 @@ async function loadAgencySettings(){
   var agCard=g('agencyCard'),pCard=g('partnersCard');
   if(agCard)agCard.style.display=currentRole==='admin'?'block':'none';
   if(pCard)pCard.style.display='block';
-  var invForm=g('invitePartnerForm');
+  var invForm=g('inviteNewPartner');
   if(invForm)invForm.style.display=currentRole==='admin'?'block':'none';
   if(!currentUser)return;
 
@@ -2838,7 +2868,7 @@ var _splitEditing={};
 
 async function loadPartnersList(){
   var el=g('partnersList');if(!el)return;
-  var res=await db.from('partners').select('id,name,split_pct,status,invited_email,user_id').order('created_at',{ascending:true});
+  var res=await db.from('partners').select('id,name,split_pct,status,invited_email,user_id').in('status',['active','pending']).order('created_at',{ascending:true});
   if(res.error||!res.data){el.innerHTML='<p style="font-size:12px;color:var(--text3)">No partners yet.</p>';return;}
   var rows=res.data;
   _partnersSplitTotal=0;
@@ -2939,46 +2969,95 @@ function updateSplitRemaining(){
   el.style.color=rem<0?'var(--red)':'var(--text3)';
 }
 
+function renderInviteModelRows(){
+  var el=g('inviteModelSplits');
+  if(!el)return;
+  if(!ALL_MODELS.length){
+    el.innerHTML='<div style="font-size:13px;color:var(--text3)">No models yet. Add a model first.</div>';
+    return;
+  }
+  el.innerHTML=ALL_MODELS.map(function(m){
+    return '<div style="display:flex;align-items:center;gap:10px;padding:5px 0">'
+      +'<input type="checkbox" id="imCheck_'+m.id+'" value="'+m.id
+      +'" style="width:16px;height:16px;cursor:pointer;flex-shrink:0" onchange="updateInviteModelRow(\''+m.id+'\')">'
+      +'<label for="imCheck_'+m.id+'" style="flex:1;font-size:14px;color:var(--text);cursor:pointer">'+escHtml(m.name)+'</label>'
+      +'<input type="number" id="imSplit_'+m.id+'" min="1" max="100" placeholder="%" disabled'
+      +' style="width:64px;padding:5px 8px;font-size:13px;background:var(--card2);border:1px solid var(--border);'
+      +'border-radius:6px;color:var(--text);opacity:.4;transition:opacity .15s">'
+      +'<span style="font-size:13px;color:var(--text3)">%</span>'
+      +'</div>';
+  }).join('');
+}
+
+function updateInviteModelRow(modelId){
+  var check=g('imCheck_'+modelId);
+  var inp=g('imSplit_'+modelId);
+  if(!check||!inp)return;
+  inp.disabled=!check.checked;
+  inp.style.opacity=check.checked?'1':'.4';
+  if(check.checked&&!inp.value)inp.value=50;
+}
+
+function getInviteModels(){
+  return ALL_MODELS
+    .filter(function(m){var c=g('imCheck_'+m.id);return c&&c.checked;})
+    .map(function(m){
+      var s=g('imSplit_'+m.id);
+      return{model_id:m.id,split_pct:parseFloat((s&&s.value)||0)||0};
+    });
+}
+
+function checkSubscriptionGate(){
+  var m=ALL_MODELS.find(function(x){return x.id===ACTIVE_MODEL_ID;});
+  if(m&&m.subscription_active===false){
+    var gate=g('subscriptionGate');
+    if(gate){
+      gate.style.display='flex';
+      var title=gate.querySelector('.gate-title');
+      if(title)title.textContent=escHtml(m.name)+' — Subscription required';
+    }
+    return true;
+  }
+  var gate=g('subscriptionGate');
+  if(gate)gate.style.display='none';
+  return false;
+}
+
 async function invitePartner(){
-  if(currentRole!=='admin')return;
   var name=(g('inviteName').value||'').trim();
   var email=(g('inviteEmail').value||'').trim();
-  var split=parseInt(g('inviteSplit').value)||0;
+  var models=getInviteModels();
   var st=g('inviteStatus');
-  st.style.color='var(--red)';st.textContent='';
+  var btn=document.querySelector('[onclick="invitePartner()"]');
+  st.textContent='';st.style.color='var(--red)';
   if(!name){st.textContent='Enter partner name.';return;}
-  if(!email||!email.includes('@')){st.textContent='Enter a valid email.';return;}
-  if(split<=0){st.textContent='Split must be greater than 0.';return;}
-  if(_partnersSplitTotal+split>100){st.textContent='Total split would exceed 100%. Available: '+(100-_partnersSplitTotal)+'%.';return;}
-  var btn=document.querySelector('#invitePartnerForm .btn');
-  if(btn){btn.disabled=true;btn.textContent='Sending…';}
+  if(!email||!email.includes('@')){st.textContent='Enter valid email.';return;}
+  if(!models.length){st.textContent='Select at least one model.';return;}
+  if(models.some(function(m){return m.split_pct<=0;})){
+    st.textContent='Set split % > 0 for each selected model.';return;
+  }
+  btn.disabled=true;btn.textContent='Sending…';
   var sessionRes=await db.auth.getSession();
   var jwt=sessionRes.data&&sessionRes.data.session&&sessionRes.data.session.access_token;
-  if(!jwt){st.textContent='Not logged in.';if(btn){btn.disabled=false;btn.textContent='Send invite';}return;}
   var res=await fetch(EDGE_URL+'/invite-partner',{
     method:'POST',
-    headers:{'Authorization':'Bearer '+jwt,'Content-Type':'application/json'},
-    body:JSON.stringify({email:email,name:name,split_pct:split})
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+jwt},
+    body:JSON.stringify({email:email,name:name,models:models})
   });
   var data=await res.json();
   if(!res.ok||data.error){
-    var msg=data.error||'Failed to send invite.';
-    if(data.current_total!==undefined){
-      msg='Split total would be '+(data.current_total+split)+'% — max is 100%. Available: '+(100-data.current_total)+'%.';
-    }else if(msg.toLowerCase().includes('duplicate')||msg.toLowerCase().includes('already')){
-      msg='A partner with this email already exists in your agency.';
-    }else{
-      msg='Could not send invite. Please try again or contact support.';
-    }
-    st.textContent=msg;
-    if(btn){btn.disabled=false;btn.textContent='Send invite';}
-    return;
+    var msg=data.error||'Could not send invite. Please try again.';
+    if(data.current_total!==undefined)
+      msg='Split for "'+data.model_name+'" would exceed 100% ('+data.current_total+'% already used).';
+    st.textContent=msg;btn.disabled=false;btn.textContent='Send invite';return;
   }
-  st.style.color='var(--green-text)';st.textContent='Invite sent to '+email+' ✓';
-  g('inviteName').value='';g('inviteEmail').value='';g('inviteSplit').value='';
-  if(btn){btn.disabled=false;btn.textContent='Send invite';}
+  st.textContent='Invite sent to '+email;st.style.color='var(--green-text)';
+  g('inviteName').value='';g('inviteEmail').value='';
+  ALL_MODELS.forEach(function(m){
+    var c=g('imCheck_'+m.id);if(c){c.checked=false;updateInviteModelRow(m.id);}
+  });
+  btn.disabled=false;btn.textContent='Send invite';
   await loadPartnersList();
-  setTimeout(function(){st.textContent='';},3000);
 }
 
 function renderSubBanners(){
@@ -3502,7 +3581,7 @@ function showTab(name,btn,isMobile){
     var mb=g('mob-'+name);if(mb)mb.classList.add('act');
   }
   if(name==='dashboard'||name==='revenue')setTimeout(renderChart,50);
-  if(name==='settings'){loadAgencySettings();renderModelSplitSection();loadFanvueConnection();}
+  if(name==='settings'){loadAgencySettings();renderModelSplitSection();loadFanvueConnection();renderInviteModelRows();}
   var qs=g('sidebarQuickStats');
   if(qs)qs.style.display=name==='dashboard'?'none':'block';
 }
@@ -4776,6 +4855,8 @@ async function init(){
   renderModelSwitcher();
   renderModelSplitSection();
   renderAll();
+  renderInviteModelRows();
+  checkSubscriptionGate();
 
   setupRealtime();
 }

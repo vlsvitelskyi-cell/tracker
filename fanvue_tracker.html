@@ -38,6 +38,9 @@
   --yellow: #F59E0B;
   --yellow-bg: rgba(245,158,11,.12);
   --yellow-text: #FCD34D;
+  --purple-text: #C4B5FD;
+  --amber-text: #FCD34D;
+  --pink-text: #F9A8D4;
   --red: #EF4444;
   --red-bg: rgba(239,68,68,.12);
   --red-text: #F87171;
@@ -83,6 +86,9 @@
   --green-bg2: rgba(5,150,105,.14);
   --green-text: #065F46;
   --green-glow: rgba(5,150,105,.25);
+  --purple-text: #5B21B6;
+  --amber-text: #92400E;
+  --pink-text: #9D174D;
   --red: #DC2626;
   --red-bg: rgba(220,38,38,.08);
   --red-text: #B91C1C;
@@ -266,6 +272,8 @@ body{
   transition: border-color var(--dur-fast), box-shadow var(--dur-normal);
 }
 .card:hover { border-color: var(--border2); box-shadow: var(--shadow-md); }
+.card-static:hover { border-color: var(--border); box-shadow: var(--shadow-sm); transform: none; }
+.card-static { cursor: default; }
 .card-header{
   display:flex;align-items:center;justify-content:space-between;
   margin-bottom:16px;
@@ -391,6 +399,9 @@ body{
 }
 .stat-val.blue { color: var(--blue-text); }
 .stat-val.green { color: var(--green-text); }
+.stat-val.purple { color: var(--purple-text); }
+.stat-val.amber { color: var(--amber-text); }
+.stat-val.pink { color: var(--pink-text); }
 .stat-val.red { color: var(--red); }
 
 /* ============================================================
@@ -409,11 +420,57 @@ body{
   background:var(--green);border-radius:0 4px 4px 0;
   transition:flex .4s ease;min-width:4px;
 }
+.split-bar-seg{border-radius:0;transition:flex .4s ease;}
+.split-bar-seg:first-child{border-radius:4px 0 0 4px;}
+.split-bar-seg:last-child{border-radius:0 4px 4px 0;}
+.split-bar-seg:only-child{border-radius:4px;}
+.split-bar-seg.blue{background:var(--blue);}
+.split-bar-seg.green{background:var(--green);}
+.split-bar-seg.purple{background:#8B5CF6;}
+.split-bar-seg.amber{background:#F59E0B;}
+.split-bar-seg.pink{background:#EC4899;}
 .split-labels{
-  display:flex;justify-content:space-between;
+  display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px;
   font-size:12px;margin-bottom:8px;
 }
 .split-hint{font-size:12px;min-height:18px;line-height:1.55}
+.partner-split-badge{
+  margin-left:auto;font-size:9px;font-weight:700;
+  background:rgba(255,255,255,.1);color:rgba(255,255,255,.6);
+  padding:2px 7px;border-radius:10px;letter-spacing:.04em;
+}
+.partner-rem.rem-zero{color:var(--text4);}
+/* Extra partner card colors */
+.partner-card.purple{
+  background:linear-gradient(135deg,rgba(139,92,246,.18) 0%,rgba(139,92,246,.06) 100%);
+  border:1px solid rgba(139,92,246,.25);
+}
+.partner-card.purple::before{background:radial-gradient(ellipse at top left,rgba(139,92,246,.22) 0%,transparent 65%);}
+.partner-card.purple .pname-dot{background:#8B5CF6;box-shadow:0 0 8px rgba(139,92,246,.5);}
+.partner-card.purple .partner-eur{color:#EDE9FE;}
+.partner-card.purple .partner-rem{color:rgba(196,181,253,.75);}
+.partner-card.amber{
+  background:linear-gradient(135deg,rgba(245,158,11,.18) 0%,rgba(245,158,11,.06) 100%);
+  border:1px solid rgba(245,158,11,.25);
+}
+.partner-card.amber::before{background:radial-gradient(ellipse at top left,rgba(245,158,11,.22) 0%,transparent 65%);}
+.partner-card.amber .pname-dot{background:#F59E0B;box-shadow:0 0 8px rgba(245,158,11,.5);}
+.partner-card.amber .partner-eur{color:#FEF3C7;}
+.partner-card.amber .partner-rem{color:rgba(252,211,77,.75);}
+.partner-card.pink{
+  background:linear-gradient(135deg,rgba(236,72,153,.18) 0%,rgba(236,72,153,.06) 100%);
+  border:1px solid rgba(236,72,153,.25);
+}
+.partner-card.pink::before{background:radial-gradient(ellipse at top left,rgba(236,72,153,.22) 0%,transparent 65%);}
+.partner-card.pink .pname-dot{background:#EC4899;box-shadow:0 0 8px rgba(236,72,153,.5);}
+.partner-card.pink .partner-eur{color:#FCE7F3;}
+.partner-card.pink .partner-rem{color:rgba(249,168,212,.75);}
+[data-theme="light"] .partner-card.purple{background:linear-gradient(135deg,rgba(139,92,246,.1) 0%,rgba(139,92,246,.03) 100%);border-color:rgba(139,92,246,.2);}
+[data-theme="light"] .partner-card.purple .partner-eur{color:#5B21B6;}
+[data-theme="light"] .partner-card.amber{background:linear-gradient(135deg,rgba(245,158,11,.1) 0%,rgba(245,158,11,.03) 100%);border-color:rgba(245,158,11,.2);}
+[data-theme="light"] .partner-card.amber .partner-eur{color:#92400E;}
+[data-theme="light"] .partner-card.pink{background:linear-gradient(135deg,rgba(236,72,153,.1) 0%,rgba(236,72,153,.03) 100%);border-color:rgba(236,72,153,.2);}
+[data-theme="light"] .partner-card.pink .partner-eur{color:#9D174D;}
 
 /* ============================================================
    DASHBOARD TWO-COLUMN MID-ROW
@@ -609,33 +666,31 @@ body{
 .badge-confirmed{background:var(--green-bg);color:var(--green-text)}
 .badge-pending-w{background:var(--yellow-bg);color:var(--yellow)}
 
-/* ---- Model bar ---- */
-.model-bar {
-  display: flex; align-items: center; gap: 6px;
-  padding: 0 32px; height: 46px;
-  background: var(--bg2); border-bottom: 1px solid var(--border);
-  overflow-x: auto; flex-shrink: 0; scrollbar-width: none;
+/* ---- Sidebar model section ---- */
+.sidebar-model-section {
+  padding: 4px 8px 8px;
+  border-bottom: 1px solid var(--border);
 }
-.model-bar:empty { display: none; }
-.model-bar::-webkit-scrollbar { display: none; }
+.model-bar { display: none; } /* legacy, no longer used as layout zone */
 .model-chip {
-  display: inline-flex; align-items: center; gap: 7px;
-  padding: 6px 14px; border-radius: 20px; flex-shrink: 0;
-  border: 1px solid transparent; background: transparent;
-  color: var(--text3); font-size: 12px; font-weight: 500;
-  cursor: pointer; transition: all var(--dur-fast); font-family: inherit;
-  white-space: nowrap;
+  display: flex; align-items: center; gap: 8px;
+  width: 100%; padding: 8px 10px; border-radius: var(--r-sm);
+  border: none; background: transparent;
+  color: var(--text3); font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: background var(--dur-fast), color var(--dur-fast);
+  font-family: inherit; text-align: left; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis; margin-bottom: 1px;
 }
-.model-chip:hover { background: var(--card); border-color: var(--border2); color: var(--text2); }
-.model-chip.act {
-  background: var(--blue-bg2); border-color: rgba(99,102,241,.3);
-  color: var(--blue-text); font-weight: 600;
-}
+.model-chip:hover { background: var(--card); color: var(--text2); }
+.model-chip.act { background: var(--blue-bg); color: var(--blue-text); font-weight: 600; }
 .mc-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text4); flex-shrink: 0; }
-.mc-dot.connected { background: var(--green); box-shadow: 0 0 0 2.5px rgba(16,185,129,.2); }
-.model-chip.act .mc-dot.connected { background: var(--green-text); box-shadow: 0 0 0 2px rgba(52,211,153,.25); }
-.model-chip-add { border-style: dashed; border-color: var(--border2); }
-.model-chip-add:hover { border-color: var(--blue); color: var(--blue-text); background: var(--blue-bg); }
+.mc-dot.connected { background: var(--green); box-shadow: 0 0 5px rgba(16,185,129,.4); }
+.model-chip.act .mc-dot.connected { background: var(--green-text); }
+.model-chip-add {
+  color: var(--text4); font-size: 12px;
+  border: 1px dashed var(--border2); background: transparent;
+}
+.model-chip-add:hover { color: var(--blue-text); border-color: var(--blue); background: var(--blue-bg); }
 
 /* ---- Model split section ---- */
 .split-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
@@ -1153,7 +1208,6 @@ body{
   .sidebar{display:none}
   .topbar{padding:0 18px}
   .page-content{padding:20px 16px 100px}
-  .model-bar{padding:0 16px}
   .dash-two-col{grid-template-columns:1fr}
   .partner-row{grid-template-columns:1fr 1fr}
   .partner-eur{font-size:28px}
@@ -1291,6 +1345,25 @@ body{
   font-size: 16px; font-weight: 700; letter-spacing: -.03em; color: var(--text); margin-bottom: 3px;
 }
 .settings-section-subtitle { font-size: 13px; color: var(--text3); line-height: 1.5; }
+
+/* ---- Settings sub-nav ---- */
+.settings-subnav {
+  display: flex; align-items: center; gap: 2px;
+  padding: 10px 0 16px;
+  position: sticky; top: 56px; z-index: 20;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 24px;
+}
+.ssnav-item {
+  padding: 7px 14px; border-radius: var(--r-sm);
+  font-size: 13px; font-weight: 500; color: var(--text3);
+  text-decoration: none; cursor: pointer;
+  transition: background var(--dur-fast), color var(--dur-fast);
+}
+.ssnav-item:hover { background: var(--card); color: var(--text2); }
+.ssnav-item.act { background: var(--blue-bg); color: var(--blue-text); font-weight: 600; }
+@media(max-width:600px){ .settings-subnav { display: none; } }
 
 /* ============================================================
    STAGE 8 — IMPROVED TOASTS
@@ -1503,6 +1576,12 @@ body{
       </button>
     </nav>
 
+    <!-- Model switcher -->
+    <div class="sidebar-model-section">
+      <div class="nav-section-label">Model</div>
+      <div id="modelSwitcher"></div>
+    </div>
+
     <!-- Agency card -->
     <div class="sidebar-agency-card">
       <div class="sac-label">Agency</div>
@@ -1511,7 +1590,7 @@ body{
     </div>
 
     <!-- Quick stats -->
-    <div class="sidebar-quick-stats">
+    <div class="sidebar-quick-stats" id="sidebarQuickStats">
       <div class="sqs-item">
         <div class="sqs-label">This month</div>
         <div class="sqs-val" id="sidebarThisMonth">—</div>
@@ -1564,9 +1643,6 @@ body{
       </div>
     </div>
 
-    <!-- MODEL BAR -->
-    <div class="model-bar" id="modelSwitcher"></div>
-
     <!-- PAGE CONTENT -->
     <div class="page-content">
       <div id="toast" class="toast"></div>
@@ -1605,41 +1681,8 @@ body{
           </div>
         </div>
 
-        <!-- Partner balance KPI cards -->
-        <div class="partner-row" id="partnerRow">
-          <div class="partner-card blue">
-            <div class="partner-name"><span class="pname-dot"></span><span id="partnerName0">—</span></div>
-            <div class="partner-eur" id="bV">$0.00</div>
-            <div class="partner-earned-label">Earned (USD) · your share</div>
-            <div class="partner-divider"></div>
-            <div class="partner-rem-grid">
-              <div>
-                <div class="partner-rem-lbl">Withdrawn (EUR)</div>
-                <div class="partner-rem" id="vWithdrawnEl">€0.00</div>
-              </div>
-              <div>
-                <div class="partner-rem-lbl">Remaining (USD)</div>
-                <div class="partner-rem" id="vRemEl">$0.00</div>
-              </div>
-            </div>
-          </div>
-          <div class="partner-card green">
-            <div class="partner-name"><span class="pname-dot"></span><span id="partnerName1">—</span></div>
-            <div class="partner-eur" id="bVl">$0.00</div>
-            <div class="partner-earned-label">Earned (USD) · your share</div>
-            <div class="partner-divider"></div>
-            <div class="partner-rem-grid">
-              <div>
-                <div class="partner-rem-lbl">Withdrawn (EUR)</div>
-                <div class="partner-rem" id="vlWithdrawnEl">€0.00</div>
-              </div>
-              <div>
-                <div class="partner-rem-lbl">Remaining (USD)</div>
-                <div class="partner-rem" id="vlRemEl">$0.00</div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <!-- Partner balance KPI cards — rendered dynamically by JS -->
+        <div class="partner-row" id="partnerRow"></div>
 
         <!-- Subscription banner -->
         <div id="subBannerDash"></div>
@@ -1664,15 +1707,8 @@ body{
             <div class="card-header">
               <div class="card-title">Partner Split</div>
             </div>
-            <div class="split-labels">
-              <span style="color:var(--blue-text);font-weight:600" id="bVPct"></span>
-              <span style="color:var(--text3);font-size:11px" id="bDiff"></span>
-              <span style="color:var(--green-text);font-weight:600" id="bVlPct"></span>
-            </div>
-            <div class="split-bar">
-              <div class="split-bar-v" id="barV"></div>
-              <div class="split-bar-vl" id="barVl"></div>
-            </div>
+            <div class="split-labels" id="splitLabels"></div>
+            <div class="split-bar" id="splitBar"></div>
             <div class="split-hint" id="splitHint"></div>
             <div style="margin-top:20px">
               <button class="btn btn-primary" onclick="showTab('withdrawals',document.querySelector('[data-tab=withdrawals]'))">Record Withdrawal</button>
@@ -1696,8 +1732,8 @@ body{
       <!-- ============ REVENUE ============ -->
       <div class="tab-page" id="tab-revenue">
 
-        <!-- Manual transaction entry — at top for quick access -->
-        <div class="card" id="addTxCard">
+        <!-- Manual transaction entry — collapsed by default -->
+        <div class="card" id="addTxForm" style="display:none">
           <div class="sec-row">
             <div class="sec-label">Add Transaction</div>
             <span style="font-size:11px;color:var(--text3)">Manual entry</span>
@@ -1730,6 +1766,7 @@ body{
             <div style="display:flex;gap:8px;align-items:center">
               <button class="btn" style="font-size:12px;padding:6px 14px" onclick="refreshRevenue()">↻ Refresh</button>
               <button class="btn" id="selectModeBtn" style="font-size:12px;padding:6px 14px;display:none" onclick="toggleSelectMode()">Select</button>
+              <button class="btn" style="font-size:12px;padding:6px 14px" onclick="toggleAddTxForm()">+ Add manually</button>
             </div>
           </div>
           <div class="mtab-row" id="mTabs"></div>
@@ -1741,16 +1778,16 @@ body{
       <!-- ============ EXPENSES ============ -->
       <div class="tab-page" id="tab-expenses">
 
-        <!-- Add expense form -->
-        <div class="card" id="expensesCard">
+        <!-- Add expense form — collapsed by default -->
+        <div class="card" id="expensesCard" style="display:none">
           <div class="sec-row">
             <div class="sec-label" style="margin:0">Add Expense</div>
-            <span style="font-size:11px;color:var(--text3)">Affects split calculation</span>
           </div>
           <div class="add-row" style="margin-bottom:14px">
             <div class="field">
               <label>Partner</label>
               <select id="expPartner"></select>
+              <div style="font-size:11px;color:var(--text3);margin-top:2px;line-height:1.5">This expense is deducted from the partner's share of revenue.</div>
             </div>
             <div class="field">
               <label>Model</label>
@@ -1789,7 +1826,10 @@ body{
         <div class="card">
           <div class="sec-row" style="margin-bottom:14px">
             <div class="sec-label" style="margin:0">Expense History</div>
-            <span id="expTotalLabel" style="font-size:13px;font-weight:600;color:var(--red-text)"></span>
+            <div style="display:flex;gap:8px;align-items:center">
+              <span id="expTotalLabel" style="font-size:13px;font-weight:600;color:var(--red-text)"></span>
+              <button class="btn" style="font-size:12px;padding:6px 14px" onclick="toggleAddExpenseForm()">+ Add expense</button>
+            </div>
           </div>
           <div class="mtab-row" id="expMTabs"></div>
           <div id="expList"></div>
@@ -1799,7 +1839,13 @@ body{
 
       <!-- ============ WITHDRAWALS ============ -->
       <div class="tab-page" id="tab-withdrawals">
-        <div class="card">
+        <div class="card" style="margin-bottom:12px">
+          <div class="sec-row" style="margin-bottom:0">
+            <div class="sec-label" style="margin:0">Withdrawals</div>
+            <button class="btn" style="font-size:12px;padding:6px 14px" onclick="toggleAddWithdrawalForm()">+ Record withdrawal</button>
+          </div>
+        </div>
+        <div class="card" id="addWithdrawalForm" style="display:none">
           <div class="sec-label">New Withdrawal Request</div>
           <div class="add-row">
             <div class="field">
@@ -1842,8 +1888,17 @@ body{
         <!-- Subscription banner -->
         <div id="subBannerSettings"></div>
 
+        <!-- Settings sub-nav -->
+        <div class="settings-subnav" id="settingsSubnav">
+          <a href="#sAgency" class="ssnav-item act" onclick="scrollToSection('sAgency',this);return false;">Agency</a>
+          <a href="#sTeam" class="ssnav-item" onclick="scrollToSection('sTeam',this);return false;">Team</a>
+          <a href="#sIntegrations" class="ssnav-item" onclick="scrollToSection('sIntegrations',this);return false;">Integrations</a>
+          <a href="#sPreferences" class="ssnav-item" onclick="scrollToSection('sPreferences',this);return false;">Preferences</a>
+          <a href="#sAbout" class="ssnav-item" onclick="scrollToSection('sAbout',this);return false;">About</a>
+        </div>
+
         <!-- SECTION: AGENCY -->
-        <div class="settings-section" id="agencyCard" style="display:none">
+        <div class="settings-section" id="agencyCard" style="display:none"><div id="sAgency"></div>
           <div class="settings-section-header">
             <div class="settings-section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></div>
             <div>
@@ -1863,7 +1918,7 @@ body{
         </div>
 
         <!-- SECTION: TEAM -->
-        <div class="settings-section" id="partnersCard" style="display:none">
+        <div class="settings-section" id="partnersCard" style="display:none"><div id="sTeam"></div>
           <div class="settings-section-header">
             <div class="settings-section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
             <div>
@@ -1909,7 +1964,7 @@ body{
         </div>
 
         <!-- SECTION: INTEGRATIONS -->
-        <div class="settings-section">
+        <div class="settings-section" id="sIntegrations">
           <div class="settings-section-header">
             <div class="settings-section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></div>
             <div>
@@ -1931,7 +1986,7 @@ body{
         </div>
 
         <!-- SECTION: PREFERENCES -->
-        <div class="settings-section">
+        <div class="settings-section" id="sPreferences">
           <div class="settings-section-header">
             <div class="settings-section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg></div>
             <div>
@@ -1972,7 +2027,7 @@ body{
         </div>
 
         <!-- SECTION: ABOUT -->
-        <div class="settings-section">
+        <div class="settings-section" id="sAbout">
           <div class="settings-section-header">
             <div class="settings-section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
             <div>
@@ -2557,8 +2612,33 @@ async function saveModelSplits(){
 
 /* ---- Partners ---- */
 var PARTNERS=[];
+var PARTNER_COLORS=['blue','green','purple','amber','pink'];
 function P0(){return PARTNERS[0]||{id:'',name:'Partner 1'};}
 function P1(){return PARTNERS[1]||{id:'',name:'Partner 2'};}
+
+/* ---- N-partner calculation engine ---- */
+function partnerTotalExp(partnerId){
+  return S.months.reduce(function(sum,m){return sum+((m.expByPartner||{})[partnerId]||0);},0);
+}
+function partnerShareForMonth(partnerId,month){
+  var allExp=0;
+  Object.values(month.expByPartner||{}).forEach(function(v){allExp+=v;});
+  var netPool=mTot(month)-allExp-(month.agencyExp||0);
+  var split=getCurrentSplit(ACTIVE_MODEL_ID,partnerId)/100;
+  var ownExp=(month.expByPartner||{})[partnerId]||0;
+  return netPool*split+ownExp;
+}
+function totalPartnerShare(partnerId){
+  return r2(S.months.reduce(function(sum,m){return sum+partnerShareForMonth(partnerId,m);},0));
+}
+function totalPartnerWithdrawnEUR(partnerId){
+  return r2(okWs().reduce(function(sum,w){return sum+((w.splitsByPartner||{})[partnerId]||0);},0));
+}
+function partnerRemaining(partnerId){
+  var wEUR=totalPartnerWithdrawnEUR(partnerId);
+  var wUSD=FX_RATES.EUR>0?wEUR/FX_RATES.EUR:wEUR;
+  return r2(totalPartnerShare(partnerId)-wUSD);
+}
 
 async function loadPartners(){
   var res=await db.from('partners').select('id,name,status,invited_email').order('created_at',{ascending:true});
@@ -2569,9 +2649,43 @@ async function loadPartners(){
 }
 
 function renderPartnerCards(){
-  var n0=g('partnerName0'),n1=g('partnerName1');
-  if(n0)n0.textContent=P0().name;
-  if(n1)n1.textContent=P1().name;
+  var container=g('partnerRow');
+  if(!container)return;
+  if(!PARTNERS||!PARTNERS.length){
+    container.innerHTML='<div style="padding:20px;color:var(--text3);font-size:13px">No partners configured yet. Add partners in Settings → Team.</div>';
+    return;
+  }
+  var activePartners=PARTNERS.filter(function(p){return p.status==='active';});
+  if(!activePartners.length){
+    container.innerHTML='<div style="padding:20px;color:var(--text3);font-size:13px">No active partners.</div>';
+    return;
+  }
+  var html=activePartners.map(function(p,i){
+    var colorClass=PARTNER_COLORS[i%PARTNER_COLORS.length];
+    var share=totalPartnerShare(p.id);
+    var wEUR=totalPartnerWithdrawnEUR(p.id);
+    var rem=partnerRemaining(p.id);
+    var splitPct=getCurrentSplit(ACTIVE_MODEL_ID,p.id);
+    return '<div class="partner-card '+colorClass+'">'
+      +'<div class="partner-name"><span class="pname-dot"></span>'+escHtml(p.name)
+      +(splitPct?'<span class="partner-split-badge">'+splitPct+'%</span>':'')
+      +'</div>'
+      +'<div class="partner-eur">'+fc(share)+'</div>'
+      +'<div class="partner-earned-label">Earned (USD) · your share</div>'
+      +'<div class="partner-divider"></div>'
+      +'<div class="partner-rem-grid">'
+        +'<div>'
+          +'<div class="partner-rem-lbl">Withdrawn (EUR)</div>'
+          +'<div class="partner-rem">€'+r2(wEUR).toFixed(2)+'</div>'
+        +'</div>'
+        +'<div>'
+          +'<div class="partner-rem-lbl">Remaining (USD)</div>'
+          +'<div class="partner-rem'+(rem>0?'':' rem-zero')+'">'+fc(Math.max(0,rem))+'</div>'
+        +'</div>'
+      +'</div>'
+    +'</div>';
+  }).join('');
+  container.innerHTML=html;
 }
 
 /* ---- Fanvue Connection ---- */
@@ -3295,6 +3409,8 @@ function showTab(name,btn,isMobile){
   }
   if(name==='dashboard'||name==='revenue')setTimeout(renderChart,50);
   if(name==='settings'){loadAgencySettings();renderModelSplitSection();loadFanvueConnection();}
+  var qs=g('sidebarQuickStats');
+  if(qs)qs.style.display=name==='dashboard'?'none':'block';
 }
 
 /* ---- Wise rate ---- */
@@ -3411,7 +3527,7 @@ async function loadRevenueData(){
 
   function ensureMonth(key){
     if(!monthMap[key]){
-      monthMap[key]={revenues:{},vExp:0,vlExp:0};
+      monthMap[key]={revenues:{},expByPartner:{},agencyExp:0};
       S.platforms.forEach(function(p){monthMap[key].revenues[p]=0;});
     }
   }
@@ -3430,8 +3546,11 @@ async function loadRevenueData(){
     if(!key)return;
     ensureMonth(key);
     var amt=parseFloat(exp.amount_usd)||0;
-    if(exp.partner_id===P0().id)monthMap[key].vExp+=amt;
-    else if(exp.partner_id===P1().id)monthMap[key].vlExp+=amt;
+    if(exp.partner_id){
+      monthMap[key].expByPartner[exp.partner_id]=(monthMap[key].expByPartner[exp.partner_id]||0)+amt;
+    }else{
+      monthMap[key].agencyExp+=amt;
+    }
   });
 
   var newMonths=Object.keys(monthMap).sort().map(function(key){
@@ -3440,7 +3559,9 @@ async function loadRevenueData(){
       if(data.revenues[p]===undefined)data.revenues[p]=0;
       else data.revenues[p]=r2(data.revenues[p]);
     });
-    return{id:key,name:monthKeyToName(key),revenues:data.revenues,vExp:r2(data.vExp),vlExp:r2(data.vlExp)};
+    var expByPartnerRounded={};
+    Object.keys(data.expByPartner).forEach(function(pid){expByPartnerRounded[pid]=r2(data.expByPartner[pid]);});
+    return{id:key,name:monthKeyToName(key),revenues:data.revenues,expByPartner:expByPartnerRounded,agencyExp:r2(data.agencyExp||0)};
   });
 
   if(newMonths.length>0){
@@ -3467,9 +3588,7 @@ async function loadWithdrawals(){
   var splitsMap={};
   (splitsRes.data||[]).forEach(function(s){
     if(!splitsMap[s.withdrawal_id])splitsMap[s.withdrawal_id]={};
-    var amt=parseFloat(s.eur_amount)||0;
-    if(s.partner_id===P0().id)splitsMap[s.withdrawal_id].vE=amt;
-    else if(s.partner_id===P1().id)splitsMap[s.withdrawal_id].vlE=amt;
+    splitsMap[s.withdrawal_id][s.partner_id]=parseFloat(s.eur_amount)||0;
   });
 
   var allWs=(wRes.data||[]).map(function(row){
@@ -3478,8 +3597,7 @@ async function loadWithdrawals(){
       id:row.id,pl:row.platform,
       usd:parseFloat(row.usd)||0,
       eur:parseFloat(row.eur)||0,
-      vE:sp.vE!=null?sp.vE:(parseFloat(row.v_eur)||0),
-      vlE:sp.vlE!=null?sp.vlE:(parseFloat(row.vl_eur)||0),
+      splitsByPartner:sp,
       date:row.request_date,rd:row.received_date,
       st:row.status==='ok'?'ok':'pend',
       model_id:row.model_id||null,
@@ -3556,22 +3674,27 @@ async function addW(){
 async function confirmW(id){
   var eur=pn(g('e_'+id).value);
   if(!eur||eur<=0){g('e_'+id).focus();return;}
-  var vG=pn(g('sv_'+id).value),vlG=pn(g('svl_'+id).value);
-  if(Math.abs(vG+vlG-eur)>0.02){alert(P0().name+' + '+P1().name+' must equal '+eur.toFixed(2)+' EUR');return;}
+  var partners=PARTNERS.filter(function(p){return p.status==='active';});
+  var splits=partners.map(function(p){
+    var inp=g('sp_'+id+'_'+p.id);
+    return{withdrawal_id:id,partner_id:p.id,eur_amount:r2(pn(inp?inp.value:'0'))};
+  });
+  var totalSpl=splits.reduce(function(s,x){return s+x.eur_amount;},0);
+  if(partners.length>0&&Math.abs(totalSpl-eur)>0.02){
+    alert('Split total ('+fe(totalSpl)+') must equal '+fe(eur));return;
+  }
   var today=new Date().toISOString().slice(0,10);
 
   var res=await db.from('withdrawals').update({
-    eur:r2(eur),v_eur:r2(vG),vl_eur:r2(vlG),
-    status:'ok',received_date:today
+    eur:r2(eur),status:'ok',received_date:today
   }).eq('id',id);
   if(res.error){showToast(friendlyError(res.error),'error');return;}
 
   await db.from('withdrawal_splits').delete().eq('withdrawal_id',id);
-  var splitsRes=await db.from('withdrawal_splits').insert([
-    {withdrawal_id:id,partner_id:P0().id,eur_amount:r2(vG)},
-    {withdrawal_id:id,partner_id:P1().id,eur_amount:r2(vlG)}
-  ]);
-  if(splitsRes.error)console.error('splits write error:',splitsRes.error);
+  if(splits.length){
+    var splitsRes=await db.from('withdrawal_splits').insert(splits);
+    if(splitsRes.error)console.error('splits write error:',splitsRes.error);
+  }
 
   EXP[id]=false;
 }
@@ -3873,15 +3996,23 @@ async function refreshRevenue(){
 
 /* ---- Calculations ---- */
 function mTot(m){return Object.values(m.revenues||{}).reduce(function(s,v){return s+(v||0);},0);}
-function mVSh(m){return(mTot(m)+m.vExp-m.vlExp)/2;}
-function mVlSh(m){return(mTot(m)+m.vlExp-m.vExp)/2;}
+function okWs(){return S.ws.filter(function(w){return w.st==='ok'&&w.eur>0;});}
+// LEGACY: can remove after testing — used only as 2-partner backward compat
+function mVSh(m){return(mTot(m)+((m.expByPartner||{})[P0().id]||0)-((m.expByPartner||{})[P1().id]||0))/2;}
+function mVlSh(m){return(mTot(m)+((m.expByPartner||{})[P1().id]||0)-((m.expByPartner||{})[P0().id]||0))/2;}
 function totalVSh(){return S.months.reduce(function(s,m){return s+mVSh(m);},0);}
 function totalVlSh(){return S.months.reduce(function(s,m){return s+mVlSh(m);},0);}
-function okWs(){return S.ws.filter(function(w){return w.st==='ok'&&w.eur>0;});}
-function totalVEUR(){return okWs().reduce(function(s,w){return s+w.vE;},0);}
-function totalVlEUR(){return okWs().reduce(function(s,w){return s+w.vlE;},0);}
-function totalVUSD(){return okWs().reduce(function(s,w){return s+w.usd*(w.eur>0?w.vE/w.eur:0);},0);}
-function totalVlUSD(){return okWs().reduce(function(s,w){return s+w.usd*(w.eur>0?w.vlE/w.eur:0);},0);}
+// LEGACY: can remove after testing
+function totalVEUR(){return PARTNERS[0]?totalPartnerWithdrawnEUR(PARTNERS[0].id):0;}
+function totalVlEUR(){return PARTNERS[1]?totalPartnerWithdrawnEUR(PARTNERS[1].id):0;}
+function totalVUSD(){
+  var pid=PARTNERS[0]?PARTNERS[0].id:'';
+  return okWs().reduce(function(s,w){var e=(w.splitsByPartner||{})[pid]||0;return s+w.usd*(w.eur>0?e/w.eur:0);},0);
+}
+function totalVlUSD(){
+  var pid=PARTNERS[1]?PARTNERS[1].id:'';
+  return okWs().reduce(function(s,w){var e=(w.splitsByPartner||{})[pid]||0;return s+w.usd*(w.eur>0?e/w.eur:0);},0);
+}
 function vRem(){return r2(totalVSh()-totalVUSD());}
 function vlRem(){return r2(totalVlSh()-totalVlUSD());}
 function vRatio(){var vs=totalVSh(),t=vs+totalVlSh();return t>0?vs/t:0.5;}
@@ -3893,28 +4024,64 @@ function suggestSplit(eur){
 function expectedEur(usd){return r2(usd*WISE_RATE);}
 
 function toggleExp(id){EXP[id]=!EXP[id];renderList();}
-function eurChanged(id){
-  var eur=pn(g('e_'+id).value)||0;
-  var sp=suggestSplit(eur);
-  var sv=g('sv_'+id),svl=g('svl_'+id);
-  if(sv)sv.value=sp.vG.toFixed(2);
-  if(svl)svl.value=sp.vlG.toFixed(2);
-  var hint=g('rh_'+id);
+function onSplitInput(wId){
+  var eur=pn(g('e_'+wId).value)||0;
+  var hint=g('rh_'+wId);
   if(hint&&eur>0){
-    var w=S.ws.find(function(x){return x.id===id;});
+    var w=S.ws.find(function(x){return x.id===wId;});
     if(w){var expE=expectedEur(w.usd),loss=r2(expE-eur);
       hint.textContent='Wise expected: '+fe(expE)+(loss>0?'  |  Loss: '+fe(loss):'  |  On par or better');}
   }
+  if(!eur)return;
+  var partners=PARTNERS.filter(function(p){return p.status==='active';});
+  var totalSplit=partners.reduce(function(s,p){return s+getCurrentSplit(ACTIVE_MODEL_ID,p.id);},0)||100;
+  var remaining=eur;
+  partners.forEach(function(p,i){
+    var inp=g('sp_'+wId+'_'+p.id);if(!inp)return;
+    if(i===partners.length-1){
+      inp.value=r2(remaining).toFixed(2);
+    }else{
+      var portion=r2(eur*getCurrentSplit(ACTIVE_MODEL_ID,p.id)/totalSplit);
+      inp.value=portion.toFixed(2);
+      remaining-=portion;
+    }
+  });
 }
-function updateV(id){
-  var eur=pn(g('e_'+id).value)||0;if(!eur)return;
-  var v=r2(Math.max(0,Math.min(eur,pn(g('sv_'+id).value))));
-  g('sv_'+id).value=v.toFixed(2);g('svl_'+id).value=r2(eur-v).toFixed(2);
+// LEGACY: can remove after testing
+function eurChanged(id){onSplitInput(id);}
+function updateV(id){onSplitInput(id);}
+function updateVl(id){onSplitInput(id);}
+
+/* ---- Settings sub-nav (Stage 4) ---- */
+function scrollToSection(id,el){
+  var target=g(id);
+  if(!target)return;
+  target.scrollIntoView({behavior:'smooth',block:'start'});
+  document.querySelectorAll('.ssnav-item').forEach(function(a){a.classList.remove('act');});
+  if(el)el.classList.add('act');
 }
-function updateVl(id){
-  var eur=pn(g('e_'+id).value)||0;if(!eur)return;
-  var vl=r2(Math.max(0,Math.min(eur,pn(g('svl_'+id).value))));
-  g('svl_'+id).value=vl.toFixed(2);g('sv_'+id).value=r2(eur-vl).toFixed(2);
+
+/* ---- Collapsible forms (Stage 3) ---- */
+function toggleAddTxForm(){
+  var form=g('addTxForm');if(!form)return;
+  var visible=form.style.display!=='none';
+  form.style.display=visible?'none':'block';
+  if(!visible)form.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function toggleAddExpenseForm(){
+  var form=g('expensesCard');if(!form)return;
+  var visible=form.style.display!=='none';
+  form.style.display=visible?'none':'block';
+  if(!visible)form.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function toggleAddWithdrawalForm(){
+  var form=g('addWithdrawalForm');if(!form)return;
+  var visible=form.style.display!=='none';
+  form.style.display=visible?'none':'block';
+  if(!visible){
+    form.scrollIntoView({behavior:'smooth',block:'nearest'});
+    setTimeout(function(){var f=g('wModel');if(f)f.focus();},200);
+  }
 }
 function setMonth(i){
   S.am=i;
@@ -3925,45 +4092,6 @@ function setMonth(i){
 
 /* ---- Render: Dashboard ---- */
 function renderBal(){
-  var vE=r2(totalVEUR()),vlE=r2(totalVlEUR()),tot=vE+vlE,diff=Math.abs(vE-vlE);
-  var vr=vRem(),vlr=vlRem();
-  var vWithdrawn=r2(totalVUSD()),vlWithdrawn=r2(totalVlUSD());
-  var vEusd=FX_RATES.EUR>0?vE/FX_RATES.EUR:vE;
-  var vlEusd=FX_RATES.EUR>0?vlE/FX_RATES.EUR:vlE;
-  g('bV').textContent=fc(r2(totalVSh()));g('bVl').textContent=fc(r2(totalVlSh()));
-  var vwEl=g('vWithdrawnEl'),vlwEl=g('vlWithdrawnEl');
-  if(vwEl)vwEl.textContent='€'+r2(totalVEUR()).toFixed(2);
-  if(vlwEl)vlwEl.textContent='€'+r2(totalVlEUR()).toFixed(2);
-  var vrEl=g('vRemEl'),vlrEl=g('vlRemEl');
-  if(vrEl){
-    if(vr>0.01){vrEl.textContent='$'+vr.toFixed(2);vrEl.style.color='var(--blue-text)';}
-    else if(vr<-0.01){vrEl.textContent='$0.00 (overpaid)';vrEl.style.color='var(--text3)';}
-    else{vrEl.textContent='$0.00';vrEl.style.color='var(--text3)';}
-  }
-  if(vlrEl){
-    if(vlr>0.01){vlrEl.textContent='$'+vlr.toFixed(2);vlrEl.style.color='var(--green-text)';}
-    else if(vlr<-0.01){vlrEl.textContent='$0.00 (overpaid)';vlrEl.style.color='var(--text3)';}
-    else{vlrEl.textContent='$0.00';vlrEl.style.color='var(--text3)';}
-  }
-
-  if(tot>0.01){
-    var vf=vE/tot;
-    g('barV').style.flex=vf.toFixed(3);g('barVl').style.flex=(1-vf).toFixed(3);
-    g('bVPct').textContent=P0().name+' '+(vf*100).toFixed(1)+'%';
-    g('bVlPct').textContent=P1().name+' '+((1-vf)*100).toFixed(1)+'%';
-    g('bDiff').textContent=diff>0.05?'Gap: '+fe(diff):'';
-    var hint=g('splitHint');
-    if(hint){
-      if(diff<5){hint.innerHTML='<span style="color:var(--green-text)">✓ Splits are balanced</span>';}
-      else{var behind=vE<vlE?P0().name:P1().name;
-        hint.innerHTML='<span style="color:var(--yellow)">Next withdrawal should favor '+behind+' to balance the split (gap: '+fe(diff)+')</span>';}
-    }
-  }else{
-    g('barV').style.flex='1';g('barVl').style.flex='1';
-    g('bVPct').textContent='';g('bVlPct').textContent='';g('bDiff').textContent='';
-    var hint=g('splitHint');if(hint)hint.textContent='';
-  }
-
   var totalRev=r2(S.months.reduce(function(s,m){return s+mTot(m);},0));
   var totalW=r2(S.ws.filter(function(w){return w.st==='ok';}).reduce(function(s,w){return s+w.usd;},0));
   var tLoss=0,oks=okWs(),tU=0,tEur=0;
@@ -3971,7 +4099,6 @@ function renderBal(){
   tLoss=r2(tLoss);
   var avgRate=tU>0?(tEur/tU).toFixed(4):null;
 
-  /* Current month revenue + trend */
   var curM=S.months[S.months.length-1];
   var curRev=curM?r2(mTot(curM)):0;
   var prevM=S.months[S.months.length-2];
@@ -4005,12 +4132,48 @@ function renderBal(){
     return;
   }
 
+  /* Per-model view */
   g('dashStats').innerHTML=
     '<div class="stat-box"><div class="stat-lbl">This month</div><div class="stat-val">'+fc(curRev)+trendHtml+'</div></div>'
     +'<div class="stat-box"><div class="stat-lbl">Total revenue</div><div class="stat-val">'+fc(totalRev)+'</div></div>'
     +'<div class="stat-box"><div class="stat-lbl">Total withdrawn</div><div class="stat-val">'+fc(totalW)+'</div></div>'
     +(avgRate?'<div class="stat-box"><div class="stat-lbl">Avg rate</div><div class="stat-val">'+avgRate+'</div></div>':'')
     +(tLoss>0?'<div class="stat-box"><div class="stat-lbl">FX loss</div><div class="stat-val red">'+fe(tLoss)+'</div></div>':'');
+
+  /* Partner cards */
+  renderPartnerCards();
+
+  /* Split bar: N segments by actual EUR withdrawn */
+  var activePartners=PARTNERS.filter(function(p){return p.status==='active';});
+  var totalEURwithdrawn=okWs().reduce(function(s,w){return s+w.eur;},0);
+  var splitBarEl=g('splitBar'),splitLabelsEl=g('splitLabels');
+  if(splitBarEl&&activePartners.length>0){
+    if(totalEURwithdrawn>0.01){
+      var barHtml='',labHtml='';
+      activePartners.forEach(function(p,i){
+        var wEUR=totalPartnerWithdrawnEUR(p.id);
+        var frac=wEUR/totalEURwithdrawn;
+        var colorClass=PARTNER_COLORS[i%PARTNER_COLORS.length];
+        barHtml+='<div class="split-bar-seg '+colorClass+'" style="flex:'+frac.toFixed(3)+';min-width:4px"></div>';
+        labHtml+='<span style="font-weight:600">'+escHtml(p.name)+' '+(frac*100).toFixed(1)+'%</span>';
+      });
+      splitBarEl.innerHTML=barHtml;
+      if(splitLabelsEl)splitLabelsEl.innerHTML=labHtml;
+    }else{
+      var eqFrac=(1/Math.max(activePartners.length,1)).toFixed(3);
+      splitBarEl.innerHTML=activePartners.map(function(p,i){
+        return '<div class="split-bar-seg '+PARTNER_COLORS[i%PARTNER_COLORS.length]+'" style="flex:'+eqFrac+';min-width:4px"></div>';
+      }).join('');
+      if(splitLabelsEl)splitLabelsEl.innerHTML='<span style="color:var(--text3)">No withdrawals yet</span>';
+    }
+  }
+  var hint=g('splitHint');
+  if(hint)hint.innerHTML='<span style="color:var(--text3);font-size:11px">Actual payout distribution (based on recorded withdrawals)</span>';
+
+  /* Sidebar quick stats */
+  var sb1=g('sidebarThisMonth'),sb2=g('sidebarTotalWithdrawn');
+  if(sb1)sb1.textContent=fc(curRev);
+  if(sb2)sb2.textContent=fc(totalW);
 }
 
 /* ---- Render: Recent transactions (dashboard) ---- */
@@ -4121,7 +4284,8 @@ function renderMonths(){
   var m=S.months[S.am]||S.months[S.months.length-1];
   if(!m){g('mView').innerHTML='';return;}
 
-  var tot=r2(mTot(m)),vSh=r2(mVSh(m)),vlSh=r2(mVlSh(m));
+  var tot=r2(mTot(m));
+  var activePartners=PARTNERS.filter(function(p){return p.status==='active';});
 
   var revBoxes=S.platforms.map(function(p,pi){
     var val=(m.revenues||{})[p]||0;
@@ -4131,19 +4295,27 @@ function renderMonths(){
       +'</div>';
   }).join('');
 
+  var partnerExpBoxes=activePartners.map(function(p,i){
+    var colorClass=PARTNER_COLORS[i%PARTNER_COLORS.length];
+    var exp=(m.expByPartner||{})[p.id]||0;
+    return '<div class="stat-box"><p class="stat-lbl">'+escHtml(p.name)+'</p><p class="stat-val '+colorClass+'">'+fu(exp)+'</p></div>';
+  }).join('');
+
+  var partnerShareBoxes=activePartners.map(function(p,i){
+    var colorClass=PARTNER_COLORS[i%PARTNER_COLORS.length];
+    var share=r2(partnerShareForMonth(p.id,m));
+    return '<div class="stat-box"><p class="stat-lbl">'+escHtml(p.name)+'\'s share</p><p class="stat-val '+colorClass+'">'+fu(share)+'</p></div>';
+  }).join('');
+
   var html=
     '<p class="sec-label" style="margin-bottom:.625rem">Revenue</p>'
     +'<div class="stats-row" style="margin-bottom:1rem">'+revBoxes+'</div>'
-    +'<p class="sec-label" style="margin-bottom:.625rem">Expenses</p>'
-    +'<div class="stats-row" style="margin-bottom:.5rem">'
-    +'<div class="stat-box"><p class="stat-lbl">'+P0().name+'</p><p class="stat-val blue">'+fu(m.vExp)+'</p></div>'
-    +'<div class="stat-box"><p class="stat-lbl">'+P1().name+'</p><p class="stat-val green">'+fu(m.vlExp)+'</p></div>'
-    +'</div>'
+    +(activePartners.length?'<p class="sec-label" style="margin-bottom:.625rem">Expenses</p>'
+    +'<div class="stats-row" style="margin-bottom:.5rem">'+partnerExpBoxes+'</div>':'')
     +'<div class="divider"></div>'
     +'<div class="stats-row" style="margin-bottom:0">'
     +'<div class="stat-box"><p class="stat-lbl">Total</p><p class="stat-val">'+fu(tot)+'</p></div>'
-    +'<div class="stat-box"><p class="stat-lbl">'+P0().name+'\'s share</p><p class="stat-val blue">'+fu(vSh)+'</p></div>'
-    +'<div class="stat-box"><p class="stat-lbl">'+P1().name+'\'s share</p><p class="stat-val green">'+fu(vlSh)+'</p></div>'
+    +partnerShareBoxes
     +'</div>';
 
   var monthKey=m.id;
@@ -4343,15 +4515,21 @@ function renderList(){
         h+='<div class="w-expand" style="margin:0 -20px;padding:16px 20px">'
           +'<div class="g2" style="margin-bottom:.875rem">'
           +'<div class="field"><label>Received (EUR)</label>'
-          +'<input class="num" id="e_'+w.id+'" placeholder="0.00" oninput="eurChanged(\''+w.id+'\')">'
+          +'<input class="num" id="e_'+w.id+'" placeholder="0.00" oninput="onSplitInput(\''+w.id+'\')">'
           +'<p class="sub-hint" id="rh_'+w.id+'">Wise expected: '+fe(expE)+'</p></div><div></div></div>'
           +'<p class="sec-label" style="margin-bottom:.625rem">Split</p>'
           +'<div class="g2" style="margin-bottom:.875rem">'
-          +'<div class="field"><label>'+P0().name+' (EUR)</label><input class="num" id="sv_'+w.id+'" placeholder="0.00" oninput="updateV(\''+w.id+'\')"></div>'
-          +'<div class="field"><label>'+P1().name+' (EUR)</label><input class="num" id="svl_'+w.id+'" placeholder="0.00" oninput="updateVl(\''+w.id+'\')"></div>'
+          +PARTNERS.filter(function(p){return p.status==='active';}).map(function(p,i){
+            var colorClass=PARTNER_COLORS[i%PARTNER_COLORS.length];
+            return '<div class="field"><label style="color:var(--'+colorClass+'-text)">'+escHtml(p.name)+' (EUR)</label>'
+              +'<input class="num" id="sp_'+w.id+'_'+p.id+'" placeholder="0.00" oninput="onSplitInput(\''+w.id+'\')" data-partner="'+p.id+'"></div>';
+          }).join('')
           +'</div>'
           +'<p class="hint" style="margin-bottom:.75rem">Enter EUR received — split fills automatically. Adjust if needed.</p>'
+          +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'
           +'<button class="btn btn-primary" style="font-size:13px" onclick="confirmW(\''+w.id+'\')">Confirm receipt</button>'
+          +'<span style="font-size:11px;color:var(--text3)">— click when funds arrive</span>'
+          +'</div>'
           +'</div>';
       }
     });
@@ -4377,9 +4555,9 @@ function renderList(){
       var mBadge2=(!ACTIVE_MODEL_ID&&ALL_MODELS.length>1)
         ?'<span class="wd-badge model-b">'+(dwMObj?escHtml(dwMObj.name):'Agency')+'</span>'
         :'';
-      var splits=PARTNERS.length>=2
-        ?escHtml(P0().name)+' '+fe(w.vE)+'<br>'+escHtml(P1().name)+' '+fe(w.vlE)
-        :'';
+      var splits=PARTNERS.filter(function(p){return p.status==='active';}).map(function(p){
+        return escHtml(p.name)+' '+fe((w.splitsByPartner||{})[p.id]||0);
+      }).join('<br>');
       var descHtmlDone=w.description
         ?'<div class="wd-description">'+escHtml(w.description)+'</div>'
         :'';
@@ -4390,7 +4568,7 @@ function renderList(){
         +'<span class="wd-badge platform">'+escHtml(w.pl)+'</span>'
         +'<span class="wd-badge confirmed">Confirmed</span>'
         +mBadge2
-        +(loss>0?'<span class="wd-loss">FX loss '+fe(loss)+'</span>':'')
+        +(loss>0?'<span class="wd-loss" title="Difference between Wise mid-market rate and actual received amount">FX loss '+fe(loss)+'</span>':'')
         +'</div>'
         +'<div class="wd-detail">'+fu(w.usd)+' &nbsp;·&nbsp; rate '+rate+' &nbsp;·&nbsp; '+fdate(w.date)+(w.rd?' → '+fdate(w.rd):'')+'</div>'
         +descHtmlDone
@@ -4422,7 +4600,8 @@ function updateSidebarStats(){
   if(mc)mc.textContent=ALL_MODELS.length+' model'+(ALL_MODELS.length!==1?'s':'');
   var curM=S.months[S.am]||S.months[S.months.length-1];
   if(tm)tm.textContent=curM?fc(mTot(curM)):'—';
-  if(tw)tw.textContent='€'+(totalVEUR()+totalVlEUR()).toFixed(2);
+  var totalWdrawn=r2(S.ws.filter(function(w){return w.st==='ok';}).reduce(function(s,w){return s+w.usd;},0));
+  if(tw)tw.textContent=fc(totalWdrawn);
 }
 
 function renderAll(){

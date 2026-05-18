@@ -2308,10 +2308,27 @@ async function signup(){
     btn.disabled=false;btn.textContent='Create account';
     return;
   }
-  err.style.color='var(--green-text)';
-  err.textContent='Check your email and click the confirmation link to activate your account.';
+  var needsConfirm=!res.data.user.confirmed_at&&!res.data.session;
+  if(needsConfirm){
+    err.style.color='var(--green-text)';
+    err.textContent='Check your email and click the confirmation link to activate your account.';
+    g('resendRow').style.display='block';
+  } else {
+    err.style.color='var(--green-text)';
+    err.textContent='Account created! Signing you in…';
+    var signInAfterReg=await db.auth.signInWithPassword({email:email,password:pass});
+    if(!signInAfterReg.error&&signInAfterReg.data.user){
+      var rd=await loadUserRole(signInAfterReg.data.user.id);
+      if(rd){
+        showApp(signInAfterReg.data.user,rd);
+        if(currentRole==='admin')await loadAgencySettings();
+        await Promise.all([loadPartners(),loadModels()]);
+        init();loadFanvueConnection();
+        if(ALL_MODELS.length===0&&currentRole==='admin')showOnboardingOverlay();
+      }
+    }
+  }
   btn.disabled=false;btn.textContent='Create account';
-  g('resendRow').style.display='block';
 }
 
 var _resendCooldown=null;
@@ -2932,6 +2949,8 @@ async function invitePartner(){
       msg='Split total would be '+(data.current_total+split)+'% — max is 100%. Available: '+(100-data.current_total)+'%.';
     }else if(msg.toLowerCase().includes('duplicate')||msg.toLowerCase().includes('already')){
       msg='A partner with this email already exists in your agency.';
+    }else{
+      msg='Could not send invite. Please try again or contact support.';
     }
     st.textContent=msg;
     if(btn){btn.disabled=false;btn.textContent='Send invite';}
@@ -3130,8 +3149,14 @@ async function connectFanvue(){
 }
 
 async function disconnectFanvue(){
-  if(!confirm('Disconnect your Fanvue account? Revenue data already stored will remain.'))return;
-  showToast('To fully disconnect, contact support.','error');
+  if(!confirm('Disconnect Fanvue? All stored transaction history will be kept. Automatic sync will stop.'))return;
+  var modelId=ACTIVE_MODEL_ID;
+  if(!modelId){showToast('Select a model first.','error');return;}
+  var res=await db.from('fanvue_connections').delete().eq('model_id',modelId);
+  if(res.error){showToast('Failed to disconnect. Try again.','error');return;}
+  FANVUE_CONNECTION=null;
+  loadFanvueConnection();
+  showToast('Fanvue disconnected. Transaction history preserved.','success');
 }
 
 function showToast(msg,type){
@@ -3459,9 +3484,28 @@ async function fetchWiseRate(){
   if(gbpRow&&FX_RATES.GBP&&FX_RATES.GBP!==0.73)gbpRow.style.display='flex';
 }
 
-function requestDataDeletion(){
-  if(!confirm('This will permanently delete your account and all data. This cannot be undone.\n\nContact support@payoutmanager.app to confirm your request.'))return;
-  showToast('Data deletion request noted. Please email support@payoutmanager.app to complete it.','info');
+async function requestDataDeletion(){
+  if(!confirm('This will permanently delete your account and all data. This cannot be undone.'))return;
+  var btn=document.querySelector('[onclick="requestDataDeletion()"]');
+  if(btn){btn.disabled=true;btn.textContent='Deleting…';}
+  if(_agencyId){
+    await db.from('withdrawals').delete().eq('agency_id',_agencyId);
+    await db.from('expenses').delete().eq('agency_id',_agencyId);
+    await db.from('transactions').delete().eq('agency_id',_agencyId);
+    await db.from('partners').delete().eq('agency_id',_agencyId);
+    await db.from('models').delete().eq('agency_id',_agencyId);
+    await db.from('agencies').delete().eq('id',_agencyId);
+  }
+  var sessionRes=await db.auth.getSession();
+  var jwt=sessionRes.data&&sessionRes.data.session&&sessionRes.data.session.access_token;
+  if(jwt){
+    await fetch(EDGE_URL+'/delete-account',{
+      method:'POST',
+      headers:{'Authorization':'Bearer '+jwt,'Content-Type':'application/json'}
+    });
+  }
+  await db.auth.signOut();
+  location.reload();
 }
 
 /* ---- Platform management ---- */
@@ -4687,6 +4731,7 @@ async function init(){
   renderExpModelSelect();
   renderWModelSelect();
   renderAll();
+  requestAnimationFrame(function(){requestAnimationFrame(function(){renderChart();});});
   fetchWiseRate();
 
   await Promise.all([loadRevenueData(),loadWithdrawals(),loadAllModelsSplits(),loadFxRates()]);
@@ -4706,7 +4751,33 @@ async function init(){
 
   var _startParams=new URLSearchParams(window.location.search);
   var _invToken=_startParams.get('invite');
-  if(_invToken){showInviteOverlay(_invToken);return;}
+
+  if(_invToken){
+    var _sessionCheck=await db.auth.getSession();
+    var _existingSession=_sessionCheck.data&&_sessionCheck.data.session;
+    if(_existingSession&&_existingSession.user){
+      var _acceptRes=await fetch(EDGE_URL+'/accept-invite',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({token:_invToken,user_id:_existingSession.user.id})
+      });
+      history.replaceState({},'',window.location.pathname);
+      var _roleData=await loadUserRole(_existingSession.user.id);
+      if(_roleData){
+        showApp(_existingSession.user,_roleData);
+        if(currentRole==='admin')await loadAgencySettings();
+        await Promise.all([loadPartners(),loadModels()]);
+        init();
+        loadFanvueConnection();
+      } else {
+        showLogin();
+        setTimeout(function(){g('authErr').textContent='Invite link may be invalid or expired.';},100);
+      }
+      return;
+    }
+    showInviteOverlay(_invToken);
+    return;
+  }
 
   var sessionRes=await db.auth.getSession();
   var session=sessionRes.data&&sessionRes.data.session;

@@ -2828,8 +2828,9 @@ async function loadAgencySettings(){
 
 async function ensureAdminPartnerExists(){
   if(currentRole!=='admin'||!_agencyId||!currentUser)return;
-  var existing=PARTNERS.find(function(p){return p.user_id===currentUser.id;});
-  if(!existing){
+  var dbCheck = await db.from('partners').select('id')
+    .eq('agency_id', _agencyId).eq('user_id', currentUser.id).maybeSingle();
+  if(!dbCheck.error && !dbCheck.data){
     var adminName=(currentUser.email||'').split('@')[0];
     var ins=await db.from('partners').insert({
       agency_id:_agencyId,

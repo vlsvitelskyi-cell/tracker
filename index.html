@@ -11,7 +11,7 @@
 <meta property="og:type" content="website">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=DM+Sans:wght@400;500;600&family=Outfit:wght@700;800&display=swap" rel="stylesheet">
 <style>
 /* ── Reset ─────────────────────────────────────── */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -83,6 +83,8 @@ body{
   color:var(--indigo-l);
   flex-shrink:0;
 }
+.nav-links{display:flex;align-items:center;gap:2px}
+@media(max-width:600px){.nav-links{display:none}}
 .nav-actions{display:flex;align-items:center;gap:10px}
 .nav-link{
   text-decoration:none;color:var(--text2);font-size:14px;font-weight:500;
@@ -231,10 +233,11 @@ h1.hero-headline .hi{color:var(--indigo-l)}
   color:var(--text3);margin-bottom:5px;
 }
 .mock-pbal{
-  font-family:'Chakra Petch',sans-serif;
+  font-family:'Outfit',sans-serif;
   font-size:22px;font-weight:700;
   letter-spacing:-.04em;color:var(--text);
   margin-bottom:3px;line-height:1;
+  font-variant-numeric:tabular-nums;
 }
 .mock-prem{font-size:10px;color:var(--text3)}
 .mock-prem em{font-style:normal;color:var(--indigo-l);font-weight:600}
@@ -521,26 +524,6 @@ h1.hero-headline .hi{color:var(--indigo-l)}
 .theme-toggle:hover{background:rgba(255,255,255,.06);color:var(--text)}
 [data-theme="light"] .theme-toggle:hover{background:rgba(0,0,0,.05);color:var(--text)}
 
-/* ── Operator teaser ─────────────────────────────── */
-.operator-teaser{
-  max-width:700px;margin:0 auto 0;
-  border:1px dashed var(--border2);
-  border-radius:14px;padding:28px 32px;
-  opacity:.85;
-}
-.ot-badge{
-  display:inline-block;
-  font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
-  color:var(--indigo-l);background:var(--indigo-dim);
-  border:1px solid rgba(99,102,241,.2);
-  padding:3px 10px;border-radius:20px;margin-bottom:14px;
-}
-.operator-teaser h3{
-  font-family:'Chakra Petch',sans-serif;font-size:18px;font-weight:700;
-  color:var(--text);margin-bottom:10px;letter-spacing:-.02em;
-}
-.operator-teaser p{font-size:14px;color:var(--text2);line-height:1.72}
-
 /* ── Responsive ──────────────────────────────────── */
 @media(max-width:900px){
   .hero-inner{grid-template-columns:1fr;gap:48px}
@@ -578,8 +561,24 @@ h1.hero-headline .hi{color:var(--indigo-l)}
       </span>
       Payout Manager
     </a>
+    <div class="nav-links">
+      <a href="#features" class="nav-link">Features</a>
+      <a href="#pricing" class="nav-link">Pricing</a>
+      <a href="#faq" class="nav-link">FAQ</a>
+    </div>
     <div class="nav-actions">
-      <button class="theme-toggle" id="themeToggle" onclick="toggleLandingTheme()" title="Switch to light theme">☀</button>
+      <button class="theme-toggle" id="themeToggle" onclick="toggleLandingTheme()" title="Switch to light theme">
+        <svg id="ltIconSun" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <circle cx="12" cy="12" r="5"/>
+          <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+          <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        </svg>
+        <svg id="ltIconMoon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:none">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      </button>
       <a href="https://payoutmanager.app/fanvue_tracker.html" class="nav-link">Sign in</a>
       <a href="https://payoutmanager.app/fanvue_tracker.html?signup=1" class="btn-nav">Get started →</a>
     </div>
@@ -597,22 +596,22 @@ h1.hero-headline .hi{color:var(--indigo-l)}
         Built for Fanvue creators and agencies
       </div>
       <h1 class="hero-headline reveal rd1">
-        The financial<br>
-        <span class="hi">OS</span> for Fanvue<br>
-        agencies
+        Know exactly<br>
+        who's owed <span class="hi">what</span>.<br>
+        Always.
       </h1>
       <p class="hero-sub reveal rd2">
-        Honest partner splits, per-model profitability, and withdrawal history — all in one place.
-        Built for agencies that run on Fanvue.
+        Partner splits calculated to the cent. Per-model profitability. Withdrawal history with live FX rates.
+        Built for Fanvue agencies.
       </p>
       <div class="hero-cta reveal rd3">
         <a href="https://payoutmanager.app/fanvue_tracker.html?signup=1" class="btn-primary">
-          Get started free →
+          Get started →
         </a>
         <a href="#features" class="btn-ghost">See how it works</a>
       </div>
       <p class="hero-meta reveal rd3">
-        $29.99/mo per model &nbsp;·&nbsp; No setup fee &nbsp;·&nbsp; Available on Fanvue App Store
+        $29.99/mo per model &nbsp;·&nbsp; No setup fee &nbsp;·&nbsp; Billed via Fanvue App Store
       </p>
     </div>
 
@@ -639,13 +638,17 @@ h1.hero-headline .hi{color:var(--indigo-l)}
           <div class="mock-partner">
             <div class="mock-pname">Alex</div>
             <div class="mock-pbal">$4,218.50</div>
-            <div class="mock-prem">Already withdrawn: <em>$1,118.50</em></div>
+            <div class="mock-prem" style="margin-bottom:7px">Earned · your share</div>
+            <div style="height:1px;background:rgba(255,255,255,.08);margin-bottom:7px"></div>
+            <div class="mock-prem">Withdrawn (EUR): <em>€980.00</em></div>
             <div class="mock-prem" style="margin-top:2px">Remaining: <em>$3,100.00</em></div>
           </div>
           <div class="mock-partner">
             <div class="mock-pname">Morgan</div>
             <div class="mock-pbal">$2,812.33</div>
-            <div class="mock-prem">Already withdrawn: <em>$712.33</em></div>
+            <div class="mock-prem" style="margin-bottom:7px">Earned · your share</div>
+            <div style="height:1px;background:rgba(255,255,255,.08);margin-bottom:7px"></div>
+            <div class="mock-prem">Withdrawn (EUR): <em>€650.00</em></div>
             <div class="mock-prem" style="margin-top:2px">Remaining: <em>$2,100.00</em></div>
           </div>
         </div>
@@ -658,10 +661,6 @@ h1.hero-headline .hi{color:var(--indigo-l)}
           <div class="mock-stat">
             <span class="mock-slabel">Expenses</span>
             <span class="mock-sval">$1,840.00</span>
-          </div>
-          <div class="mock-stat">
-            <span class="mock-slabel">Net profit</span>
-            <span class="mock-sval green">$10,610.20</span>
           </div>
         </div>
 
@@ -742,22 +741,11 @@ h1.hero-headline .hi{color:var(--indigo-l)}
   </div>
 </section>
 
-<!-- ═══════════════════════════════════════ OPERATOR TEASER -->
-<section class="section" style="padding-top:0">
-  <div class="container">
-    <div class="operator-teaser reveal">
-      <div class="ot-badge">Coming soon</div>
-      <h3>Operator earnings tracking</h3>
-      <p>Automatically split chat sales revenue between agency owners and operators based on shift schedules. See exactly how much each operator earned — only from the sales they drove.</p>
-    </div>
-  </div>
-</section>
-
 <!-- ═══════════════════════════════════════ WHY -->
 <section class="section" id="why">
   <div class="why-grid container">
     <div class="s-head">
-      <div class="s-label reveal">Differentiation</div>
+      <div class="s-label reveal">Why it's different</div>
       <h2 class="s-title reveal rd1">Built for agency owners,<br>not solo creators</h2>
     </div>
     <div class="why-cols reveal rd2">
@@ -773,25 +761,25 @@ h1.hero-headline .hi{color:var(--indigo-l)}
         </div>
         <div class="why-row">
           <span class="why-ic">
-            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 2v4.5M6.5 9.5V11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M3.5 3.5l6 6M9.5 3.5l-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
           </span>
           Split calculations in Google Sheets
         </div>
         <div class="why-row">
           <span class="why-ic">
-            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 2v4.5M6.5 9.5V11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M3.5 3.5l6 6M9.5 3.5l-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
           </span>
           "Who got paid what?" arguments
         </div>
         <div class="why-row">
           <span class="why-ic">
-            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 2v4.5M6.5 9.5V11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M3.5 3.5l6 6M9.5 3.5l-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
           </span>
-          One Fanvue dashboard for all models
+          All creators mixed — no per-model split
         </div>
         <div class="why-row">
           <span class="why-ic">
-            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 2v4.5M6.5 9.5V11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M3.5 3.5l6 6M9.5 3.5l-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
           </span>
           Manual CSV exports
         </div>
@@ -875,7 +863,7 @@ h1.hero-headline .hi{color:var(--indigo-l)}
         <a href="https://payoutmanager.app/fanvue_tracker.html?signup=1"
            class="btn-primary"
            style="width:100%;justify-content:center">
-          Get started free →
+          Get started →
         </a>
         <p class="pricing-note">Billed through Fanvue App Store</p>
         <p class="pricing-footnote">Pricing is set by Fanvue App Store and may vary by region.</p>
@@ -928,6 +916,42 @@ h1.hero-headline .hi{color:var(--indigo-l)}
       </div>
     </div>
 
+    <div class="faq-item reveal">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        What happens if I cancel?
+        <svg class="faq-q-icon" width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <path d="M9 3v12M3 9h12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <div class="faq-a">
+        You can cancel anytime through the Fanvue App Store. Your account data stays intact — nothing is deleted automatically. If you resubscribe later, all your history is still there.
+      </div>
+    </div>
+
+    <div class="faq-item reveal rd1">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        Can I export my financial data?
+        <svg class="faq-q-icon" width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <path d="M9 3v12M3 9h12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <div class="faq-a">
+        CSV and PDF export is on the roadmap. For now, all your transaction, expense, and withdrawal data is fully accessible inside the dashboard, with filters by month and model.
+      </div>
+    </div>
+
+    <div class="faq-item reveal rd2">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        How many partners or models can I add?
+        <svg class="faq-q-icon" width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <path d="M9 3v12M3 9h12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <div class="faq-a">
+        There's no cap on partners. Each connected Fanvue creator requires one subscription. Adding more models is as simple as connecting them via Fanvue OAuth inside the app.
+      </div>
+    </div>
+
   </div>
 </section>
 
@@ -960,11 +984,15 @@ var _landingTheme='dark';
 function toggleLandingTheme(){
   _landingTheme=_landingTheme==='dark'?'light':'dark';
   document.documentElement.setAttribute('data-theme',_landingTheme);
-  var btn=document.getElementById('themeToggle');
-  if(btn){
-    btn.textContent=_landingTheme==='dark'?'☀':'☾';
-    btn.title=_landingTheme==='dark'?'Switch to light theme':'Switch to dark theme';
+  var sun=document.getElementById('ltIconSun');
+  var moon=document.getElementById('ltIconMoon');
+  if(sun&&moon){
+    sun.style.display=_landingTheme==='dark'?'block':'none';
+    moon.style.display=_landingTheme==='dark'?'none':'block';
   }
+  var btn=document.getElementById('themeToggle');
+  if(btn)btn.title=_landingTheme==='dark'?'Switch to light theme':'Switch to dark theme';
+  try{localStorage.setItem('landing_theme',_landingTheme);}catch(e){}
 }
 
 /* ── Scroll-reveal ──────────────────────── */

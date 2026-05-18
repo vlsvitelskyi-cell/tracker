@@ -515,7 +515,7 @@ body{
 /* ============================================================
    SETTINGS SECTIONS
 ============================================================ */
-.settings-section { margin-bottom: 44px; }
+.settings-section { margin-bottom: 44px; scroll-margin-top: 124px; }
 .settings-section-title { font-size: 14px; font-weight: 700; letter-spacing: -.01em; margin-bottom: 3px; }
 .settings-section-subtitle { font-size: 12px; color: var(--text3); line-height: 1.5; }
 .settings-section > .card { margin-bottom: 12px; }
@@ -1333,9 +1333,10 @@ body{
 /* ============================================================
    STAGE 7 — SETTINGS SECTION ICONS
 ============================================================ */
-.settings-section { margin-bottom: 48px; }
+.settings-section { margin-bottom: 48px; scroll-margin-top: 124px; }
 .settings-section > .card { margin-bottom: 12px; }
 .settings-section > .card:last-child { margin-bottom: 0; }
+#sAgency, #sTeam, #sIntegrations, #sPreferences, #sAbout { scroll-margin-top: 124px; }
 .settings-section-header {
   display: flex; align-items: center; gap: 14px; margin-bottom: 18px;
 }
@@ -2761,7 +2762,7 @@ async function loadAgencySettings(){
   if(agRes.error||!agRes.data)return;
   _agencyId=agRes.data;
 
-  var agData=await db.from('agencies').select('name,trial_ends_at').eq('id',_agencyId).single();
+  var agData=await db.from('agencies').select('name,trial_ends_at,withdrawal_currency,platforms').eq('id',_agencyId).single();
   if(!agData.error&&agData.data){
     _agencyName=agData.data.name||'';
     var inp=g('agencyNameInput');
@@ -2769,6 +2770,11 @@ async function loadAgencySettings(){
     _agencyTrialEndsAt=agData.data.trial_ends_at||null;
     renderSubBanners();
     updateSidebarStats();
+    if(agData.data.platforms&&Array.isArray(agData.data.platforms)&&agData.data.platforms.length){
+      S.platforms=agData.data.platforms;
+      renderPlatformSelect();
+      renderPlatformSettings();
+    }
   }
   await loadPartnersList();
 }
@@ -2926,8 +2932,6 @@ async function invitePartner(){
       msg='Split total would be '+(data.current_total+split)+'% — max is 100%. Available: '+(100-data.current_total)+'%.';
     }else if(msg.toLowerCase().includes('duplicate')||msg.toLowerCase().includes('already')){
       msg='A partner with this email already exists in your agency.';
-    }else if(msg.toLowerCase().includes('partner')||msg.toLowerCase().includes('create')){
-      msg='Could not create partner — check your agency settings or contact support.';
     }
     st.textContent=msg;
     if(btn){btn.disabled=false;btn.textContent='Send invite';}
@@ -3461,8 +3465,22 @@ function requestDataDeletion(){
 }
 
 /* ---- Platform management ---- */
-function savePlatforms(){
+async function loadPlatformsForPartner(){
+  if(currentRole==='admin')return;
+  var agRes=await db.rpc('get_my_agency_id');
+  if(agRes.error||!agRes.data)return;
+  var agData=await db.from('agencies').select('platforms').eq('id',agRes.data).single();
+  if(!agData.error&&agData.data&&Array.isArray(agData.data.platforms)&&agData.data.platforms.length){
+    S.platforms=agData.data.platforms;
+    renderPlatformSelect();
+  }
+}
+
+async function savePlatforms(){
   try{localStorage.setItem('ft6_platforms',JSON.stringify(S.platforms));}catch(e){}
+  if(_agencyId){
+    await db.from('agencies').update({platforms:S.platforms}).eq('id',_agencyId);
+  }
 }
 function renderPlatformSelect(){
   [g('nPl'),g('txPl')].forEach(function(sel){
@@ -3483,6 +3501,8 @@ function renderPlatformSettings(){
         :'<span style="font-size:11px;color:var(--text3)">last</span>')
       +'</div>';
   }).join('');
+  var addRow=g('newPlatform')?g('newPlatform').closest('.pl-add-row'):null;
+  if(addRow)addRow.style.display=currentRole==='admin'?'':'none';
 }
 function addPlatform(){
   var input=g('newPlatform');
@@ -4574,8 +4594,11 @@ function renderList(){
       var mBadge2=(!ACTIVE_MODEL_ID&&ALL_MODELS.length>1)
         ?'<span class="wd-badge model-b">'+(dwMObj?escHtml(dwMObj.name):'Agency')+'</span>'
         :'';
-      var splits=PARTNERS.filter(function(p){return p.status==='active';}).map(function(p){
-        return escHtml(p.name)+' '+fe((w.splitsByPartner||{})[p.id]||0);
+      var splitsData=PARTNERS.filter(function(p){
+        return p.status==='active'&&((w.splitsByPartner||{})[p.id]||0)>0;
+      });
+      var splits=splitsData.map(function(p){
+        return escHtml(p.name)+' '+fe(w.splitsByPartner[p.id]);
       }).join('<br>');
       var descHtmlDone=w.description
         ?'<div class="wd-description">'+escHtml(w.description)+'</div>'
@@ -4694,6 +4717,7 @@ async function init(){
       showApp(session.user,roleData);
       if(currentRole==='admin')await loadAgencySettings();
       await Promise.all([loadPartners(),loadModels()]);
+      if(currentRole!=='admin')await loadPlatformsForPartner();
       handleCallbackParams();
       init();
       loadFanvueConnection();

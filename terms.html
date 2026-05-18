@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Terms of Service — Payout Manager</title>
+<meta name="description" content="Terms of Service for Payout Manager — Financial OS for Fanvue agencies.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;font-size:16px}
+body{
+  font-family:'DM Sans',system-ui,sans-serif;
+  background:#0B0D13;
+  color:#EEF0F8;
+  line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+:root{
+  --bg:#0B0D13;
+  --bg2:#10131C;
+  --card:#161B27;
+  --border:rgba(255,255,255,0.07);
+  --border2:rgba(255,255,255,0.12);
+  --indigo:#6366F1;
+  --indigo-l:#818CF8;
+  --indigo-dim:rgba(99,102,241,0.14);
+  --text:#EEF0F8;
+  --text2:#94A3B8;
+  --text3:#5A6680;
+}
+
+/* Nav */
+.nav{
+  position:fixed;top:0;left:0;right:0;z-index:200;
+  background:rgba(11,13,19,0.85);
+  backdrop-filter:blur(18px);
+  -webkit-backdrop-filter:blur(18px);
+  border-bottom:1px solid var(--border);
+  padding:0 28px;
+}
+.nav-inner{
+  max-width:780px;margin:0 auto;
+  height:66px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.nav-logo{
+  display:flex;align-items:center;gap:9px;
+  text-decoration:none;color:var(--text);
+  font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:16px;
+}
+.nav-logo-icon{
+  width:30px;height:30px;
+  background:var(--indigo-dim);
+  border:1px solid rgba(99,102,241,.2);
+  border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+}
+.nav-back{
+  font-size:14px;color:var(--text2);text-decoration:none;
+  display:flex;align-items:center;gap:6px;
+  transition:color .2s;
+}
+.nav-back:hover{color:var(--text);}
+
+/* Main layout */
+.page-wrap{
+  max-width:780px;margin:0 auto;padding:120px 28px 80px;
+}
+.page-tag{
+  display:inline-block;
+  font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--indigo-l);
+  background:var(--indigo-dim);
+  border:1px solid rgba(99,102,241,.2);
+  border-radius:20px;padding:4px 12px;
+  margin-bottom:18px;
+}
+.page-title{
+  font-family:'Chakra Petch',sans-serif;font-weight:700;
+  font-size:clamp(26px,4vw,38px);
+  letter-spacing:-.02em;color:var(--text);
+  margin-bottom:10px;
+}
+.page-meta{
+  font-size:14px;color:var(--text3);
+  margin-bottom:56px;
+}
+
+/* Content */
+.doc-section{
+  border-top:1px solid var(--border);
+  padding:36px 0;
+}
+.doc-section:first-of-type{border-top:none;padding-top:0;}
+h2{
+  font-family:'Chakra Petch',sans-serif;font-weight:600;
+  font-size:18px;letter-spacing:-.01em;color:var(--text);
+  margin-bottom:14px;
+}
+p{
+  font-size:15px;color:var(--text2);
+  margin-bottom:14px;
+}
+p:last-child{margin-bottom:0;}
+ul{
+  list-style:none;padding:0;margin-bottom:14px;
+}
+ul li{
+  font-size:15px;color:var(--text2);
+  padding:5px 0 5px 20px;
+  position:relative;
+}
+ul li::before{
+  content:'—';
+  position:absolute;left:0;
+  color:var(--text3);
+}
+a{color:var(--indigo-l);text-decoration:none;}
+a:hover{text-decoration:underline;}
+strong{color:var(--text);font-weight:600;}
+
+.highlight-box{
+  background:var(--card);
+  border:1px solid var(--border2);
+  border-radius:10px;
+  padding:20px 22px;
+  margin:20px 0;
+}
+.highlight-box p{margin-bottom:0;}
+
+/* Footer */
+.footer{
+  border-top:1px solid var(--border);
+  padding:32px 28px;
+}
+.footer-inner{
+  max-width:780px;margin:0 auto;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:12px;
+}
+.footer-wordmark{
+  font-family:'Chakra Petch',sans-serif;font-weight:700;
+  font-size:14px;color:var(--text3);
+}
+.footer-right{display:flex;align-items:center;gap:20px;flex-wrap:wrap;}
+.footer-right a{font-size:13px;color:var(--text3);text-decoration:none;}
+.footer-right a:hover{color:var(--text);}
+.footer-copy{font-size:13px;color:var(--text3);}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a class="nav-logo" href="/">
+      <div class="nav-logo-icon">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <rect x="2" y="2" width="5" height="5" rx="1.5" fill="#6366F1"/>
+          <rect x="9" y="2" width="5" height="5" rx="1.5" fill="#6366F1" opacity=".5"/>
+          <rect x="2" y="9" width="5" height="5" rx="1.5" fill="#6366F1" opacity=".5"/>
+          <rect x="9" y="9" width="5" height="5" rx="1.5" fill="#6366F1" opacity=".3"/>
+        </svg>
+      </div>
+      Payout Manager
+    </a>
+    <a class="nav-back" href="/">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+        <path d="M9 2L4 7l5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Back to home
+    </a>
+  </div>
+</nav>
+
+<main class="page-wrap">
+
+  <div class="page-tag">Legal</div>
+  <h1 class="page-title">Terms of Service</h1>
+  <div class="page-meta">Effective date: May 17, 2026 &nbsp;·&nbsp; Last updated: May 17, 2026</div>
+
+  <div class="doc-section">
+    <h2>1. Agreement</h2>
+    <p>These Terms of Service ("Terms") govern your use of Payout Manager ("Service"), operated at <a href="https://payoutmanager.app">payoutmanager.app</a>. By creating an account or using the Service, you agree to these Terms. If you do not agree, do not use the Service.</p>
+    <p>References to "you" mean the individual or entity using the Service. References to "we", "us", "our" mean the operator of Payout Manager.</p>
+  </div>
+
+  <div class="doc-section">
+    <h2>2. Description of the service</h2>
+    <p>Payout Manager is a financial management tool designed for Fanvue creators and agencies. It provides: partner revenue split tracking, per-model profitability reporting, withdrawal history with FX loss tracking, and integration with the Fanvue platform via official OAuth.</p>
+    <p>The Service is a management and reporting tool. It does not process payments, hold funds, or execute financial transactions on your behalf.</p>
+  </div>
+
+  <div class="doc-section">
+    <h2>3. Eligibility</h2>
+    <p>You must be at least 18 years old to use the Service. By using the Service, you represent that you are of legal age in your jurisdiction to enter into a binding agreement.</p>
+    <p>The Service is intended for business use by Fanvue creator agencies. Personal use is permitted but the Service is optimised for agencies managing two or more creators or partners.</p>
+  </div>
+
+  <div class="doc-section">
+    <h2>4. Accounts</h2>
+    <p>You are responsible for maintaining the confidentiality of your login credentials and for all activity that occurs under your account. You agree to notify us immediately of any unauthorised use at <a href="mailto:support@payoutmanager.app">support@payoutmanager.app</a>.</p>
+    <p>You must provide accurate information when registering. We reserve the right to suspend or terminate accounts that provide false information or violate these Terms.</p>
+    <p>You may invite partners to your agency workspace. You are responsible for the actions of users you invite.</p>
+  </div>
+
+  <div class="doc-section">
+    <h2>5. Subscription and billing</h2>
+    <p>Payout Manager uses a per-creator billing model: each connected Fanvue creator account requires one active subscription.</p>
+    <div class="highlight-box">
+      <p><strong>Billing is handled exclusively through the Fanvue App Store.</strong> We do not process payments directly. Subscription pricing, renewal terms, refund policies, and billing disputes are governed by Fanvue's App Store terms. Pricing may vary by region as determined by Fanvue.</p>
+    </div>
+    <p>Your subscription remains active as long as it is maintained through the Fanvue App Store. Cancellation via the Fanvue App Store will terminate your access to the Service at the end of the current billing period. We do not offer refunds for partial billing periods.</p>
+  </div>
+
+  <div class="doc-section">
+    <h2>6. Acceptable use</h2>
+    <p>You agree not to:</p>
+    <ul>
+      <li>Use the Service for any unlawful purpose or in violation of any applicable law</li>
+      <li>Attempt to gain unauthorised access to any part of the Service or another user's account</li>
+      <li>Reverse-engineer, decompile, or attempt to extract the source code of the Service</li>
+      <li>Use the Service to store, process, or transmit content that is illegal, fraudulent, or violates third-party rights</li>
+      <li>Circumvent or attempt to circumvent any security or access control measures</li>
+      <li>Use the Service in a way that disrupts or degrades performance for other users</li>
+      <li>Misrepresent financial data or use the Service to facilitate financial fraud</li>
+    </ul>
+  </div>
+
+  <div class="doc-section">
+    <h2>7. Fanvue integration</h2>
+    <p>The Service integrates with Fanvue via OAuth. By connecting your Fanvue account, you authorise Payout Manager to access your Fanvue earnings data on your behalf using the permissions you grant. We do not access any data beyond what is necessary to provide the Service.</p>
+    <p>Your use of the Fanvue integration is also subject to Fanvue's own terms of service and policies. We are not responsible for changes to the Fanvue API, interruptions to the Fanvue service, or any decisions made by Fanvue regarding your account.</p>
+  </div>
+
+  <div class="doc-section">
+    <h2>8. Your data</h2>
+    <p>You retain ownership of the financial data and content you enter into the Service. By using the Service, you grant us a limited licence to store and process your data solely for the purpose of operating and providing the Service.</p>
+    <p>We do not claim ownership of your data. We do not use your financial data for any purpose other than providing the Service to you. See our <a href="/privacy.html">Privacy Policy</a> for full details.</p>
+  </div>
+
+  <div class="doc-section">
+    <h2>9. Availability and modifications</h2>
+    <p>We aim to maintain high availability but do not guarantee uninterrupted access to the Service. The Service is provided "as is" and we may update, modify, or discontinue features at any time.</p>
+    <p>We will provide reasonable notice before making material changes that affect your use of the Service. Notice will be sent to the email address on your account.</p>
+  </div>
+
+  <div class="doc-section">
+    <h2>10. Disclaimer of warranties</h2>
+    <p>The Service is provided "as is" and "as available" without warranties of any kind, express or implied, including but not limited to warranties of merchantability, fitness for a particular purpose, or non-infringement.</p>
+    <p>We do not warrant that the financial calculations, split distributions, or reports generated by the Service are error-free or suitable for tax, accounting, or legal purposes. You are responsible for verifying all financial data and for compliance with applicable tax and financial regulations in your jurisdiction.</p>
+  </div>
+
+  <div class="doc-section">
+    <h2>11. Limitation of liability</h2>
+    <p>To the maximum extent permitted by applicable law, we shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including but not limited to loss of revenue, loss of data, or loss of business, arising from your use of the Service.</p>
+    <p>Our total aggregate liability for any claim arising from your use of the Service shall not exceed the amount you paid for the Service in the three months preceding the claim.</p>
+    <p>Some jurisdictions do not allow the exclusion or limitation of certain liabilities. In such jurisdictions, our liability is limited to the maximum extent permitted by law.</p>
+  </div>
+
+  <div class="doc-section">
+    <h2>12. Termination</h2>
+    <p>You may terminate your account at any time by deleting your data from within the app (Settings → About → Legal → Delete my data) or by contacting us at <a href="mailto:support@payoutmanager.app">support@payoutmanager.app</a>.</p>
+    <p>We may suspend or terminate your account if you violate these Terms, if we are required to do so by law, or if we decide to discontinue the Service. In the event of Service discontinuation, we will provide at least 30 days notice.</p>
+    <p>Upon termination, your right to access the Service ceases immediately. Sections 8, 10, 11, and 13 survive termination.</p>
+  </div>
+
+  <div class="doc-section">
+    <h2>13. Governing law</h2>
+    <p>These Terms are governed by and construed in accordance with the laws of the European Union and, where applicable, the laws of the jurisdiction in which we operate. Any dispute arising from these Terms or your use of the Service shall be subject to the exclusive jurisdiction of the competent courts in that jurisdiction.</p>
+    <p>If you are located in the EEA, you may also have the right to submit a complaint to a local consumer protection authority.</p>
+  </div>
+
+  <div class="doc-section">
+    <h2>14. Changes to these terms</h2>
+    <p>We may update these Terms from time to time. If we make material changes, we will notify registered users by email at least 14 days before the change takes effect. Continued use of the Service after that date constitutes acceptance of the updated Terms.</p>
+    <p>The current version of these Terms is always available at <a href="https://payoutmanager.app/terms.html">payoutmanager.app/terms.html</a>.</p>
+  </div>
+
+  <div class="doc-section">
+    <h2>15. Contact</h2>
+    <p>For questions about these Terms, contact us at: <a href="mailto:support@payoutmanager.app">support@payoutmanager.app</a>.</p>
+  </div>
+
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-wordmark">Payout Manager</div>
+    <div class="footer-right">
+      <a href="/privacy.html">Privacy Policy</a>
+      <a href="/terms.html">Terms of Service</a>
+      <span class="footer-copy">© 2026 Payout Manager</span>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

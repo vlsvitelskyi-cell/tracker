@@ -2641,9 +2641,9 @@ function partnerRemaining(partnerId){
 }
 
 async function loadPartners(){
-  var res=await db.from('partners').select('id,name,status,invited_email').order('created_at',{ascending:true});
+  var res=await db.from('partners').select('id,name,status,invited_email,user_id').order('created_at',{ascending:true});
   if(res.error||!res.data||!res.data.length){console.error('loadPartners:',res.error);return;}
-  PARTNERS=res.data.map(function(p,i){return{id:p.id,name:p.name,status:p.status||'active',invited_email:p.invited_email||null,color:i===0?'blue':'green'};});
+  PARTNERS=res.data.map(function(p,i){return{id:p.id,name:p.name,status:p.status||'active',invited_email:p.invited_email||null,user_id:p.user_id||null,color:i===0?'blue':'green'};});
   renderPartnerCards();
   renderPartnerSelect();
 }
@@ -2662,12 +2662,16 @@ function renderPartnerCards(){
   }
   var html=activePartners.map(function(p,i){
     var colorClass=PARTNER_COLORS[i%PARTNER_COLORS.length];
+    var isMe=currentUser&&p.user_id===currentUser.id;
+    var nameLabel=isMe
+      ?escHtml(p.name)+'<span style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:8px;background:rgba(255,255,255,.12);color:rgba(255,255,255,.6);margin-left:6px;letter-spacing:.06em">YOU</span>'
+      :escHtml(p.name);
     var share=totalPartnerShare(p.id);
     var wEUR=totalPartnerWithdrawnEUR(p.id);
     var rem=partnerRemaining(p.id);
     var splitPct=getCurrentSplit(ACTIVE_MODEL_ID,p.id);
     return '<div class="partner-card '+colorClass+'">'
-      +'<div class="partner-name"><span class="pname-dot"></span>'+escHtml(p.name)
+      +'<div class="partner-name"><span class="pname-dot"></span>'+nameLabel
       +(splitPct?'<span class="partner-split-badge">'+splitPct+'%</span>':'')
       +'</div>'
       +'<div class="partner-eur">'+fc(share)+'</div>'
@@ -4024,7 +4028,7 @@ function suggestSplit(eur){
 function expectedEur(usd){return r2(usd*WISE_RATE);}
 
 function toggleExp(id){EXP[id]=!EXP[id];renderList();}
-function onSplitInput(wId){
+function onWithdrawalSplitInput(wId){
   var eur=pn(g('e_'+wId).value)||0;
   var hint=g('rh_'+wId);
   if(hint&&eur>0){
@@ -4048,9 +4052,9 @@ function onSplitInput(wId){
   });
 }
 // LEGACY: can remove after testing
-function eurChanged(id){onSplitInput(id);}
-function updateV(id){onSplitInput(id);}
-function updateVl(id){onSplitInput(id);}
+function eurChanged(id){onWithdrawalSplitInput(id);}
+function updateV(id){onWithdrawalSplitInput(id);}
+function updateVl(id){onWithdrawalSplitInput(id);}
 
 /* ---- Settings sub-nav (Stage 4) ---- */
 function scrollToSection(id,el){
@@ -4155,7 +4159,8 @@ function renderBal(){
         var frac=wEUR/totalEURwithdrawn;
         var colorClass=PARTNER_COLORS[i%PARTNER_COLORS.length];
         barHtml+='<div class="split-bar-seg '+colorClass+'" style="flex:'+frac.toFixed(3)+';min-width:4px"></div>';
-        labHtml+='<span style="font-weight:600">'+escHtml(p.name)+' '+(frac*100).toFixed(1)+'%</span>';
+        var colorVar=colorClass==='blue'?'var(--blue-text)':colorClass==='green'?'var(--green-text)':colorClass==='purple'?'#A78BFA':colorClass==='amber'?'var(--yellow-text)':'#F9A8D4';
+        labHtml+='<span style="font-weight:600;color:'+colorVar+'">'+escHtml(p.name)+' '+(frac*100).toFixed(1)+'%</span>';
       });
       splitBarEl.innerHTML=barHtml;
       if(splitLabelsEl)splitLabelsEl.innerHTML=labHtml;
@@ -4515,14 +4520,14 @@ function renderList(){
         h+='<div class="w-expand" style="margin:0 -20px;padding:16px 20px">'
           +'<div class="g2" style="margin-bottom:.875rem">'
           +'<div class="field"><label>Received (EUR)</label>'
-          +'<input class="num" id="e_'+w.id+'" placeholder="0.00" oninput="onSplitInput(\''+w.id+'\')">'
+          +'<input class="num" id="e_'+w.id+'" placeholder="0.00" oninput="onWithdrawalSplitInput(\''+w.id+'\')">'
           +'<p class="sub-hint" id="rh_'+w.id+'">Wise expected: '+fe(expE)+'</p></div><div></div></div>'
           +'<p class="sec-label" style="margin-bottom:.625rem">Split</p>'
           +'<div class="g2" style="margin-bottom:.875rem">'
           +PARTNERS.filter(function(p){return p.status==='active';}).map(function(p,i){
             var colorClass=PARTNER_COLORS[i%PARTNER_COLORS.length];
             return '<div class="field"><label style="color:var(--'+colorClass+'-text)">'+escHtml(p.name)+' (EUR)</label>'
-              +'<input class="num" id="sp_'+w.id+'_'+p.id+'" placeholder="0.00" oninput="onSplitInput(\''+w.id+'\')" data-partner="'+p.id+'"></div>';
+              +'<input class="num" id="sp_'+w.id+'_'+p.id+'" placeholder="0.00" oninput="onWithdrawalSplitInput(\''+w.id+'\')" data-partner="'+p.id+'"></div>';
           }).join('')
           +'</div>'
           +'<p class="hint" style="margin-bottom:.75rem">Enter EUR received — split fills automatically. Adjust if needed.</p>'

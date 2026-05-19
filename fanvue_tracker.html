@@ -1656,6 +1656,7 @@ body{
             <div class="card-header">
               <div class="card-title">Partner Split</div>
             </div>
+            <div id="rebalanceHint" style="display:none;font-size:12px;color:var(--text2);padding:8px 12px;background:var(--card2);border-radius:6px;margin-bottom:12px;line-height:1.5"></div>
             <div class="split-labels" id="splitLabels"></div>
             <div class="split-bar" id="splitBar"></div>
             <div class="split-hint" id="splitHint"></div>
@@ -1824,11 +1825,20 @@ body{
             </div>
             <div class="field">
               <label>Amount (USD)</label>
-              <input id="nUSD" class="num" placeholder="200">
+              <input id="nUSD" class="num" placeholder="200" oninput="onWithdrawalUSDChange(this.value)">
             </div>
             <div class="field">
               <label>Date</label>
               <input type="date" id="nDate">
+            </div>
+          </div>
+          <div id="smartSuggestRow" style="display:none;margin-bottom:12px">
+            <div style="background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px">
+              <div>
+                <div style="font-size:12px;font-weight:600;color:var(--indigo-l);margin-bottom:2px">💡 Smart suggestion</div>
+                <div id="smartSuggestText" style="font-size:12px;color:var(--text2)">—</div>
+              </div>
+              <button class="btn" onclick="applySmartSuggestion()" style="font-size:12px;padding:6px 12px;flex-shrink:0;white-space:nowrap">Use suggestion</button>
             </div>
           </div>
           <div class="add-row" style="align-items:flex-end;margin-top:10px">
@@ -2412,7 +2422,8 @@ function renderModelSwitcher(){
   var el=g('modelSwitcher');if(!el)return;
   if(!ALL_MODELS.length){el.innerHTML='';return;}
   var html='';
-  if(ALL_MODELS.length>=1){
+  var showAllChip=currentRole==='admin'||ALL_MODELS.length>1;
+  if(showAllChip){
     html+='<div class="model-chip'+(ACTIVE_MODEL_ID===''?' act':'')+'" onclick="selectModel(\'\')">All models</div>';
   }
   ALL_MODELS.forEach(function(m){
@@ -4358,6 +4369,7 @@ function toggleAddWithdrawalForm(){
   if(!visible){
     form.scrollIntoView({behavior:'smooth',block:'nearest'});
     setTimeout(function(){var f=g('wModel');if(f)f.focus();},200);
+    computeSmartSuggestion();
   }
 }
 function setMonth(i){
@@ -4368,6 +4380,74 @@ function setMonth(i){
 }
 
 /* ---- Render: Dashboard ---- */
+function renderRebalanceHint(){
+  var el=g('rebalanceHint');
+  if(!el||currentRole!=='admin')return;
+  var activePartners=PARTNERS.filter(function(p){return p.status==='active';});
+  if(activePartners.length<2){el.style.display='none';return;}
+  var remaining=activePartners.map(function(p){
+    return{name:p.name,rem:partnerRemaining(p.id)};
+  }).filter(function(r){return r.rem>0;});
+  if(!remaining.length){el.style.display='none';return;}
+  remaining.sort(function(a,b){return b.rem-a.rem;});
+  var top=remaining[0];
+  if(remaining.length>=2&&(top.rem-remaining[remaining.length-1].rem)>50){
+    el.style.display='block';
+    el.innerHTML='💡 <strong>'+escHtml(top.name)+'</strong> has the most uncollected: '
+      +fc(top.rem)+' — consider the next withdrawal in their favor.';
+  }else{
+    el.style.display='none';
+  }
+}
+
+function computeSmartSuggestion(){
+  var row=g('smartSuggestRow');
+  var txt=g('smartSuggestText');
+  if(!row||!txt)return;
+  var activePartners=PARTNERS.filter(function(p){return p.status==='active';});
+  if(activePartners.length<2){row.style.display='none';return;}
+  var remaining=activePartners.map(function(p){
+    return{id:p.id,name:p.name,rem:partnerRemaining(p.id)};
+  });
+  var maxRem=Math.max.apply(null,remaining.map(function(r){return r.rem;}));
+  var minRem=Math.min.apply(null,remaining.map(function(r){return r.rem;}));
+  if(maxRem<=0){row.style.display='none';return;}
+  var suggestedUSD=minRem>0?minRem:maxRem;
+  var suggestedEUR=r2(suggestedUSD*(FX_RATES.EUR||WISE_RATE||0.84));
+  var parts=remaining
+    .filter(function(r){return r.rem>0;})
+    .map(function(r){return escHtml(r.name)+': '+fc(r.rem)+' remaining';});
+  txt.innerHTML=parts.join(' &nbsp;·&nbsp; ')
+    +'<br><span style="color:var(--indigo-l);font-weight:600">Suggested: '+fc(suggestedUSD)+' ≈ '+fe(suggestedEUR)+'</span>';
+  row.style.display='block';
+  row._suggestedUSD=suggestedUSD;
+  row._suggestedEUR=suggestedEUR;
+}
+
+function applySmartSuggestion(){
+  var row=g('smartSuggestRow');
+  if(!row||!row._suggestedUSD)return;
+  var usdInput=g('nUSD');
+  if(usdInput){
+    usdInput.value=row._suggestedUSD.toFixed(2);
+    usdInput.dispatchEvent(new Event('input'));
+  }
+}
+
+function onWithdrawalUSDChange(usdVal){
+  var usd=parseFloat(usdVal)||0;
+  if(!usd)return;
+  var suggestedEUR=r2(usd*(FX_RATES.EUR||WISE_RATE||0.84));
+  var eurInput=g('wEUR')||document.querySelector('#addWithdrawalForm input[placeholder*="EUR"]');
+  if(eurInput&&!eurInput.value){
+    eurInput.value=suggestedEUR.toFixed(2);
+    if(typeof onWithdrawalSplitInput==='function'){
+      var pendingW=S.ws.find(function(w){return w.st==='pend';});
+      if(pendingW)onWithdrawalSplitInput(pendingW.id);
+    }
+  }
+}
+
 function renderModelProfitSection(){
   var sec=g('modelProfitSection');
   var tbl=g('modelProfitTable');
@@ -4497,6 +4577,10 @@ function renderBal(){
   if(sb1)sb1.textContent=fc(curRev);
   if(sb2)sb2.textContent=fc(totalW);
   renderModelProfitSection();
+  renderRebalanceHint();
+  if(g('addWithdrawalForm')&&g('addWithdrawalForm').style.display!=='none'){
+    computeSmartSuggestion();
+  }
 }
 
 /* ---- Render: Recent transactions (dashboard) ---- */
@@ -4630,7 +4714,31 @@ function renderMonths(){
     return '<div class="stat-box"><p class="stat-lbl">'+escHtml(p.name)+'\'s share</p><p class="stat-val '+colorClass+'">'+fu(share)+'</p></div>';
   }).join('');
 
-  var html=
+  var partnerSummaryHtml='';
+  if(currentRole==='partner'){
+    var myPartner=PARTNERS.find(function(p){return currentUser&&p.user_id===currentUser.id;});
+    if(myPartner){
+      var myShare=r2(partnerShareForMonth(myPartner.id,m));
+      var myWithdrawnEUR=r2(okWs().reduce(function(s,w){
+        return s+((w.splitsByPartner||{})[myPartner.id]||0);
+      },0));
+      var mySplit=getCurrentSplit(ACTIVE_MODEL_ID,myPartner.id);
+      partnerSummaryHtml='<div style="background:var(--card2);border:1px solid var(--border2);border-radius:10px;'
+        +'padding:16px 18px;margin-bottom:16px;display:flex;gap:24px;flex-wrap:wrap">'
+        +'<div>'
+        +'<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:4px">Your share this month</div>'
+        +'<div style="font-size:22px;font-weight:700;color:var(--text)">'+fu(myShare)+'</div>'
+        +'<div style="font-size:11px;color:var(--text3);margin-top:2px">'+mySplit+'% split · based on '+fu(r2(mTot(m)))+' total</div>'
+        +'</div>'
+        +'<div>'
+        +'<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:4px">Withdrawn (all time)</div>'
+        +'<div style="font-size:22px;font-weight:700;color:var(--text)">'+fe(myWithdrawnEUR)+'</div>'
+        +'</div>'
+        +'</div>';
+    }
+  }
+
+  var html=partnerSummaryHtml+
     '<p class="sec-label" style="margin-bottom:.625rem">Revenue</p>'
     +'<div class="stats-row" style="margin-bottom:1rem">'+revBoxes+'</div>'
     +(activePartners.length?'<p class="sec-label" style="margin-bottom:.625rem">Expenses</p>'
@@ -4745,6 +4853,17 @@ function renderMonths(){
           +'</div>'
           +'</div>';
       }else{
+        var partnerShareHtml='';
+        if(currentRole==='partner'){
+          var myPtnr=PARTNERS.find(function(p){return currentUser&&p.user_id===currentUser.id;});
+          if(myPtnr){
+            var txSplit=getCurrentSplit(tx.model_id||ACTIVE_MODEL_ID,myPtnr.id);
+            var myTxShare=r2((tx.amount||tx.amt||0)*txSplit/100);
+            if(myTxShare>0){
+              partnerShareHtml='<span style="font-size:11px;color:var(--text3);margin-left:8px">your share: '+fu(myTxShare)+'</span>';
+            }
+          }
+        }
         html+='<div class="tx-item">'
           +'<div class="tx-row">'
           +'<div class="tx-left">'
@@ -4752,6 +4871,7 @@ function renderMonths(){
             +' onchange="toggleTxSelect(\''+tx.id+'\',this.checked)" onclick="event.stopPropagation()">':'')
           +'<span class="tx-pl" style="background:'+plColor+'22;color:'+plColor+'">'+plLabel+'</span>'
           +'<span class="tx-amt">'+fu(tx.amount)+'</span>'
+          +partnerShareHtml
           +'<span class="tx-date">'+fdate(tx.date)+'</span>'
           +(tx.source==='scraper'?'<span class="tx-source">auto</span>':'')
           +'</div>'
@@ -4978,7 +5098,7 @@ function downloadCSV(rows,filename){
 function renderAll(){
   renderBal();renderChartLegend();renderMonths();renderList();
   renderPlatformSettings();renderPlatformSelect();renderExpenses();renderRecentTx();
-  renderModelProfitSection();updateSidebarStats();
+  renderModelProfitSection();renderRebalanceHint();updateSidebarStats();
 }
 
 /* ---- Numeric input filter ---- */

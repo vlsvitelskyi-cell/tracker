@@ -1676,6 +1676,19 @@ body{
           </div>
         </div>
 
+        <!-- Model profitability section (admin only) -->
+        <div id="modelProfitSection" style="display:none;margin-bottom:24px">
+          <div class="card" style="padding:0;overflow:hidden">
+            <div style="padding:18px 22px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+              <div>
+                <div style="font-size:14px;font-weight:600;color:var(--text)">Model Performance</div>
+                <div style="font-size:12px;color:var(--text3);margin-top:2px">Revenue vs expenses per model</div>
+              </div>
+            </div>
+            <div id="modelProfitTable" style="padding:8px 0"></div>
+          </div>
+        </div>
+
       </div><!-- end tab-dashboard -->
 
       <!-- ============ REVENUE ============ -->
@@ -1716,6 +1729,7 @@ body{
               <button class="btn" style="font-size:12px;padding:6px 14px" onclick="refreshRevenue()">↻ Refresh</button>
               <button class="btn" id="selectModeBtn" style="font-size:12px;padding:6px 14px;display:none" onclick="toggleSelectMode()">Select</button>
               <button class="btn" style="font-size:12px;padding:6px 14px" onclick="toggleAddTxForm()">+ Add manually</button>
+              <button class="btn" onclick="exportTransactionsCSV()" style="font-size:12px;padding:6px 12px">↓ Export CSV</button>
             </div>
           </div>
           <div class="mtab-row" id="mTabs"></div>
@@ -1791,7 +1805,10 @@ body{
         <div class="card" style="margin-bottom:12px">
           <div class="sec-row" style="margin-bottom:0">
             <div class="sec-label" style="margin:0">Withdrawals</div>
-            <button class="btn" style="font-size:12px;padding:6px 14px" onclick="toggleAddWithdrawalForm()">+ Record withdrawal</button>
+            <div style="display:flex;gap:8px;align-items:center">
+              <button class="btn" onclick="exportWithdrawalsCSV()" style="font-size:12px;padding:6px 12px">↓ Export CSV</button>
+              <button class="btn" style="font-size:12px;padding:6px 14px" onclick="toggleAddWithdrawalForm()">+ Record withdrawal</button>
+            </div>
           </div>
         </div>
         <div class="card" id="addWithdrawalForm" style="display:none">
@@ -1976,6 +1993,21 @@ body{
                 <input id="newPlatform" placeholder="Platform name…" onkeydown="if(event.key==='Enter')addPlatform()">
               </div>
               <button class="btn" onclick="addPlatform()" style="align-self:flex-end">Add</button>
+            </div>
+          </div>
+          <div class="card" id="digestCard" style="display:none">
+            <div class="sec-label">EMAIL NOTIFICATIONS</div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 0">
+              <div>
+                <div style="font-size:14px;color:var(--text);font-weight:500">Daily digest</div>
+                <div style="font-size:12px;color:var(--text3);margin-top:2px">Morning summary of yesterday's earnings</div>
+              </div>
+              <label style="position:relative;display:inline-block;width:44px;height:24px;cursor:pointer">
+                <input type="checkbox" id="digestToggle" onchange="saveDigestPreference(this.checked)"
+                  style="opacity:0;width:0;height:0;position:absolute">
+                <span id="digestToggleTrack" style="position:absolute;inset:0;background:var(--border2);border-radius:12px;transition:.2s"></span>
+                <span id="digestToggleThumb" style="position:absolute;left:3px;top:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:.2s"></span>
+              </label>
             </div>
           </div>
         </div>
@@ -2824,6 +2856,31 @@ async function loadAgencySettings(){
   }
   await loadPartnersList();
   await ensureAdminPartnerExists();
+  await loadDigestPreference();
+}
+
+async function loadDigestPreference(){
+  var card=g('digestCard');
+  if(!_agencyId||currentRole!=='admin'){if(card)card.style.display='none';return;}
+  if(card)card.style.display='block';
+  var res=await db.from('agencies').select('digest_enabled').eq('id',_agencyId).single();
+  if(res.error)return;
+  setDigestToggleUI(res.data&&res.data.digest_enabled!==false);
+}
+
+function setDigestToggleUI(enabled){
+  var cb=g('digestToggle'),track=g('digestToggleTrack'),thumb=g('digestToggleThumb');
+  if(!cb)return;
+  cb.checked=enabled;
+  if(track)track.style.background=enabled?'var(--indigo)':'var(--border2)';
+  if(thumb)thumb.style.transform=enabled?'translateX(20px)':'translateX(0)';
+}
+
+async function saveDigestPreference(enabled){
+  setDigestToggleUI(enabled);
+  if(!_agencyId)return;
+  await db.from('agencies').update({digest_enabled:enabled}).eq('id',_agencyId);
+  showToast(enabled?'Daily digest enabled':'Daily digest disabled','success');
 }
 
 async function ensureAdminPartnerExists(){
@@ -4311,6 +4368,50 @@ function setMonth(i){
 }
 
 /* ---- Render: Dashboard ---- */
+function renderModelProfitSection(){
+  var sec=g('modelProfitSection');
+  var tbl=g('modelProfitTable');
+  if(!sec||!tbl)return;
+  if(currentRole!=='admin'||!ALL_MODELS.length){sec.style.display='none';return;}
+  sec.style.display='block';
+  if(!S.months.length){
+    tbl.innerHTML='<div style="padding:16px 22px;font-size:13px;color:var(--text3)">No revenue data yet.</div>';
+    return;
+  }
+  var modelStats={};
+  ALL_MODELS.forEach(function(m){modelStats[m.id]={name:m.name,revenue:0,expenses:0};});
+  S.months.forEach(function(mo){
+    (mo.txs||[]).forEach(function(tx){
+      var mid=tx.model_id||ACTIVE_MODEL_ID;
+      if(modelStats[mid])modelStats[mid].revenue+=tx.amt||0;
+    });
+  });
+  S.exps.forEach(function(ex){
+    var mid=ex.model_id;
+    if(mid&&modelStats[mid])modelStats[mid].expenses+=ex.amount||0;
+  });
+  var rows=ALL_MODELS.map(function(m){
+    var s=modelStats[m.id]||{revenue:0,expenses:0};
+    var net=s.revenue-s.expenses;
+    var netColor=net>=0?'var(--green-text)':'var(--red)';
+    return '<div style="display:grid;grid-template-columns:1fr repeat(3,120px);align-items:center;'
+      +'padding:10px 22px;border-bottom:1px solid var(--border)">'
+      +'<div style="font-size:13px;font-weight:600;color:var(--text)">'+escHtml(m.name)+'</div>'
+      +'<div style="font-size:13px;color:var(--text);text-align:right">'+fc(s.revenue)+'</div>'
+      +'<div style="font-size:13px;color:var(--text2);text-align:right">'+fc(s.expenses)+'</div>'
+      +'<div style="font-size:13px;font-weight:600;color:'+netColor+';text-align:right">'+fc(net)+'</div>'
+      +'</div>';
+  }).join('');
+  tbl.innerHTML='<div style="display:grid;grid-template-columns:1fr repeat(3,120px);padding:8px 22px;'
+    +'border-bottom:1px solid var(--border)">'
+    +'<div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em">Model</div>'
+    +'<div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;text-align:right">Revenue</div>'
+    +'<div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;text-align:right">Expenses</div>'
+    +'<div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;text-align:right">Net</div>'
+    +'</div>'
+    +rows;
+}
+
 function renderBal(){
   var totalRev=r2(S.months.reduce(function(s,m){return s+mTot(m);},0));
   var totalW=r2(S.ws.filter(function(w){return w.st==='ok';}).reduce(function(s,w){return s+w.usd;},0));
@@ -4395,6 +4496,7 @@ function renderBal(){
   var sb1=g('sidebarThisMonth'),sb2=g('sidebarTotalWithdrawn');
   if(sb1)sb1.textContent=fc(curRev);
   if(sb2)sb2.textContent=fc(totalW);
+  renderModelProfitSection();
 }
 
 /* ---- Render: Recent transactions (dashboard) ---- */
@@ -4828,10 +4930,55 @@ function updateSidebarStats(){
   if(tw)tw.textContent=fc(totalWdrawn);
 }
 
+function exportTransactionsCSV(){
+  var rows=[['Date','Platform','Amount (USD)','Source','Description','Model']];
+  S.months.forEach(function(mo){
+    (mo.txs||[]).forEach(function(tx){
+      var model=ALL_MODELS.find(function(m){return m.id===(tx.model_id||ACTIVE_MODEL_ID);})||{name:''};
+      rows.push([
+        tx.date||'',
+        tx.platform||'',
+        (tx.amt||0).toFixed(2),
+        tx.source||'',
+        (tx.description||'').replace(/,/g,' '),
+        model.name
+      ]);
+    });
+  });
+  downloadCSV(rows,'transactions_'+new Date().toISOString().slice(0,10)+'.csv');
+}
+
+function exportWithdrawalsCSV(){
+  var rows=[['Date Requested','Date Received','Platform','USD','EUR','Rate','FX Loss (EUR)','Status']];
+  S.ws.forEach(function(w){
+    rows.push([
+      w.reqDate||'',
+      w.recDate||'',
+      w.platform||'',
+      (w.usd||0).toFixed(2),
+      (w.eur||0).toFixed(2),
+      w.rate||(w.eur&&w.usd?(w.eur/w.usd).toFixed(4):''),
+      (w.fxLoss||0).toFixed(2),
+      w.st==='ok'?'Confirmed':'Pending'
+    ]);
+  });
+  downloadCSV(rows,'withdrawals_'+new Date().toISOString().slice(0,10)+'.csv');
+}
+
+function downloadCSV(rows,filename){
+  var csv=rows.map(function(r){return r.map(function(v){return'"'+String(v).replace(/"/g,'""')+'"';}).join(',');}).join('\n');
+  var blob=new Blob([csv],{type:'text/csv'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url;a.download=filename;
+  document.body.appendChild(a);a.click();
+  document.body.removeChild(a);URL.revokeObjectURL(url);
+}
+
 function renderAll(){
   renderBal();renderChartLegend();renderMonths();renderList();
   renderPlatformSettings();renderPlatformSelect();renderExpenses();renderRecentTx();
-  updateSidebarStats();
+  renderModelProfitSection();updateSidebarStats();
 }
 
 /* ---- Numeric input filter ---- */
@@ -4933,14 +5080,18 @@ async function init(){
       if(currentRole==='admin')await loadAgencySettings();
       await Promise.all([loadPartners(),loadModels()]);
       if(currentRole!=='admin')await loadPlatformsForPartner();
-      if(currentRole==='partner'&&!_agencyName&&_agencyId){
-        var agNameRes=await db.from('agencies').select('name').eq('id',_agencyId).single();
-        if(!agNameRes.error&&agNameRes.data){
-          _agencyName=agNameRes.data.name||'';
-          var nm=g('sidebarAgencyName');
-          if(nm&&_agencyName)nm.textContent=_agencyName;
+      if(currentRole==='partner'){
+        var agIdRes=await db.rpc('get_my_agency_id');
+        if(!agIdRes.error&&agIdRes.data){
+          _agencyId=agIdRes.data;
+          var agNameRes=await db.from('agencies').select('name').eq('id',agIdRes.data).single();
+          if(!agNameRes.error&&agNameRes.data&&agNameRes.data.name){
+            _agencyName=agNameRes.data.name;
+          }
         }
       }
+      var _nm=g('sidebarAgencyName');
+      if(_nm&&_agencyName)_nm.textContent=_agencyName;
       handleCallbackParams();
       init();
       loadFanvueConnection();

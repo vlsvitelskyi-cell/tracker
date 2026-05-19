@@ -24,12 +24,14 @@
   --text2: #8892B0;
   --text3: #6B7A9E;
   --text4: #4E5775;
-  --blue: #6366F1;
-  --blue-dim: #4C4FBF;
-  --blue-bg: rgba(99,102,241,.12);
-  --blue-bg2: rgba(99,102,241,.20);
-  --blue-text: #A5B4FC;
-  --blue-glow: rgba(99,102,241,.45);
+  --blue: #7C3AED;
+  --blue-dim: #5B21B6;
+  --blue-bg: rgba(124,58,237,.12);
+  --blue-bg2: rgba(124,58,237,.20);
+  --blue-text: #C4B5FD;
+  --blue-glow: rgba(124,58,237,.45);
+  --indigo: #7C3AED;
+  --indigo-l: #C4B5FD;
   --green: #10B981;
   --green-bg: rgba(16,185,129,.12);
   --green-bg2: rgba(16,185,129,.20);
@@ -48,7 +50,7 @@
   --shadow-sm: 0 1px 3px rgba(0,0,0,.5), 0 1px 2px rgba(0,0,0,.3);
   --shadow-md: 0 4px 16px rgba(0,0,0,.5), 0 2px 4px rgba(0,0,0,.3);
   --shadow-lg: 0 8px 32px rgba(0,0,0,.6), 0 4px 8px rgba(0,0,0,.4);
-  --shadow-glow-blue: 0 0 0 1px rgba(99,102,241,.2), 0 4px 20px rgba(99,102,241,.15);
+  --shadow-glow-blue: 0 0 0 1px rgba(124,58,237,.2), 0 4px 20px rgba(124,58,237,.15);
   --shadow-glow-green: 0 0 0 1px rgba(16,185,129,.15), 0 4px 20px rgba(16,185,129,.1);
   --r-xs: 6px;
   --r-sm: 10px;
@@ -245,72 +247,75 @@ body{
 .card-meta{font-size:11px;color:var(--text3)}
 
 /* ============================================================
-   PARTNER KPI CARDS (existing IDs preserved)
+   PARTNER CARDS — Clean border-left style
 ============================================================ */
-.partner-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+.partner-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.partner-row.single { grid-template-columns: 1fr; max-width: 480px; }
+
 .partner-card {
-  border-radius: 22px; padding: 26px 28px;
-  position: relative; overflow: hidden;
-  transition: transform var(--dur-normal) var(--ease-out), box-shadow var(--dur-normal);
-  animation: fadeUp var(--dur-slow) var(--ease-out) both;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 22px 24px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color var(--dur-normal), box-shadow var(--dur-normal), transform var(--dur-normal);
+  border-left: 4px solid var(--blue);
 }
-.partner-card:hover { transform: translateY(-2px); }
-.partner-card.blue {
-  background: linear-gradient(145deg, #1E2134 0%, #1A1D2E 100%);
-  border: 1px solid rgba(99,102,241,.25);
-  box-shadow: var(--shadow-glow-blue);
+.partner-card:hover {
+  border-color: var(--border2);
+  border-left-color: var(--blue);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
 }
-.partner-card.green {
-  background: linear-gradient(145deg, #1C2030 0%, #1A1D2E 100%);
-  border: 1px solid rgba(16,185,129,.2);
-  box-shadow: var(--shadow-glow-green);
-  animation-delay: 60ms;
-}
-.partner-card.blue::before {
-  content: ''; position: absolute; top: -60px; right: -60px;
-  width: 200px; height: 200px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(99,102,241,.22) 0%, transparent 65%);
-  pointer-events: none;
-}
-.partner-card.green::before {
-  content: ''; position: absolute; top: -60px; right: -60px;
-  width: 200px; height: 200px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(16,185,129,.18) 0%, transparent 65%);
-  pointer-events: none;
-}
+
+.partner-card.blue  { border-left-color: var(--blue); }
+.partner-card.green { border-left-color: var(--green); }
+.partner-card.purple { border-left-color: #8B5CF6; }
+.partner-card.amber  { border-left-color: #F59E0B; }
+.partner-card.pink   { border-left-color: #EC4899; }
+
 .partner-name {
-  font-size: 10px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
-  color: var(--text3); margin-bottom: 16px;
+  font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--text3); margin-bottom: 14px;
   display: flex; align-items: center; gap: 8px;
 }
-.pname-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-.partner-card.blue .pname-dot { background: var(--blue); box-shadow: 0 0 8px var(--blue-glow); }
-.partner-card.green .pname-dot { background: var(--green); box-shadow: 0 0 8px var(--green-glow); }
-.partner-eur {
-  font-size: 42px; font-weight: 800; letter-spacing: -.07em; line-height: 1;
-  font-variant-numeric: tabular-nums; font-family: 'Outfit', sans-serif; margin-bottom: 6px;
+.pname-dot {
+  width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
 }
-.partner-card.blue .partner-eur { color: #E0E7FF; }
-.partner-card.green .partner-eur { color: #D1FAE5; }
+.partner-card.blue   .pname-dot { background: var(--blue); }
+.partner-card.green  .pname-dot { background: var(--green); }
+.partner-card.purple .pname-dot { background: #8B5CF6; }
+.partner-card.amber  .pname-dot { background: #F59E0B; }
+.partner-card.pink   .pname-dot { background: #EC4899; }
+
+.partner-eur {
+  font-size: 36px; font-weight: 800; letter-spacing: -.06em; line-height: 1;
+  font-variant-numeric: tabular-nums; font-family: 'Outfit', sans-serif;
+  color: var(--text); margin-bottom: 4px;
+}
 .partner-earned-label {
-  font-size: 10px; color: var(--text3); font-weight: 500;
-  letter-spacing: .04em; margin-bottom: 18px;
+  font-size: 11px; color: var(--text3); font-weight: 500;
+  letter-spacing: .02em; margin-bottom: 18px;
 }
 .partner-divider {
-  height: 1px; margin-bottom: 18px;
-  background: linear-gradient(to right, rgba(255,255,255,.12), transparent);
+  height: 1px; margin-bottom: 16px;
+  background: var(--border);
 }
-.partner-rem-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.partner-rem-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .partner-rem-lbl {
   font-size: 9px; font-weight: 700; color: var(--text4);
-  text-transform: uppercase; letter-spacing: .1em; margin-bottom: 5px;
+  text-transform: uppercase; letter-spacing: .1em; margin-bottom: 4px;
 }
 .partner-rem {
-  font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums;
+  font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums;
   font-family: 'Outfit', sans-serif; color: var(--text2);
 }
-.partner-card.blue .partner-rem { color: rgba(165,180,252,.75); }
-.partner-card.green .partner-rem { color: rgba(110,231,183,.75); }
 
 /* ============================================================
    STATS ROW (used by JS renderBal)
@@ -377,37 +382,18 @@ body{
   font-size:12px;margin-bottom:8px;
 }
 .split-hint{font-size:12px;min-height:18px;line-height:1.55}
-.partner-split-badge{
-  margin-left:auto;font-size:9px;font-weight:700;
-  background:rgba(255,255,255,.1);color:rgba(255,255,255,.6);
-  padding:2px 7px;border-radius:10px;letter-spacing:.04em;
+.partner-rem.rem-zero { color: var(--text4); }
+.partner-split-badge {
+  margin-left: auto; font-size: 10px; font-weight: 700;
+  background: var(--blue-bg); color: var(--blue-text);
+  padding: 2px 8px; border-radius: 10px; letter-spacing: .04em;
 }
-.partner-rem.rem-zero{color:var(--text4);}
-/* Extra partner card colors */
-.partner-card.purple{
-  background:linear-gradient(135deg,rgba(139,92,246,.18) 0%,rgba(139,92,246,.06) 100%);
-  border:1px solid rgba(139,92,246,.25);
+.skeleton-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--border2);
+  pointer-events: none;
 }
-.partner-card.purple::before{background:radial-gradient(ellipse at top left,rgba(139,92,246,.22) 0%,transparent 65%);}
-.partner-card.purple .pname-dot{background:#8B5CF6;box-shadow:0 0 8px rgba(139,92,246,.5);}
-.partner-card.purple .partner-eur{color:#EDE9FE;}
-.partner-card.purple .partner-rem{color:rgba(196,181,253,.75);}
-.partner-card.amber{
-  background:linear-gradient(135deg,rgba(245,158,11,.18) 0%,rgba(245,158,11,.06) 100%);
-  border:1px solid rgba(245,158,11,.25);
-}
-.partner-card.amber::before{background:radial-gradient(ellipse at top left,rgba(245,158,11,.22) 0%,transparent 65%);}
-.partner-card.amber .pname-dot{background:#F59E0B;box-shadow:0 0 8px rgba(245,158,11,.5);}
-.partner-card.amber .partner-eur{color:#FEF3C7;}
-.partner-card.amber .partner-rem{color:rgba(252,211,77,.75);}
-.partner-card.pink{
-  background:linear-gradient(135deg,rgba(236,72,153,.18) 0%,rgba(236,72,153,.06) 100%);
-  border:1px solid rgba(236,72,153,.25);
-}
-.partner-card.pink::before{background:radial-gradient(ellipse at top left,rgba(236,72,153,.22) 0%,transparent 65%);}
-.partner-card.pink .pname-dot{background:#EC4899;box-shadow:0 0 8px rgba(236,72,153,.5);}
-.partner-card.pink .partner-eur{color:#FCE7F3;}
-.partner-card.pink .partner-rem{color:rgba(249,168,212,.75);}
 
 /* ============================================================
    DASHBOARD TWO-COLUMN MID-ROW
@@ -1153,6 +1139,7 @@ body{
   .partner-eur{font-size:28px}
   .tabs-mobile{display:flex}
   body{padding-bottom:90px}
+  #mobileModelPill { display: flex !important; }
 }
 @media(max-width:640px){
   .partner-row{grid-template-columns:1fr}
@@ -1180,7 +1167,7 @@ body{
 .auth-brand::before{
   content:'';position:absolute;top:-20%;right:-15%;
   width:560px;height:560px;border-radius:50%;
-  background:radial-gradient(circle,rgba(99,102,241,.15) 0%,transparent 65%);
+  background:radial-gradient(circle,rgba(124,58,237,.15) 0%,transparent 65%);
   pointer-events:none;
 }
 .auth-brand::after{
@@ -1304,7 +1291,17 @@ body{
 }
 .ssnav-item:hover { background: var(--card); color: var(--text2); }
 .ssnav-item.act { background: var(--blue-bg); color: var(--blue-text); font-weight: 600; }
-@media(max-width:600px){ .settings-subnav { display: none; } }
+@media(max-width:600px){
+  .settings-subnav {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    white-space: nowrap;
+    padding-bottom: 2px;
+  }
+  .settings-subnav::-webkit-scrollbar { display: none; }
+  .ssnav-item { display: inline-flex; flex-shrink: 0; }
+}
 
 /* ============================================================
    STAGE 8 — IMPROVED TOASTS
@@ -1348,25 +1345,17 @@ body{
         <div class="auth-brand-name">Payout Manager</div>
       </div>
       <h1 class="auth-brand-headline">Track every dollar.<br>Pay fairly.</h1>
-      <p class="auth-brand-sub">The financial operating system for Fanvue agencies — revenue sync, partner splits, and withdrawal tracking in one place.</p>
+      <p class="auth-brand-sub">Revenue sync, partner splits, and FX tracking — in one place.</p>
       <ul class="auth-brand-bullets">
-        <li><div class="auth-brand-check">✓</div>Automatic revenue sync from Fanvue</li>
-        <li><div class="auth-brand-check">✓</div>Partner splits calculated to the cent</li>
-        <li><div class="auth-brand-check">✓</div>Multi-model management in one view</li>
-        <li><div class="auth-brand-check">✓</div>EUR/USD withdrawal tracking with live FX rates</li>
+        <li><div class="auth-brand-check">✓</div>Auto-sync from Fanvue — no manual entry</li>
+        <li><div class="auth-brand-check">✓</div>Per-model partner splits, to the cent</li>
+        <li><div class="auth-brand-check">✓</div>All your models in one dashboard</li>
+        <li><div class="auth-brand-check">✓</div>Live FX rates and withdrawal history</li>
       </ul>
     </div>
     <!-- Form side -->
     <div class="auth-form-side">
       <div class="auth-box">
-        <div class="auth-logo">
-          <div class="auth-logo-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-            </svg>
-          </div>
-          <div class="auth-logo-text">Payout Manager</div>
-        </div>
         <div class="auth-tabs">
           <button class="auth-tab act" id="tabSignin" onclick="setAuthMode('signin')">Sign in</button>
           <button class="auth-tab" id="tabSignup" onclick="setAuthMode('signup')">Create account</button>
@@ -1406,12 +1395,14 @@ body{
       <div class="ob-step act" id="obDot1"></div>
       <div class="ob-step-line"></div>
       <div class="ob-step" id="obDot2"></div>
+      <div class="ob-step-line"></div>
+      <div class="ob-step" id="obDot3"></div>
     </div>
     <!-- Step 1: Agency name -->
     <div id="obPanel1">
       <div class="ob-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color:var(--blue-text)"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></div>
-      <h2 class="ob-title">Name your agency</h2>
-      <p class="ob-desc">This will appear on reports and partner invites.</p>
+      <h2 class="ob-title">What's your agency called?</h2>
+      <p class="ob-desc">Used on partner invitations and reports.</p>
       <div class="auth-field">
         <label>Agency name</label>
         <input type="text" id="obAgencyName" placeholder="e.g. Elite Models Agency"
@@ -1481,7 +1472,7 @@ body{
       </div>
       <div>
         <div class="logo-name">Payout Manager</div>
-        <div class="logo-sub">Agency Finance</div>
+        <div class="logo-sub" id="sidebarLogoSub">Payout Manager</div>
       </div>
     </div>
 
@@ -1570,13 +1561,20 @@ body{
       <a href="https://www.fanvue.com/app-store" target="_blank"
         style="display:inline-block;padding:12px 24px;background:var(--blue);color:#fff;
         border-radius:8px;font-weight:600;font-size:14px;text-decoration:none;margin-top:4px">
-        Go to Fanvue App Store →
+        Subscribe on Fanvue →
       </a>
     </div>
 
     <!-- TOP BAR -->
     <div class="topbar">
       <div class="page-title" id="pageTitle">Dashboard</div>
+      <!-- Mobile model switcher — only visible on mobile -->
+      <div id="mobileModelPill" style="display:none;align-items:center;gap:6px;background:var(--card2);border:1px solid var(--border2);border-radius:20px;padding:5px 12px 5px 8px;cursor:pointer;max-width:160px" onclick="toggleMobileModelMenu()">
+        <span id="mobileModelDot" style="width:7px;height:7px;border-radius:50%;background:var(--green);flex-shrink:0"></span>
+        <span id="mobileModelName" style="font-size:12px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100px">—</span>
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="color:var(--text3);flex-shrink:0"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div id="mobileModelMenu" style="display:none;position:absolute;top:56px;left:50%;transform:translateX(-50%);background:var(--card);border:1px solid var(--border2);border-radius:var(--r-md);padding:6px;z-index:200;min-width:200px;box-shadow:var(--shadow-lg)"></div>
       <div class="topbar-right">
         <div class="user-chip" id="userChip" style="display:none">
           <span id="userEmail" style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
@@ -1631,13 +1629,29 @@ body{
         </div>
 
         <!-- Partner balance KPI cards — rendered dynamically by JS -->
-        <div class="partner-row" id="partnerRow"></div>
+        <div class="partner-row" id="partnerRow">
+          <div class="partner-card skeleton-card">
+            <div class="skeleton" style="width:60%;height:10px;margin-bottom:14px;border-radius:4px"></div>
+            <div class="skeleton" style="width:45%;height:36px;margin-bottom:8px;border-radius:6px"></div>
+            <div class="skeleton" style="width:35%;height:10px;margin-bottom:20px;border-radius:4px"></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <div><div class="skeleton" style="height:8px;margin-bottom:6px;border-radius:4px"></div><div class="skeleton" style="height:14px;border-radius:4px"></div></div>
+              <div><div class="skeleton" style="height:8px;margin-bottom:6px;border-radius:4px"></div><div class="skeleton" style="height:14px;border-radius:4px"></div></div>
+            </div>
+          </div>
+        </div>
 
         <!-- Subscription banner -->
         <div id="subBannerDash"></div>
 
         <!-- Stats row -->
-        <div class="stats-row" id="dashStats"></div>
+        <div class="stats-row" id="dashStats">
+          <div class="stat-box"><div class="skeleton" style="height:9px;width:60%;margin-bottom:10px;border-radius:4px"></div><div class="skeleton" style="height:22px;width:80%;border-radius:6px"></div></div>
+          <div class="stat-box"><div class="skeleton" style="height:9px;width:60%;margin-bottom:10px;border-radius:4px"></div><div class="skeleton" style="height:22px;width:80%;border-radius:6px"></div></div>
+          <div class="stat-box"><div class="skeleton" style="height:9px;width:60%;margin-bottom:10px;border-radius:4px"></div><div class="skeleton" style="height:22px;width:80%;border-radius:6px"></div></div>
+          <div class="stat-box"><div class="skeleton" style="height:9px;width:60%;margin-bottom:10px;border-radius:4px"></div><div class="skeleton" style="height:22px;width:80%;border-radius:6px"></div></div>
+          <div class="stat-box"><div class="skeleton" style="height:9px;width:60%;margin-bottom:10px;border-radius:4px"></div><div class="skeleton" style="height:22px;width:80%;border-radius:6px"></div></div>
+        </div>
 
         <!-- Mid row: Chart + Split -->
         <div class="dash-two-col">
@@ -1673,7 +1687,13 @@ body{
             <button class="btn btn-ghost" onclick="showTab('revenue',document.querySelector('[data-tab=revenue]'))">View all →</button>
           </div>
           <div id="recentTxList">
-            <div style="color:var(--text3);font-size:13px;padding:14px 0;text-align:center">No transactions yet</div>
+            <div id="recentTxSkeleton">
+              <div class="skeleton" style="height:44px;margin-bottom:1px;border-radius:0"></div>
+              <div class="skeleton" style="height:44px;margin-bottom:1px;border-radius:0;opacity:.7"></div>
+              <div class="skeleton" style="height:44px;margin-bottom:1px;border-radius:0;opacity:.5"></div>
+              <div class="skeleton" style="height:44px;margin-bottom:1px;border-radius:0;opacity:.3"></div>
+              <div class="skeleton" style="height:44px;border-radius:0;opacity:.15"></div>
+            </div>
           </div>
         </div>
 
@@ -1835,7 +1855,7 @@ body{
           <div id="smartSuggestRow" style="display:none;margin-bottom:12px">
             <div style="background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px">
               <div>
-                <div style="font-size:12px;font-weight:600;color:var(--indigo-l);margin-bottom:2px">💡 Smart suggestion</div>
+                <div style="font-size:12px;font-weight:600;color:var(--indigo-l);margin-bottom:2px">💡 Suggested withdrawal</div>
                 <div id="smartSuggestText" style="font-size:12px;color:var(--text2)">—</div>
               </div>
               <button class="btn" onclick="applySmartSuggestion()" style="font-size:12px;padding:6px 12px;flex-shrink:0;white-space:nowrap">Use suggestion</button>
@@ -1866,31 +1886,11 @@ body{
 
         <!-- Settings sub-nav -->
         <div class="settings-subnav" id="settingsSubnav">
-          <a href="#sAgency" class="ssnav-item act" onclick="scrollToSection('sAgency',this);return false;">Agency</a>
-          <a href="#sTeam" class="ssnav-item" onclick="scrollToSection('sTeam',this);return false;">Team</a>
+          <a href="#sTeam" class="ssnav-item act" onclick="scrollToSection('sTeam',this);return false;">Team</a>
           <a href="#sIntegrations" class="ssnav-item" onclick="scrollToSection('sIntegrations',this);return false;">Integrations</a>
+          <a href="#sAgency" class="ssnav-item" onclick="scrollToSection('sAgency',this);return false;">Agency</a>
           <a href="#sPreferences" class="ssnav-item" onclick="scrollToSection('sPreferences',this);return false;">Preferences</a>
           <a href="#sAbout" class="ssnav-item" onclick="scrollToSection('sAbout',this);return false;">About</a>
-        </div>
-
-        <!-- SECTION: AGENCY -->
-        <div class="settings-section" id="agencyCard" style="display:none"><div id="sAgency"></div>
-          <div class="settings-section-header">
-            <div class="settings-section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></div>
-            <div>
-              <div class="settings-section-title">Agency</div>
-              <div class="settings-section-subtitle">Your agency name and basic configuration</div>
-            </div>
-          </div>
-          <div class="card">
-            <div class="sec-label">Agency name</div>
-            <div class="field">
-              <label>Name</label>
-              <input id="agencyNameInput" placeholder="My Agency" maxlength="60">
-            </div>
-            <button class="btn btn-primary" onclick="saveAgencyName()" id="saveAgencyBtn">Save changes</button>
-            <div id="agencyNameStatus" style="font-size:12px;margin-top:8px;min-height:16px"></div>
-          </div>
         </div>
 
         <!-- SECTION: TEAM -->
@@ -1941,6 +1941,26 @@ body{
               <button class="btn" style="flex:1" onclick="cancelEditSplits()">Cancel</button>
               <button class="btn btn-primary" style="flex:1" id="saveSplitsBtn" onclick="saveModelSplits()">Save splits</button>
             </div>
+          </div>
+        </div>
+
+        <!-- SECTION: AGENCY -->
+        <div class="settings-section" id="agencyCard" style="display:none"><div id="sAgency"></div>
+          <div class="settings-section-header">
+            <div class="settings-section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></div>
+            <div>
+              <div class="settings-section-title">Agency</div>
+              <div class="settings-section-subtitle">Your agency name and basic configuration</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="sec-label">Agency name</div>
+            <div class="field">
+              <label>Name</label>
+              <input id="agencyNameInput" placeholder="My Agency" maxlength="60">
+            </div>
+            <button class="btn btn-primary" onclick="saveAgencyName()" id="saveAgencyBtn">Save changes</button>
+            <div id="agencyNameStatus" style="font-size:12px;margin-top:8px;min-height:16px"></div>
           </div>
         </div>
 
@@ -2439,6 +2459,47 @@ function renderModelSwitcher(){
     html+='<div class="model-chip model-chip-add" onclick="showAddModelModal()">+ Add model</div>';
   }
   el.innerHTML=html;
+  updateMobileModelPill();
+}
+
+function updateMobileModelPill(){
+  var pill=g('mobileModelPill');
+  var nameEl=g('mobileModelName');
+  if(!pill)return;
+  if(!ALL_MODELS.length){pill.style.display='none';return;}
+  var active=ALL_MODELS.find(function(m){return m.id===ACTIVE_MODEL_ID;});
+  var label=active?active.name:(ALL_MODELS.length>1?'All models':ALL_MODELS[0].name);
+  if(nameEl)nameEl.textContent=label;
+}
+
+function toggleMobileModelMenu(){
+  var menu=g('mobileModelMenu');
+  if(!menu)return;
+  if(menu.style.display!=='none'){menu.style.display='none';return;}
+  var items=[];
+  if(ALL_MODELS.length>1){
+    items.push('<button onclick="selectModel(\'\');closeMobileModelMenu()" style="display:block;width:100%;text-align:left;padding:9px 12px;border:none;background:transparent;color:var(--text2);font-size:13px;cursor:pointer;border-radius:6px;font-family:inherit">All models</button>');
+  }
+  ALL_MODELS.forEach(function(m){
+    var isAct=m.id===ACTIVE_MODEL_ID;
+    items.push('<button onclick="selectModel(\''+m.id+'\');closeMobileModelMenu()" style="display:block;width:100%;text-align:left;padding:9px 12px;border:none;background:'+(isAct?'var(--blue-bg)':'transparent')+';color:'+(isAct?'var(--blue-text)':'var(--text)')+';font-size:13px;font-weight:'+(isAct?'600':'400')+';cursor:pointer;border-radius:6px;font-family:inherit">'+escHtml(m.name)+'</button>');
+  });
+  menu.innerHTML=items.join('');
+  menu.style.display='block';
+  setTimeout(function(){
+    document.addEventListener('click',function handler(e){
+      if(!menu.contains(e.target)&&e.target!==g('mobileModelPill')){
+        menu.style.display='none';
+        document.removeEventListener('click',handler);
+      }
+    });
+  },10);
+}
+
+function closeMobileModelMenu(){
+  var menu=g('mobileModelMenu');
+  if(menu)menu.style.display='none';
+  updateMobileModelPill();
 }
 
 async function selectModel(modelId){
@@ -2714,6 +2775,7 @@ async function loadPartnerSplits(){
 function renderPartnerCards(){
   var container=g('partnerRow');
   if(!container)return;
+  container.querySelectorAll('.skeleton-card').forEach(function(el){ el.remove(); });
   if(!PARTNERS||!PARTNERS.length){
     container.innerHTML='<div style="padding:20px;color:var(--text3);font-size:13px">No partners yet. <a href="#" onclick="showTab(\'settings\',document.querySelector(\'[data-tab=settings]\'));scrollToSection(\'partnersCard\',null);return false" style="color:var(--indigo-l)">Invite your first partner →</a></div>';
     return;
@@ -2759,6 +2821,15 @@ function renderPartnerCards(){
     +'</div>';
   }).join('');
   container.innerHTML=html;
+  if(activePartners.length===1){
+    container.classList.add('single');
+  } else {
+    container.classList.remove('single');
+  }
+  container.querySelectorAll('.partner-eur').forEach(function(el){
+    var val=el.textContent;
+    animateCountUp(el,val,600);
+  });
 }
 
 /* ---- Fanvue Connection ---- */
@@ -2856,6 +2927,8 @@ async function loadAgencySettings(){
     _agencyName=agData.data.name||'';
     var inp=g('agencyNameInput');
     if(inp)inp.value=_agencyName;
+    var logoSub=g('sidebarLogoSub');
+    if(logoSub&&_agencyName)logoSub.textContent=_agencyName;
     _agencyTrialEndsAt=agData.data.trial_ends_at||null;
     renderSubBanners();
     updateSidebarStats();
@@ -3246,6 +3319,7 @@ function showOnboardingOverlay(){
   g('obPanel2').style.display='none';
   g('obDot1').classList.add('act');
   g('obDot2').classList.remove('act');
+  g('obDot3')&&g('obDot3').classList.remove('act');
   g('onboardingOverlay').style.display='flex';
 }
 
@@ -3402,6 +3476,12 @@ function handleCallbackParams(){
     loadFanvueConnection();
     loadModels().then(function(){renderModelSwitcher();});
     history.replaceState({},'',window.location.pathname);
+    g('obDot2')&&g('obDot2').classList.remove('act');
+    g('obDot3')&&g('obDot3').classList.add('act');
+    setTimeout(function(){
+      var ov=g('onboardingOverlay');
+      if(ov)ov.style.display='none';
+    },1500);
   }else if(params.get('fanvue_error')){
     var errors={
       access_denied:'Authorization cancelled.',
@@ -3452,6 +3532,29 @@ var MONTH_NAMES=['January','February','March','April','May','June','July','Augus
 /* ---- Utils ---- */
 function pn(v){var s=String(v==null?0:v).replace(/[$€£\s]/g,'').replace(/[,]/,'.');if(s==='-'||s==='')return 0;return parseFloat(s)||0;}
 function r2(n){return Math.round(n*100)/100;}
+function animateCountUp(element,targetText,duration){
+  duration=duration||600;
+  var match=targetText.match(/([^0-9\-]*)(-?[\d,]+\.?\d*)([^0-9]*)/);
+  if(!match){element.textContent=targetText;return;}
+  var prefix=match[1]||'';
+  var numStr=match[2].replace(/,/g,'');
+  var suffix=match[3]||'';
+  var target=parseFloat(numStr);
+  if(isNaN(target)){element.textContent=targetText;return;}
+  var start=Date.now();
+  var startVal=0;
+  function tick(){
+    var elapsed=Date.now()-start;
+    var progress=Math.min(elapsed/duration,1);
+    var eased=1-Math.pow(1-progress,3);
+    var current=startVal+(target-startVal)*eased;
+    var decimals=(numStr.indexOf('.')>=0)?numStr.split('.')[1].length:0;
+    element.textContent=prefix+current.toFixed(decimals)+suffix;
+    if(progress<1)requestAnimationFrame(tick);
+    else element.textContent=targetText;
+  }
+  requestAnimationFrame(tick);
+}
 function fe(n){return '€'+Math.abs(n).toFixed(2);}
 function fu(n){return '$'+Math.abs(n).toFixed(2);}
 function g(id){return document.getElementById(id);}
@@ -4530,6 +4633,7 @@ function renderBal(){
       +'<div class="stat-box"><div class="stat-lbl">Models</div><div class="stat-val">'+ALL_MODELS.length+'</div></div>'
       +(avgRate?'<div class="stat-box"><div class="stat-lbl">Avg rate</div><div class="stat-val">'+avgRate+'</div></div>':'')
       +(tLoss>0?'<div class="stat-box"><div class="stat-lbl">FX loss</div><div class="stat-val red">'+fe(tLoss)+'</div></div>':'');
+    g('dashStats')&&g('dashStats').querySelectorAll('.stat-val').forEach(function(el){animateCountUp(el,el.textContent,500);});
     return;
   }
 
@@ -4540,6 +4644,7 @@ function renderBal(){
     +'<div class="stat-box"><div class="stat-lbl">Total withdrawn</div><div class="stat-val">'+fc(totalW)+'</div></div>'
     +(avgRate?'<div class="stat-box"><div class="stat-lbl">Avg rate</div><div class="stat-val">'+avgRate+'</div></div>':'')
     +(tLoss>0?'<div class="stat-box"><div class="stat-lbl">FX loss</div><div class="stat-val red">'+fe(tLoss)+'</div></div>':'');
+  g('dashStats')&&g('dashStats').querySelectorAll('.stat-val').forEach(function(el){animateCountUp(el,el.textContent,500);});
 
   /* Partner cards */
   renderPartnerCards();
@@ -4586,6 +4691,8 @@ function renderBal(){
 /* ---- Render: Recent transactions (dashboard) ---- */
 function renderRecentTx(){
   var el=g('recentTxList');if(!el)return;
+  var skelEl=g('recentTxSkeleton');
+  if(skelEl)skelEl.remove();
   var txs=S.txs.slice().sort(function(a,b){
     return b.date<a.date?-1:b.date>a.date?1:0;
   }).slice(0,8);

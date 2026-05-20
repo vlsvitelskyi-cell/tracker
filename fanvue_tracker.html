@@ -253,7 +253,7 @@ body{
   font-size: 16px; font-weight: 700;
   font-family: 'Outfit', sans-serif;
   font-variant-numeric: tabular-nums;
-  color: var(--green-text);
+  color: var(--text);
   letter-spacing: -.02em;
 }
 
@@ -457,49 +457,6 @@ body{
 .stat-val.red { color: var(--red-text); }
 
 /* ============================================================
-   SPLIT BAR
-============================================================ */
-.split-bar{
-  display:flex;height:6px;border-radius:4px;
-  overflow:hidden;background:var(--card2);gap:1px;
-  margin-bottom:8px;
-}
-.split-bar-v{
-  background:var(--blue);border-radius:4px 0 0 4px;
-  transition:flex .4s ease;min-width:4px;
-}
-.split-bar-vl{
-  background:var(--green);border-radius:0 4px 4px 0;
-  transition:flex .4s ease;min-width:4px;
-}
-.split-bar-seg{border-radius:0;transition:flex .4s ease;}
-.split-bar-seg:first-child{border-radius:4px 0 0 4px;}
-.split-bar-seg:last-child{border-radius:0 4px 4px 0;}
-.split-bar-seg:only-child{border-radius:4px;}
-.split-bar-seg.blue{background:var(--blue);}
-.split-bar-seg.green{background:var(--green);}
-.split-bar-seg.purple{background:#8B5CF6;}
-.split-bar-seg.amber{background:#F59E0B;}
-.split-bar-seg.pink{background:#EC4899;}
-.split-labels{
-  display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px;
-  font-size:12px;margin-bottom:8px;
-}
-.split-hint{font-size:12px;min-height:18px;line-height:1.55}
-.partner-rem.rem-zero { color: var(--text4); }
-.partner-split-badge {
-  margin-left: auto; font-size: 10px; font-weight: 700;
-  background: var(--blue-bg); color: var(--blue-text);
-  padding: 2px 8px; border-radius: 10px; letter-spacing: .04em;
-}
-.skeleton-card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-left: 4px solid var(--border2);
-  pointer-events: none;
-}
-
-/* ============================================================
    DASHBOARD TWO-COLUMN MID-ROW
 ============================================================ */
 .dash-two-col{
@@ -626,7 +583,7 @@ body{
   background:var(--card);border:1px solid var(--border2);
   border-radius:14px;padding:10px 16px;
   display:flex;align-items:center;gap:12px;
-  box-shadow:var(--shadow);z-index:200;
+  box-shadow:var(--shadow-md);z-index:200;
   white-space:nowrap;
 }
 .bulk-bar-count{font-size:13px;font-weight:600;color:var(--text2)}
@@ -640,31 +597,6 @@ body{
 .select-mode .tx-check{
   opacity:1;pointer-events:auto;transform:scale(1);
 }
-
-/* ============================================================
-   EXPENSE CATEGORY BADGE
-============================================================ */
-.exp-cat-badge{
-  font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;
-  background:var(--yellow-bg);color:var(--yellow);flex-shrink:0;
-}
-.exp-cat-badge.cat-marketing{background:var(--blue-bg);color:var(--blue-text)}
-.exp-cat-badge.cat-software{background:rgba(168,85,247,.15);color:#c084fc}
-.exp-cat-badge.cat-equipment{background:var(--yellow-bg);color:var(--yellow)}
-.exp-cat-badge.cat-other{background:var(--card2);color:var(--text3)}
-
-/* ============================================================
-   SORT CONTROLS
-============================================================ */
-.sort-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:12px}
-.sort-lbl{font-size:11px;color:var(--text3);font-weight:600}
-.sort-btn{
-  font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;cursor:pointer;
-  font-family:inherit;transition:background .13s,color .13s;
-  background:transparent;color:var(--text2);border:1px solid var(--border2);
-}
-.sort-btn.act{background:var(--card2);color:var(--text);border-color:var(--border2)}
-.sort-btn:hover:not(.act){background:var(--card2)}
 
 /* ============================================================
    WITHDRAWAL CONFIRM MODAL
@@ -1132,22 +1064,6 @@ body{
   border-top:1px solid var(--border);
   background:var(--bg2);
 }
-
-/* ============================================================
-   EXPENSES
-============================================================ */
-.exp-item{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:10px 14px;background:var(--card2);
-  border:1px solid var(--border);border-radius:10px;margin-bottom:6px;
-}
-.exp-left{display:flex;align-items:center;gap:8px;min-width:0}
-.exp-who{font-size:11px;font-weight:700;padding:2px 8px;border-radius:12px;flex-shrink:0}
-.exp-who.p0{background:var(--blue-bg);color:var(--blue-text)}
-.exp-who.p1{background:var(--green-bg);color:var(--green-text)}
-.exp-amt{font-size:13px;font-weight:600;flex-shrink:0;font-variant-numeric:tabular-nums}
-.exp-desc{font-size:11px;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.exp-date{font-size:11px;color:var(--text3);flex-shrink:0}
 
 /* ============================================================
    PLATFORMS
@@ -1732,7 +1648,7 @@ body{
       <div class="auth-logo-text">Payout Manager</div>
     </div>
     <h2 style="font-size:18px;font-weight:700;margin:0 0 6px;letter-spacing:-.02em">You've been invited!</h2>
-    <p class="auth-sub">Create your account to join the agency</p>
+    <p class="auth-sub" id="inviteAgencySub">Create your account to join the agency</p>
     <div style="display:flex;gap:6px;margin-bottom:18px;background:var(--card2);border-radius:8px;padding:3px">
       <button id="invTabNew" onclick="setInvTab('new')" style="flex:1;padding:7px 12px;border-radius:6px;border:none;cursor:pointer;font-size:13px;font-weight:600;background:var(--indigo);color:#fff;transition:.15s">Create account</button>
       <button id="invTabExisting" onclick="setInvTab('existing')" style="flex:1;padding:7px 12px;border-radius:6px;border:none;cursor:pointer;font-size:13px;font-weight:600;background:transparent;color:var(--text2);transition:.15s">Sign in</button>
@@ -3532,10 +3448,17 @@ async function showInviteOverlay(token){
   g('invErr').textContent='';
   g('invErr').style.color='var(--red)';
   setInvTab('new');
-  var invRes=await db.from('partner_invites').select('email').eq('token',token).single();
+  var invRes=await db.from('partner_invites').select('email,agency_id').eq('token',token).single();
   if(!invRes.error&&invRes.data){
     var ef=g('invEmail');
     if(ef){ef.value=invRes.data.email;ef.readOnly=true;ef.style.opacity='.7';}
+    if(invRes.data.agency_id){
+      var agRes=await db.from('agencies').select('name').eq('id',invRes.data.agency_id).single();
+      if(!agRes.error&&agRes.data&&agRes.data.name){
+        var sub=g('inviteAgencySub');
+        if(sub)sub.textContent='Create your account to join '+agRes.data.name;
+      }
+    }
   }
   setTimeout(function(){var p=g('invPass');if(p)p.focus();},50);
 }
@@ -3545,9 +3468,9 @@ function setInvTab(mode){
   g('invConfirmField').style.display=isNew?'flex':'none';
   g('invSubmitBtn').dataset.mode=isNew?'':'existing';
   g('invSubmitBtn').textContent=isNew?'Join Agency':'Sign in & Join';
-  g('invTabNew').style.background=isNew?'var(--indigo)':'transparent';
+  g('invTabNew').style.background=isNew?'var(--blue)':'transparent';
   g('invTabNew').style.color=isNew?'#fff':'var(--text2)';
-  g('invTabExisting').style.background=isNew?'transparent':'var(--indigo)';
+  g('invTabExisting').style.background=isNew?'transparent':'var(--blue)';
   g('invTabExisting').style.color=isNew?'var(--text2)':'#fff';
 }
 
@@ -4425,6 +4348,59 @@ async function editWdDesc(id){
   showToast('Description updated','success');
 }
 
+async function editWdSplits(wId){
+  var w=S.ws.find(function(x){return x.id===wId;});
+  if(!w)return;
+  var activePartners=PARTNERS.filter(function(p){return p.status==='active';});
+  var existing=document.getElementById('wdSplitForm_'+wId);
+  if(existing){existing.remove();return;}
+  var currentSplits=w.splitsByPartner||{};
+  var formHtml='<div id="wdSplitForm_'+wId+'" style="padding:12px 20px 16px;border-top:1px solid var(--border);background:var(--bg2)">'
+    +'<p style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Edit partner splits</p>'
+    +activePartners.map(function(p){
+      var val=r2(currentSplits[p.id]||0);
+      return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">'
+        +'<span style="font-size:13px;font-weight:500;color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+escHtml(p.name)+'</span>'
+        +'<input id="wdSplit_'+wId+'_'+p.id+'" type="number" min="0" step="0.01"'
+        +' style="width:90px;padding:6px 8px;font-size:13px;background:var(--card2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:inherit;outline:none"'
+        +' placeholder="0.00" value="'+(val>0?val.toFixed(2):'')+'">'
+        +'<span style="font-size:12px;color:var(--text3);flex-shrink:0">EUR</span>'
+        +'</div>';
+    }).join('')
+    +'<div style="display:flex;gap:8px;margin-top:10px">'
+    +'<button class="btn btn-primary" style="font-size:12px" onclick="saveWdSplits(\''+wId+'\')">Save splits</button>'
+    +'<button class="btn btn-ghost" style="font-size:12px" onclick="cancelWdSplits(\''+wId+'\')">Cancel</button>'
+    +'</div>'
+    +'</div>';
+  var row=document.querySelector('[data-wd-id="'+wId+'"]');
+  if(row)row.insertAdjacentHTML('beforeend',formHtml);
+}
+
+async function saveWdSplits(wId){
+  var activePartners=PARTNERS.filter(function(p){return p.status==='active';});
+  var splits=[];
+  activePartners.forEach(function(p){
+    var inp=document.getElementById('wdSplit_'+wId+'_'+p.id);
+    var val=parseFloat((inp&&inp.value)||0)||0;
+    if(val>0)splits.push({withdrawal_id:wId,partner_id:p.id,eur_amount:r2(val)});
+  });
+  var delRes=await db.from('withdrawal_splits').delete().eq('withdrawal_id',wId);
+  if(delRes.error){showToast('Failed to save splits','error');return;}
+  if(splits.length){
+    var insRes=await db.from('withdrawal_splits').insert(splits);
+    if(insRes.error){showToast('Failed to save splits','error');return;}
+  }
+  var form=document.getElementById('wdSplitForm_'+wId);
+  if(form)form.remove();
+  await loadWithdrawals();
+  showToast('Splits saved','success');
+}
+
+function cancelWdSplits(wId){
+  var form=document.getElementById('wdSplitForm_'+wId);
+  if(form)form.remove();
+}
+
 async function resetAll(){
   if(!confirm('Delete ALL withdrawal history from the database?'))return;
   await db.from('withdrawal_splits').delete().neq('id','00000000-0000-0000-0000-000000000000');
@@ -5049,7 +5025,8 @@ function renderRecentTx(){
 function renderChartLegend(){
   var el=g('chartLegend');if(!el)return;
   el.innerHTML=S.platforms.map(function(p,i){
-    return '<div class="legend-item"><div class="legend-dot" style="background:'+PLATFORM_COLORS[i%PLATFORM_COLORS.length]+'"></div>'+p+'</div>';
+    var lColor=platformColorForName(p)||PLATFORM_COLORS[i%PLATFORM_COLORS.length];
+    return '<div class="legend-item"><div class="legend-dot" style="background:'+lColor+'"></div>'+p+'</div>';
   }).join('');
 }
 
@@ -5123,9 +5100,10 @@ function renderMonths(){
 
   var revBoxes=S.platforms.map(function(p,pi){
     var val=(m.revenues||{})[p]||0;
+    var pColor=platformColorForName(p)||PLATFORM_COLORS[pi%PLATFORM_COLORS.length];
     return '<div class="stat-box">'
       +'<p class="stat-lbl">'+p+'</p>'
-      +'<p class="stat-val" style="color:'+PLATFORM_COLORS[pi%PLATFORM_COLORS.length]+'">'+fu(val)+'</p>'
+      +'<p class="stat-val" style="color:'+pColor+'">'+fu(val)+'</p>'
       +'</div>';
   }).join('');
 
@@ -5439,7 +5417,7 @@ function renderList(){
         ?'<div class="wd-description">'+escHtml(w.description)+'</div>'
         :'';
       var plClsDone=platformCssClass(w.pl);
-      h+='<div class="wd-row">'
+      h+='<div class="wd-row" data-wd-id="'+w.id+'">'
         +'<div class="wd-left">'
         +'<div class="wd-amount confirmed">'+fe(w.eur)+'</div>'
         +'<div class="wd-meta-row">'
@@ -5459,6 +5437,7 @@ function renderList(){
         +'<path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>'
         +'</svg>'
         +'</button>'
+        +'<button class="btn btn-ghost" style="font-size:11px;padding:4px 10px" onclick="editWdSplits(\''+w.id+'\')">Edit splits</button>'
         +'<button class="btn btn-ghost" style="font-size:11px;padding:4px 10px" onclick="editWdDesc(\''+w.id+'\')">Edit note</button>'
         +(splitBadges?'<div class="wd-splits">'+splitBadges+'</div>':'')
         +'</div>'
@@ -5477,9 +5456,13 @@ function updateSidebarStats(){
   if(nm&&_agencyName)nm.textContent=_agencyName;
   if(mc)mc.textContent=ALL_MODELS.length+' model'+(ALL_MODELS.length!==1?'s':'');
   var curM=S.months[S.am]||S.months[S.months.length-1];
-  if(tm)tm.textContent=curM?fc(mTot(curM)):'—';
+  if(tm){
+    tm.textContent=curM?fc(mTot(curM)):'—';
+    var curRevVal=curM?mTot(curM):0;
+    tm.style.color=curRevVal>0?'var(--green-text)':'var(--text)';
+  }
   var totalWdrawn=r2(S.ws.filter(function(w){return w.st==='ok';}).reduce(function(s,w){return s+w.usd;},0));
-  if(tw)tw.textContent=fc(totalWdrawn);
+  if(tw){tw.textContent=fc(totalWdrawn);tw.style.color='var(--text)';}
 }
 
 function exportTransactionsCSV(){

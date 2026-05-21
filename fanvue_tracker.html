@@ -2285,6 +2285,150 @@ button { font-family: var(--sans); }
   .dash-rail-section { flex: 1; min-width: 200px; }
 }
 
+/* ── 39. DASHBOARD PAYOUT STATEMENT ─────────────────────────── */
+/* The primary dashboard element — answers "who is owed money?" */
+/* Column definition shared by head, row, footer                */
+.dash-payout-table {
+  --dpt-cols: 1fr 64px 152px 152px 172px;
+  width: 100%;
+}
+
+/* Column header strip */
+.dpt-head {
+  display: grid;
+  grid-template-columns: var(--dpt-cols);
+  padding: 0 24px;
+  height: 30px;
+  align-items: center;
+  background: var(--bg);
+  border-bottom: 1px solid var(--line-1);
+}
+.dpt-col {
+  font-size: var(--f10);
+  font-weight: 700;
+  color: var(--t4);
+  text-transform: uppercase;
+  letter-spacing: .09em;
+  white-space: nowrap;
+}
+.dpt-col.num { text-align: right; }
+.dpt-col.due-col { color: rgba(74,222,128,.5); }
+
+/* Data rows */
+.dpt-row {
+  display: grid;
+  grid-template-columns: var(--dpt-cols);
+  padding: 0 24px;
+  min-height: 48px;
+  align-items: center;
+  border-bottom: 1px solid var(--line-1);
+  transition: background var(--fast);
+}
+.dpt-row:hover { background: rgba(255,255,255,.016); }
+
+/* Partner identity cell */
+.dpt-name {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.dpt-name-text {
+  font-size: var(--f13);
+  font-weight: 600;
+  color: var(--t1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dpt-you-badge {
+  font-size: 9px;
+  font-weight: 800;
+  color: var(--t4);
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+/* Generic numeric cell */
+.dpt-cell {
+  font-size: var(--f13);
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  color: var(--t2);
+  letter-spacing: -.02em;
+}
+.dpt-cell.split-col {
+  font-size: var(--f11);
+  font-weight: 700;
+  color: var(--t4);
+  font-family: var(--mono);
+  letter-spacing: 0;
+}
+
+/* Outstanding / DUE cell */
+.dpt-cell.due-val {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 7px;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -.025em;
+  color: var(--pos-txt);
+}
+.dpt-cell.due-zero { color: var(--t4); }
+.dpt-due-tag {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  color: var(--pos-txt);
+  background: rgba(74,222,128,.08);
+  border: 1px solid rgba(74,222,128,.2);
+  border-radius: 3px;
+  padding: 2px 5px;
+  flex-shrink: 0;
+}
+
+/* Footer: total outstanding */
+.dpt-footer {
+  display: grid;
+  grid-template-columns: var(--dpt-cols);
+  padding: 0 24px;
+  height: 46px;
+  align-items: center;
+  background: var(--surface);
+  border-top: 2px solid var(--line-2);
+}
+.dpt-footer-label {
+  font-size: var(--f10);
+  font-weight: 700;
+  color: var(--t3);
+  text-transform: uppercase;
+  letter-spacing: .09em;
+  grid-column: 1 / 5;
+}
+.dpt-footer-total {
+  font-size: 17px;
+  font-weight: 800;
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--pos-txt);
+  text-align: right;
+  letter-spacing: -.03em;
+}
+.dpt-footer-total.settled {
+  font-size: var(--f13);
+  font-weight: 500;
+  color: var(--t4);
+  font-family: inherit;
+  letter-spacing: 0;
+}
+
 </style>
 </head>
 <body>
@@ -2615,55 +2759,65 @@ button { font-family: var(--sans); }
           </div>
         </div>
 
-        <!-- ── PARTNERS SECTION ─────────────────────────────────── -->
-        <div class="page-section">
+        <!-- ── PARTNER PAYOUT STATEMENT ──────────────────────────── -->
+        <!-- Primary dashboard element. Answers: who is owed money?  -->
+        <div class="page-section" id="dashPartnerSection">
           <div class="section-header">
-            <span class="section-title">Partners</span>
+            <div style="display:flex;align-items:center;gap:12px;min-width:0">
+              <span class="section-title">Partner Payouts</span>
+              <span class="section-meta" id="dashModelLabel"></span>
+            </div>
             <div class="section-actions">
               <div id="subBannerDash"></div>
+              <button class="btn btn-ghost" style="font-size:var(--f11)" onclick="showTab('withdrawals',document.querySelector('[data-tab=withdrawals]'))">Record withdrawal →</button>
             </div>
           </div>
-          <div class="partner-balance-table" id="partnerBalanceWrap">
-            <div class="pbt-header">
-              <div class="pbt-col">Partner</div>
-              <div class="pbt-col num">Revenue Share</div>
-              <div class="pbt-col num">Withdrawn (EUR)</div>
-              <div class="pbt-col num">Remaining</div>
-              <div class="pbt-col num">Split</div>
+          <div class="dash-payout-table" id="partnerBalanceWrap">
+            <div class="dpt-head">
+              <div class="dpt-col">Partner</div>
+              <div class="dpt-col num">Split</div>
+              <div class="dpt-col num">Revenue Share</div>
+              <div class="dpt-col num">Withdrawn (EUR)</div>
+              <div class="dpt-col num due-col">Outstanding</div>
             </div>
             <div id="partnerRow">
-              <div class="pbt-row">
-                <div class="pbt-name"><div class="pbt-dot p0"></div><div class="skeleton" style="width:90px;height:12px;border-radius:3px"></div></div>
-                <div class="pbt-cell"><div class="skeleton" style="width:64px;height:12px;border-radius:3px;margin-left:auto"></div></div>
-                <div class="pbt-cell"><div class="skeleton" style="width:52px;height:12px;border-radius:3px;margin-left:auto"></div></div>
-                <div class="pbt-cell"><div class="skeleton" style="width:58px;height:12px;border-radius:3px;margin-left:auto"></div></div>
-                <div class="pbt-cell split"><div class="skeleton" style="width:28px;height:12px;border-radius:3px;margin-left:auto"></div></div>
+              <div class="dpt-row">
+                <div class="dpt-name"><div class="pbt-dot p0"></div><div class="skeleton" style="width:100px;height:12px;border-radius:3px"></div></div>
+                <div class="dpt-cell split-col"><div class="skeleton" style="width:28px;height:12px;border-radius:3px;margin-left:auto"></div></div>
+                <div class="dpt-cell"><div class="skeleton" style="width:72px;height:12px;border-radius:3px;margin-left:auto"></div></div>
+                <div class="dpt-cell"><div class="skeleton" style="width:58px;height:12px;border-radius:3px;margin-left:auto"></div></div>
+                <div class="dpt-cell due-val"><div class="skeleton" style="width:68px;height:14px;border-radius:3px"></div></div>
               </div>
+            </div>
+            <div class="dpt-footer" id="dashPayoutFooter">
+              <div class="dpt-footer-label">Total Outstanding</div>
+              <div class="dpt-footer-total settled">—</div>
             </div>
           </div>
         </div>
 
-        <!-- ── ACTIVITY SECTION — 2-col: ledger + right rail ────── -->
+        <!-- ── TRANSACTION LEDGER + SIGNALS ─────────────────────── -->
         <div class="page-section dash-activity">
 
-          <!-- Left: transaction ledger -->
+          <!-- Left: running transaction ledger -->
           <div class="dash-activity-main">
             <div class="section-header">
-              <span class="section-title">Recent Transactions</span>
+              <span class="section-title">Transaction Ledger</span>
               <button class="btn btn-ghost" style="font-size:var(--f11)" onclick="showTab('revenue',document.querySelector('[data-tab=revenue]'))">All transactions →</button>
             </div>
             <div class="fin-table-wrap" id="recentTxList">
               <div id="recentTxSkeleton">
-                <div class="skeleton" style="height:42px;margin-bottom:1px;border-radius:0"></div>
-                <div class="skeleton" style="height:42px;margin-bottom:1px;border-radius:0;opacity:.7"></div>
-                <div class="skeleton" style="height:42px;margin-bottom:1px;border-radius:0;opacity:.5"></div>
-                <div class="skeleton" style="height:42px;margin-bottom:1px;border-radius:0;opacity:.3"></div>
-                <div class="skeleton" style="height:42px;border-radius:0;opacity:.15"></div>
+                <div class="skeleton" style="height:40px;margin-bottom:1px;border-radius:0"></div>
+                <div class="skeleton" style="height:40px;margin-bottom:1px;border-radius:0;opacity:.7"></div>
+                <div class="skeleton" style="height:40px;margin-bottom:1px;border-radius:0;opacity:.5"></div>
+                <div class="skeleton" style="height:40px;margin-bottom:1px;border-radius:0;opacity:.35"></div>
+                <div class="skeleton" style="height:40px;margin-bottom:1px;border-radius:0;opacity:.2"></div>
+                <div class="skeleton" style="height:40px;border-radius:0;opacity:.1"></div>
               </div>
             </div>
           </div>
 
-          <!-- Right rail: split + chart + action -->
+          <!-- Right rail: distribution + chart + action -->
           <div class="dash-activity-rail">
             <div class="section-header">
               <span class="section-title">Revenue Split</span>
@@ -2689,7 +2843,7 @@ button { font-family: var(--sans); }
 
         </div><!-- end dash-activity -->
 
-        <!-- Model profitability (admin only — shown as additional section) -->
+        <!-- Model profitability — admin only -->
         <div id="modelProfitSection" style="display:none">
           <div class="section-header">
             <span class="section-title">Model Performance</span>
@@ -3769,40 +3923,53 @@ async function loadPartnerSplits(){
 function renderPartnerCards(){
   var container=g('partnerRow');
   if(!container)return;
-  var wrap=g('partnerBalanceWrap');
+  var emptyRow='<div class="dpt-row" style="grid-template-columns:1fr"><div class="dpt-name" style="color:var(--t3);padding:4px 0">';
   if(!PARTNERS||!PARTNERS.length){
-    container.innerHTML='<div class="pbt-row"><div class="pbt-name" style="color:var(--t3)">No partners yet. <a href="#" onclick="showTab(\'settings\',document.querySelector(\'[data-tab=settings]\'));scrollToSection(\'partnersCard\',null);return false" style="color:var(--t2);margin-left:6px">Invite your first partner →</a></div></div>';
+    container.innerHTML=emptyRow+'No partners yet. <a href="#" onclick="showTab(\'settings\',document.querySelector(\'[data-tab=settings]\'));scrollToSection(\'partnersCard\',null);return false" style="color:var(--t2);margin-left:6px">Invite your first partner →</a></div></div>';
     return;
   }
   var activePartners=PARTNERS.filter(function(p){return p.status==='active';});
   if(!activePartners.length){
-    container.innerHTML='<div class="pbt-row"><div class="pbt-name" style="color:var(--t3)">No active partners yet. <a href="#" onclick="showTab(\'settings\',document.querySelector(\'[data-tab=settings]\'));scrollToSection(\'partnersCard\',null);return false" style="color:var(--t2);margin-left:6px">Invite your first partner →</a></div></div>';
+    container.innerHTML=emptyRow+'No active partners yet. <a href="#" onclick="showTab(\'settings\',document.querySelector(\'[data-tab=settings]\'));scrollToSection(\'partnersCard\',null);return false" style="color:var(--t2);margin-left:6px">Invite your first partner →</a></div></div>';
     return;
   }
+  var totalOutstanding=0;
   var html=activePartners.map(function(p,i){
     var ci=i%5;
     var isMe=currentUser&&p.user_id===currentUser.id;
     var share=totalPartnerShare(p.id);
     var wEUR=totalPartnerWithdrawnEUR(p.id);
-    var rem=partnerRemaining(p.id);
+    var rem=Math.max(0,partnerRemaining(p.id));
     var splitPct=getCurrentSplit(ACTIVE_MODEL_ID,p.id);
-    var remPos=rem>0.01;
-    return '<div class="pbt-row">'
-      +'<div class="pbt-name">'
+    var hasDue=rem>0.01;
+    totalOutstanding+=rem;
+    return '<div class="dpt-row">'
+      +'<div class="dpt-name">'
         +'<div class="pbt-dot p'+ci+'"></div>'
-        +escHtml(p.name)
-        +(isMe?'<span style="font-size:9px;font-weight:700;color:var(--t4);margin-left:6px;letter-spacing:.06em;text-transform:uppercase">You</span>':'')
+        +'<span class="dpt-name-text">'+escHtml(p.name)+'</span>'
+        +(isMe?'<span class="dpt-you-badge">You</span>':'')
       +'</div>'
-      +'<div class="pbt-cell fin-kpi-value" style="font-size:var(--f13)">'+fc(share)+'</div>'
-      +'<div class="pbt-cell dim">€'+r2(wEUR).toFixed(2)+'</div>'
-      +'<div class="pbt-cell '+(remPos?'pos':'dim')+'">'+fc(Math.max(0,rem))+'</div>'
-      +'<div class="pbt-cell split">'+(splitPct?splitPct+'%':'—')+'</div>'
+      +'<div class="dpt-cell split-col">'+(splitPct?splitPct+'%':'—')+'</div>'
+      +'<div class="dpt-cell">'+fc(share)+'</div>'
+      +'<div class="dpt-cell">€'+r2(wEUR).toFixed(2)+'</div>'
+      +'<div class="dpt-cell '+(hasDue?'due-val':'due-val due-zero')+'">'
+        +(hasDue
+          ?'<span>'+fc(rem)+'</span><span class="dpt-due-tag">DUE</span>'
+          :'<span style="font-size:var(--f12);color:var(--t4);font-weight:400;font-family:inherit">Settled</span>')
+      +'</div>'
     +'</div>';
   }).join('');
   container.innerHTML=html;
-  /* Animate revenue-share cells */
-  container.querySelectorAll('.pbt-cell').forEach(function(el,i){
-    if(i%5===0)animateCountUp(el,el.textContent,600);
+  /* Update payout footer with total outstanding */
+  var footer=g('dashPayoutFooter');
+  if(footer){
+    var hasAny=totalOutstanding>0.01;
+    footer.innerHTML='<div class="dpt-footer-label">Total Outstanding</div>'
+      +'<div class="dpt-footer-total'+(hasAny?'':' settled')+'">'+(hasAny?fc(totalOutstanding):'Fully settled')+'</div>';
+  }
+  /* Count-up on revenue share cells (index 1 of 4 per row: split, share, eur, due) */
+  container.querySelectorAll('.dpt-cell').forEach(function(el,i){
+    if(i%4===1)animateCountUp(el,el.textContent,700);
   });
 }
 
@@ -5675,6 +5842,21 @@ function renderBal(){
     +'</div>';
   }
 
+  /* Total outstanding across all active partners */
+  var activePs=PARTNERS.filter(function(p){return p.status==='active';});
+  var totalOutstanding=r2(activePs.reduce(function(s,p){return s+Math.max(0,partnerRemaining(p.id));},0));
+
+  /* Model label in Partner Payouts section header */
+  var ml=g('dashModelLabel');
+  if(ml){
+    if(ACTIVE_MODEL_ID){
+      var mObj=ALL_MODELS.find(function(m){return m.id===ACTIVE_MODEL_ID;});
+      ml.textContent=mObj?mObj.name:'';
+    } else {
+      ml.textContent=ALL_MODELS.length>1?'All Models':(ALL_MODELS.length===1?ALL_MODELS[0].name:'');
+    }
+  }
+
   /* Welcome state if no models at all */
   if(!ACTIVE_MODEL_ID&&ALL_MODELS.length===0){
     var dw=g('dashWelcome');if(dw)dw.style.display='block';
@@ -5690,6 +5872,7 @@ function renderBal(){
     g('dashStats').innerHTML=
       mkSrl('This month (all)',fc(curRev),'',trendHtml)
       +mkSrl('Total revenue',fc(totalRev))
+      +(totalOutstanding>0.01?mkSrl('Outstanding',fc(totalOutstanding),'warn'):'')
       +mkSrl('Withdrawn',fc(totalW),'dim')
       +mkSrl('Models',ALL_MODELS.length,'dim')
       +(avgRate?mkSrl('Avg rate',avgRate,'dim'):'')
@@ -5702,7 +5885,7 @@ function renderBal(){
   g('dashStats').innerHTML=
     mkSrl('This month',fc(curRev),'',trendHtml)
     +mkSrl('Total revenue',fc(totalRev))
-    +mkSrl('Withdrawn',fc(totalW),'dim')
+    +(totalOutstanding>0.01?mkSrl('Outstanding',fc(totalOutstanding),'warn'):'')
     +(avgRate?mkSrl('Avg rate',avgRate,'dim'):'')
     +(tLoss>0?mkSrl('FX loss',fe(tLoss),'neg'):'');
   g('dashStats')&&g('dashStats').querySelectorAll('.srl-value').forEach(function(el){animateCountUp(el,el.textContent,500);});
@@ -5756,7 +5939,7 @@ function renderRecentTx(){
   if(skelEl)skelEl.remove();
   var txs=S.txs.slice().sort(function(a,b){
     return b.date<a.date?-1:b.date>a.date?1:0;
-  }).slice(0,8);
+  }).slice(0,10);
   if(!txs.length){
     el.innerHTML='<div class="empty-state"><div class="empty-state-title">No transactions yet</div><div class="empty-state-body">Add revenue manually or connect Fanvue to sync automatically.</div></div>';
     return;

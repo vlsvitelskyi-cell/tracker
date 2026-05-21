@@ -19,26 +19,27 @@
 /* ── 1. TOKENS ─────────────────────────────────────────────── */
 :root {
 
-  /* SURFACES — dark navy base. Elevation chain: bg → surface → surface-2 → surface-3 → surface-4.
-     Each step is visibly distinct. Navy tint adds depth without appearing "themed". */
-  --bg:        #0D0F16;   /* body: darkest — no pure black */
-  --surface:   #141520;   /* chrome: sidebar, topbar, subnav strips */
-  --surface-2: #1C1E2C;   /* containers: cards, panels, auth box */
-  --surface-3: #252838;   /* header chrome within containers */
-  --surface-4: #2E3047;   /* peak elevation: modals, dropdowns */
+  /* SURFACES — deep saturated navy. Elevation chain: bg → surface → surface-2 → surface-3 → surface-4.
+     Each step is visibly distinct. Rich indigo-navy — not gray-blue, not pure black.
+     B/R channel ratio ≈ 2.4 throughout for cinematic premium depth. */
+  --bg:        #0B0D1A;   /* deep navy base — H232° S40% L7% */
+  --surface:   #11152A;   /* chrome: sidebar, topbar, subnav */
+  --surface-2: #191E36;   /* containers: cards, panels, auth box */
+  --surface-3: #222742;   /* header chrome within containers */
+  --surface-4: #2B304F;   /* peak elevation: modals, dropdowns */
 
-  /* BORDERS — hairline only. 1px max. Bumped from original — navy bg needs more contrast. */
-  --line-1: rgba(255,255,255,.07);   /* background separation */
-  --line-2: rgba(255,255,255,.12);   /* standard UI borders   */
-  --line-3: rgba(255,255,255,.20);   /* emphasized borders     */
-  --line-4: rgba(255,255,255,.32);   /* focus rings            */
+  /* BORDERS — hairline only. 1px max. White opacity reads as cool-blue on deep navy. */
+  --line-1: rgba(255,255,255,.08);   /* background separation */
+  --line-2: rgba(255,255,255,.14);   /* standard UI borders   */
+  --line-3: rgba(255,255,255,.26);   /* emphasized borders     */
+  --line-4: rgba(255,255,255,.42);   /* focus rings            */
 
-  /* TEXT — 4 levels, strict roles. Never skip levels.
-     t3/t4 lifted significantly — old values were unreadable on dark surfaces. */
-  --t1: #EEEEF2;  /* primary: figures, headings, active */
-  --t2: #9E9EAE;  /* secondary: body copy, descriptions */
-  --t3: #68687A;  /* tertiary: labels, captions, col headers */
-  --t4: #46465A;  /* quaternary: placeholders, disabled, dividers */
+  /* TEXT — 4 levels, strict roles. Aggressive contrast hierarchy against deep navy.
+     Gap between t1 and t2 is intentionally wide for financial emphasis. */
+  --t1: #F0F0FA;  /* primary: figures, headings — near-white, cool tint */
+  --t2: #B4B4CE;  /* secondary: body copy — clearly readable, violet-cool */
+  --t3: #6E6E8A;  /* tertiary: labels, captions — clearly subordinate */
+  --t4: #48485E;  /* quaternary: placeholders, dividers — barely visible */
 
   /* SEMANTIC — financial signal. Never decorative. */
   --pos:     #22C55E;
@@ -71,8 +72,8 @@
   --paypal-bg:   rgba(59,130,246,.10);
   --telegram:    #0EA5E9;
   --telegram-bg: rgba(14,165,233,.10);
-  --other:       #72727E;
-  --other-bg:    rgba(255,255,255,.06);
+  --other:       #78788C;
+  --other-bg:    rgba(255,255,255,.07);
 
   /* TYPOGRAPHY */
   --sans: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -102,9 +103,14 @@
   --r4: 8px;    /* large containers, modals */
   --r5: 12px;   /* auth forms only */
 
-  /* SHADOWS — floating elements only. Never on cards. Reduced opacity — bg is no longer pure black. */
-  --shadow-float:   0 4px 24px rgba(0,0,0,.55), 0 1px 0 rgba(255,255,255,.06);
-  --shadow-overlay: 0 24px 80px rgba(0,0,0,.75), 0 1px 0 rgba(255,255,255,.06);
+  /* SHADOWS — floating elements only. Deep navy warrants stronger shadows for elevation drama. */
+  --shadow-float:   0 4px 32px rgba(0,0,0,.65), 0 1px 0 rgba(255,255,255,.07);
+  --shadow-overlay: 0 24px 80px rgba(0,0,0,.85), 0 1px 0 rgba(255,255,255,.07);
+
+  /* VIOLET ACCENT — restrained premium signal. Never for data, only for chrome/structural UI. */
+  --violet:      #7B70D4;
+  --violet-dim:  rgba(123,112,212,.10);
+  --violet-line: rgba(123,112,212,.24);
 
   /* MOTION */
   --fast:   80ms ease;
@@ -139,7 +145,7 @@
   --shadow-xs:0 1px 2px rgba(0,0,0,.6);--shadow-sm:0 1px 4px rgba(0,0,0,.6);
   --shadow-md:var(--shadow-float);--shadow-lg:var(--shadow-overlay);
   --shadow-glow-blue:none;--shadow-glow-green:none;
-  --topbar-bg:rgba(13,15,22,.97);
+  --topbar-bg:rgba(11,13,26,.97);
   --dur-fast:80ms;--dur-normal:150ms;--dur-slow:260ms;
   --ease-out:cubic-bezier(.16,1,.3,1);--ease-spring:cubic-bezier(.34,1.56,.64,1);
   --r-xs:var(--r1);--r-sm:var(--r2);--r-md:var(--r3);
@@ -2240,8 +2246,8 @@ button { font-family: var(--sans); }
 /* Left: full transaction ledger. Right: split + chart + CTA.  */
 .dash-activity {
   display: grid;
-  grid-template-columns: 1fr 280px;
-  min-height: 360px;
+  grid-template-columns: 65fr 35fr;
+  min-height: 400px;
   align-items: stretch;
 }
 .dash-activity-main {
@@ -2261,7 +2267,7 @@ button { font-family: var(--sans); }
   min-width: 0;
 }
 .dash-rail-section {
-  padding: var(--s4) var(--s5);
+  padding: var(--s5) var(--s6);
   border-bottom: 1px solid var(--line-1);
 }
 .dash-rail-section:last-child { border-bottom: none; }
@@ -4061,6 +4067,116 @@ button { font-family: var(--sans); }
 /* ── J. Mobile bottom nav: chrome layer ─────────────────────── */
 .bottom-nav { background: var(--surface); border-top: 1px solid var(--line-2); }
 
+/* ══ 49. CINEMATIC FINTECH COMPOSITION ═══════════════════════════
+   Premium depth through controlled contrast, violet accents,
+   and aggressive text hierarchy. Financial terminal aesthetic.
+════════════════════════════════════════════════════════════════ */
+
+/* ── A. Sidebar active state: premium violet accent ──────────── */
+/* Sidebar is a financial navigation instrument, not a menu */
+.sidebar-model-section { border-top: 1px solid var(--line-2); }
+.model-chip.act {
+  background: var(--violet-dim);
+  border-color: var(--violet-line);
+  color: var(--t1);
+}
+.model-chip.act:hover { background: var(--violet-dim); }
+
+/* ── B. Tab-btn active: weight + subtle background ───────────── */
+.tab-btn.act {
+  color: var(--t1);
+  font-weight: 600;
+  background: rgba(255,255,255,.04);
+}
+
+/* ── C. Dashboard rail: strategic, not decorative ────────────── */
+/* Section headers in the right rail carry more visual authority */
+.dash-activity-rail .section-header {
+  border-bottom: 1px solid var(--line-2);
+}
+.dash-activity-rail .section-title {
+  color: var(--t2);
+  font-weight: 600;
+}
+/* Tighten border between ledger and rail */
+.dash-activity-main { border-right: 1px solid var(--line-2); }
+
+/* ── D. Financial figure emphasis ────────────────────────────── */
+/* Primary money figures — maximum luminance contrast */
+.stat-val         { color: var(--t1); }
+.wd-amount        { color: var(--t1); }
+.dpt-footer-total { color: var(--t1); }
+.srl-value        { color: var(--t1); }
+
+/* Revenue statement amounts: maintain semantic color on totals */
+.rev-stmt-amt.pos { color: var(--pos-txt); }
+.rev-stmt-amt.neg { color: var(--neg-txt); }
+
+/* ── E. Table readability: stronger column header contrast ───── */
+.fin-table th {
+  color: var(--t3);
+  font-size: var(--f10);
+  font-weight: 700;
+  letter-spacing: .09em;
+}
+/* Body cells at primary text for financial data readability */
+.fin-table td { color: var(--t2); }
+.fin-table .num { color: var(--t1); font-weight: 600; }
+
+/* ── F. Timestamp + secondary metadata: clear but subordinate ── */
+.tx-date     { color: var(--t3); font-size: var(--f11); }
+.wd-detail   { color: var(--t3); }
+.wd-meta-row { margin-top: 5px; }
+.stat-lbl    { color: var(--t3); }
+
+/* ── G. Section header: stronger visual weight ───────────────── */
+.section-title {
+  font-size: var(--f11);
+  font-weight: 700;
+  letter-spacing: .08em;
+  color: var(--t3);
+}
+
+/* ── H. Summary rail: financial terminal strip ───────────────── */
+.srl-label {
+  color: var(--t4);
+  font-size: var(--f10);
+  font-weight: 700;
+  letter-spacing: .10em;
+}
+.srl-sub { color: var(--t4); font-size: var(--f10); }
+
+/* ── I. Partner payout table: outstanding column high contrast ─ */
+.dpt-col.due-col    { color: var(--pos-txt); font-weight: 700; }
+.dpt-footer-label   { color: var(--t4); text-transform: uppercase; letter-spacing: .08em; }
+
+/* ── J. Card hover border: visible lift ─────────────────────── */
+.card:not(.card-static):hover { border-color: var(--line-3); }
+
+/* ── K. Withdrawal history section: layered surface ─────────── */
+.wd-list-wrap { background: var(--surface); border-color: var(--line-2); }
+
+/* ── L. Revenue by month header: operational label ──────────── */
+#revLoadStatus { font-size: var(--f10); color: var(--t4); }
+
+/* ── M. Sidebar brand mark: premium treatment ───────────────── */
+.sidebar-wordmark-text {
+  font-weight: 700;
+  letter-spacing: .08em;
+  color: var(--t2);
+}
+.sidebar-agency-name { color: var(--t3); }
+
+/* ── N. Auth form: floating on deep navy ─────────────────────── */
+.auth-overlay { background: var(--bg); }
+
+/* ── O. Suggest banner: factual, not predictive ─────────────── */
+.suggest-banner {
+  background: rgba(123,112,212,.06);
+  border-color: var(--violet-line);
+}
+.suggest-banner-label { color: var(--violet); }
+
 </style>
 </head>
 <body>
@@ -4626,14 +4742,13 @@ button { font-family: var(--sans); }
                 <input type="date" id="nDate">
               </div>
             </div>
-            <!-- Smart suggestion -->
+            <!-- Recorded remaining (factual, no predictions) -->
             <div id="smartSuggestRow" style="display:none">
               <div class="suggest-banner">
                 <div class="suggest-banner-copy">
-                  <div class="suggest-banner-label">Suggested withdrawal</div>
+                  <div class="suggest-banner-label">Recorded remaining</div>
                   <div class="suggest-banner-text" id="smartSuggestText">—</div>
                 </div>
-                <button class="btn" onclick="applySmartSuggestion()" style="flex-shrink:0;white-space:nowrap">Use suggestion</button>
               </div>
             </div>
             <!-- Zone 2: FX rate -->
@@ -7481,47 +7596,39 @@ function setMonth(i){
 
 /* ---- Render: Dashboard ---- */
 function renderRebalanceHint(){
+  /* Shows factual payout history only — no withdrawal recommendations.
+     This product is an accounting layer, not a payout prediction system. */
   var el=g('rebalanceHint');
-  if(!el||currentRole!=='admin')return;
+  if(!el)return;
+  var oks=okWs();
   var activePartners=PARTNERS.filter(function(p){return p.status==='active';});
-  if(activePartners.length<2){el.style.display='none';return;}
-  var remaining=activePartners.map(function(p){
-    return{name:p.name,rem:partnerRemaining(p.id)};
-  }).filter(function(r){return r.rem>0;});
-  if(!remaining.length){el.style.display='none';return;}
-  remaining.sort(function(a,b){return b.rem-a.rem;});
-  var top=remaining[0];
-  if(remaining.length>=2&&(top.rem-remaining[remaining.length-1].rem)>50){
-    el.style.display='block';
-    el.innerHTML='💡 <strong>'+escHtml(top.name)+'</strong> has the most uncollected: '
-      +fc(top.rem)+' — consider the next withdrawal in their favor.';
-  }else{
-    el.style.display='none';
-  }
+  if(!oks.length||!activePartners.length){el.style.display='none';return;}
+  var totalEUR=r2(oks.reduce(function(s,w){return s+w.eur;},0));
+  el.style.display='block';
+  el.innerHTML='<span style="font-size:var(--f10);font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--t4)">Recorded distribution</span>'
+    +'<span style="color:var(--t3);font-size:var(--f11);margin-left:10px">'+fe(totalEUR)+' across '+oks.length+' recorded payout'+(oks.length!==1?'s':'')+'</span>';
 }
 
 function computeSmartSuggestion(){
+  /* Shows factual recorded-remaining amounts only.
+     No suggested withdrawal amounts — this product does not model platform
+     payout timing, rolling reserves, or withdrawal availability. */
   var row=g('smartSuggestRow');
   var txt=g('smartSuggestText');
   if(!row||!txt)return;
   var activePartners=PARTNERS.filter(function(p){return p.status==='active';});
-  if(activePartners.length<2){row.style.display='none';return;}
-  var remaining=activePartners.map(function(p){
-    return{id:p.id,name:p.name,rem:partnerRemaining(p.id)};
-  });
-  var maxRem=Math.max.apply(null,remaining.map(function(r){return r.rem;}));
-  var minRem=Math.min.apply(null,remaining.map(function(r){return r.rem;}));
-  if(maxRem<=0){row.style.display='none';return;}
-  var suggestedUSD=minRem>0?minRem:maxRem;
-  var suggestedEUR=r2(suggestedUSD*(FX_RATES.EUR||WISE_RATE||0.84));
-  var parts=remaining
-    .filter(function(r){return r.rem>0;})
-    .map(function(r){return escHtml(r.name)+': '+fc(r.rem)+' remaining';});
-  txt.innerHTML=parts.join(' &nbsp;·&nbsp; ')
-    +'<br><span style="color:var(--indigo-l);font-weight:600">Suggested: '+fc(suggestedUSD)+' ≈ '+fe(suggestedEUR)+'</span>';
+  if(!activePartners.length||!ACTIVE_MODEL_ID){row.style.display='none';return;}
+  var parts=activePartners
+    .map(function(p){
+      var rem=partnerRemaining(p.id);
+      return rem>0.01?escHtml(p.name)+': <strong>'+fc(rem)+'</strong> recorded remaining':null;
+    })
+    .filter(Boolean);
+  if(!parts.length){row.style.display='none';return;}
+  txt.innerHTML=parts.join(' &nbsp;&middot;&nbsp; ');
   row.style.display='block';
-  row._suggestedUSD=suggestedUSD;
-  row._suggestedEUR=suggestedEUR;
+  row._suggestedUSD=null;
+  row._suggestedEUR=null;
 }
 
 function applySmartSuggestion(){

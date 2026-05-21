@@ -180,8 +180,9 @@ button { font-family: var(--sans); }
 
 /* ── 4. SIDEBAR ─────────────────────────────────────────────── */
 /* Narrow, text-only navigation. Active = weight + left border. */
+/* ── 3. SIDEBAR ─────────────────────────────────────────────── */
 .sidebar {
-  width: 200px;
+  width: 216px;
   flex-shrink: 0;
   background: var(--bg);
   border-right: 1px solid var(--line-1);
@@ -194,81 +195,78 @@ button { font-family: var(--sans); }
   z-index: 40;
 }
 
-/* Brand header — compact, no decoration */
-.sidebar-logo {
-  padding: 15px 16px 13px;
-  display: flex;
-  align-items: center;
-  gap: 9px;
+/* ── Brand zone: wordmark + agency context, unified ── */
+.sidebar-brand {
+  padding: 20px 18px 16px;
   border-bottom: 1px solid var(--line-1);
   flex-shrink: 0;
 }
-.logo-icon {
-  width: 22px;
-  height: 22px;
-  background: var(--surface-3);
-  border: 1px solid var(--line-2);
-  border-radius: var(--r2);
+.sidebar-wordmark {
   display: flex;
   align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+  gap: 9px;
+  margin-bottom: 11px;
 }
-.logo-icon svg { opacity: .7; }
-.logo-name {
-  font-size: var(--f11);
+/* Ledger mark — three-line financial symbol */
+.sidebar-mark {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: var(--t2);
+}
+.sidebar-product {
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: .08em;
+  letter-spacing: .07em;
   text-transform: uppercase;
   color: var(--t1);
   line-height: 1;
 }
-.logo-sub { display: none; } /* context shown in sidebar-context */
-
-/* Context strip — agency name */
-.sidebar-agency-card {
-  padding: 10px 16px 8px;
-  border-bottom: 1px solid var(--line-1);
-  flex-shrink: 0;
+.sidebar-context {
+  padding-left: 25px; /* optically align under product name */
 }
-.sac-label {
-  font-size: var(--f10);
-  font-weight: 600;
-  color: var(--t4);
-  text-transform: uppercase;
-  letter-spacing: .08em;
-  margin-bottom: 2px;
-}
-.sac-name {
+.sidebar-agency-name {
   font-size: var(--f12);
-  font-weight: 500;
-  color: var(--t2);
+  font-weight: 400;
+  color: var(--t3);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  line-height: 1.4;
 }
-.sac-models { font-size: var(--f11); color: var(--t4); margin-top: 1px; }
-
-/* Navigation — institutional, text-first */
-.sidebar-nav { flex: 1; padding: 6px 0; }
-.nav-section-label {
-  font-size: var(--f10);
-  font-weight: 600;
+.sidebar-agency-meta {
+  font-size: 10px;
   color: var(--t4);
-  letter-spacing: .08em;
-  text-transform: uppercase;
-  padding: 12px 16px 4px;
+  margin-top: 1px;
+}
+
+/* Legacy aliases — kept for JS compat */
+.logo-sub { display: none; }
+.sidebar-logo { display: none; }
+.sidebar-agency-card { display: none; }
+
+/* ── Navigation — text-first, no icons, two groups ── */
+.sidebar-nav {
+  flex: 1;
+  padding: 6px 0 4px;
+  display: flex;
+  flex-direction: column;
+}
+.sidebar-nav-group { padding: 2px 0; }
+.sidebar-nav-group + .sidebar-nav-group {
+  border-top: 1px solid var(--line-1);
+  margin-top: 4px;
+  padding-top: 6px;
 }
 .tab-btn {
   display: flex;
   align-items: center;
-  gap: 8px;
   width: 100%;
-  padding: 7px 16px;
+  padding: 7px 18px;
   border: none;
   border-left: 2px solid transparent;
   background: transparent;
-  color: var(--t3);
+  color: var(--t4);
   font-family: var(--sans);
   font-size: var(--f13);
   font-weight: 400;
@@ -276,42 +274,40 @@ button { font-family: var(--sans); }
   text-align: left;
   white-space: nowrap;
   letter-spacing: -.01em;
+  line-height: 1.2;
   transition: color var(--fast);
   position: relative;
-  margin-bottom: 0;
 }
-.tab-btn svg {
-  flex-shrink: 0;
-  width: 14px;
-  height: 14px;
-  opacity: .35;
-  transition: opacity var(--fast);
-}
-.tab-btn:hover { color: var(--t2); background: transparent; }
-.tab-btn:hover svg { opacity: .55; }
-
-/* Active state: weight + left border. No pill, no bg fill. */
+/* hide old icons if any remain */
+.tab-btn svg { display: none; }
+.tab-btn:hover { color: var(--t2); }
 .tab-btn.act {
   color: var(--t1);
   font-weight: 600;
-  border-left-color: var(--accent);
-  background: rgba(255,255,255,.03);
+  border-left-color: var(--t1);
 }
-.tab-btn.act svg { opacity: .85; }
-.tab-btn.act::before { display: none; } /* remove old indicator */
+.tab-btn.act::before { display: none; }
 
-/* Model switcher in sidebar */
+/* ── Model context ── */
 .sidebar-model-section {
-  padding: var(--s1) 0 var(--s2);
-  border-bottom: 1px solid var(--line-1);
+  border-top: 1px solid var(--line-1);
+  padding: 6px 0 4px;
+}
+.nav-section-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--t4);
+  padding: 4px 18px 2px;
 }
 .model-bar { display: none; }
 .model-chip {
   display: flex;
   align-items: center;
-  gap: var(--s2);
+  gap: 7px;
   width: 100%;
-  padding: 6px 16px;
+  padding: 5px 18px;
   border: none;
   border-left: 2px solid transparent;
   background: transparent;
@@ -328,14 +324,13 @@ button { font-family: var(--sans); }
 }
 .model-chip:hover { color: var(--t2); }
 .model-chip.act {
-  color: var(--t1);
+  color: var(--t2);
   font-weight: 600;
   border-left-color: var(--pos);
-  background: rgba(255,255,255,.02);
 }
 .mc-dot {
-  width: 5px;
-  height: 5px;
+  width: 4px;
+  height: 4px;
   border-radius: 50%;
   background: var(--t4);
   flex-shrink: 0;
@@ -350,19 +345,24 @@ button { font-family: var(--sans); }
 }
 .model-chip-add:hover { color: var(--t2); border: none; background: transparent; }
 
-/* Quick stats — inline pairs, minimal */
+/* ── Financial summary — the two numbers that matter ── */
 .sidebar-quick-stats {
-  padding: 8px 16px 6px;
-  border-bottom: 1px solid var(--line-1);
+  border-top: 1px solid var(--line-1);
+  padding: 10px 18px 8px;
 }
 .sqs-item {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: var(--s2);
-  padding: 3px 0;
+  gap: 6px;
+  padding: 2px 0;
 }
-.sqs-label { font-size: var(--f11); color: var(--t4); white-space: nowrap; }
+.sqs-label {
+  font-size: 10px;
+  color: var(--t4);
+  white-space: nowrap;
+  letter-spacing: .01em;
+}
 .sqs-val {
   font-size: var(--f12);
   font-weight: 600;
@@ -372,29 +372,32 @@ button { font-family: var(--sans); }
   letter-spacing: -.02em;
 }
 
-/* Footer — connection status */
+/* ── Footer — status only, near-invisible ── */
 .sidebar-footer {
-  padding: 10px 16px 14px;
+  padding: 8px 18px 12px;
   border-top: 1px solid var(--line-1);
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
 }
 .live-indicator {
   display: flex;
   align-items: center;
-  gap: var(--s2);
-  margin-bottom: 2px;
+  gap: 5px;
 }
 .live-dot {
-  width: 5px;
-  height: 5px;
+  width: 4px;
+  height: 4px;
   border-radius: 50%;
   background: var(--t4);
   transition: background var(--normal);
   flex-shrink: 0;
 }
 .live-dot.on { background: var(--pos); animation: pulse-dot 2.5s ease-in-out infinite; }
-#liveStatus { font-size: var(--f11); color: var(--t4); }
-#lastRefreshLabel { font-size: var(--f10); color: var(--t4); margin-top: 1px; }
+#liveStatus { font-size: 10px; color: var(--t4); }
+#lastRefreshLabel { font-size: 9px; color: var(--t4); opacity: .5; }
 
 /* ── 5. TOPBAR ──────────────────────────────────────────────── */
 .topbar {
@@ -2706,6 +2709,104 @@ button { font-family: var(--sans); }
 .fin-table .dim     { color: var(--t3); }
 .fin-table .meta    { font-size: var(--f11); color: var(--t4); margin-top: 2px; }
 
+/* ━━ 41. TABLE & LIST REFINEMENTS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+   Unified scan path: status → identity → date → amount → actions
+   Left-border accent = platform/status signal (instant scannability)
+   Hover calibrated to be visible but not distracting
+   Amount always rightmost, always monospace, always primary weight
+
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+/* — Hover: calibrated across all financial rows — */
+.fin-table tbody tr:hover td  { background: rgba(255,255,255,.04); }
+.rev-stmt-row:hover           { background: rgba(255,255,255,.03); }
+.dpt-row:hover                { background: rgba(255,255,255,.04); }
+.wd-row:hover                 { background: rgba(255,255,255,.03); }
+.exp-item:hover               { background: rgba(255,255,255,.03); }
+
+/* — fin-table: primary column weight, right-align date — */
+.fin-table tbody td { color: var(--t1); }
+.fin-table td.dim   { color: var(--t3); font-size: var(--f12); }
+.fin-table td.date-col { text-align: right; white-space: nowrap; padding-right: 20px; }
+
+/* — Transaction rows: 3-column grid for perfect alignment — */
+.tx-list-wrap {
+  border: 1px solid var(--line-2);
+  border-radius: var(--r3);
+  overflow: hidden;
+  background: var(--surface);
+}
+.tx-item {
+  border-bottom: 1px solid var(--line-1);
+  border-left: 2px solid transparent; /* platform color set per-row by JS */
+  overflow: hidden;
+  transition: background var(--fast);
+}
+.tx-item:last-child  { border-bottom: none; }
+.tx-item.editing     { background: var(--surface-2); border-left-color: transparent; }
+.tx-row {
+  display: grid;
+  grid-template-columns: 1fr 84px auto;
+  align-items: center;
+  padding: 0 20px;
+  height: 44px;
+  gap: 0 8px;
+  transition: background var(--fast);
+}
+.tx-item.editing .tx-row {
+  display: flex; align-items: center; gap: 10px;
+  height: auto; min-height: 40px; padding: 8px 16px;
+}
+.tx-row:hover { background: rgba(255,255,255,.035); }
+.tx-row:hover .tx-actions { opacity: 1; pointer-events: auto; }
+.tx-left {
+  display: flex; align-items: center; gap: 10px; min-width: 0; overflow: hidden;
+}
+.tx-platform-icon {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+}
+.tx-plname {
+  font-size: var(--f13); font-weight: 600; color: var(--t1);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.tx-source {
+  font-size: 9px; font-weight: 700; letter-spacing: .06em; flex-shrink: 0;
+  color: var(--t4); background: rgba(255,255,255,.04);
+  border: 1px solid var(--line-1); border-radius: 3px; padding: 1px 4px;
+}
+.tx-date {
+  font-size: var(--f11); color: var(--t4); font-family: var(--mono);
+  text-align: right; white-space: nowrap; letter-spacing: -.01em;
+}
+.tx-right {
+  display: flex; align-items: center; justify-content: flex-end; gap: 8px;
+}
+.tx-amt {
+  font-size: 15px; font-weight: 700;
+  font-variant-numeric: tabular-nums; font-family: var(--mono);
+  letter-spacing: -.025em; white-space: nowrap;
+}
+.tx-amt.pos { color: var(--pos-txt); }
+.tx-amt.neg { color: var(--neg-txt); }
+.tx-actions {
+  display: flex; gap: 4px; align-items: center; flex-shrink: 0;
+  opacity: 0; pointer-events: none; transition: opacity 120ms;
+}
+.tx-item:hover .tx-actions  { opacity: 1; pointer-events: auto; }
+.tx-desc {
+  font-size: var(--f11); color: var(--t4);
+  padding: 0 20px var(--s2); font-style: italic; border-top: none;
+}
+
+/* — Section labels — */
+.list-section-label {
+  font-size: 10px; font-weight: 700; color: var(--t4);
+  text-transform: uppercase; letter-spacing: .1em;
+  margin: var(--s5) 0 var(--s3); padding: 0;
+}
+.list-section-label:first-child { margin-top: 0; }
+
 </style>
 </head>
 <body>
@@ -2851,79 +2952,57 @@ button { font-family: var(--sans); }
 
   <!-- SIDEBAR -->
   <aside class="sidebar">
-    <div class="sidebar-logo">
-      <div class="logo-icon">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="12" y1="1" x2="12" y2="23"/>
-          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+
+    <!-- Brand zone: product mark + agency context -->
+    <div class="sidebar-brand">
+      <div class="sidebar-wordmark">
+        <!-- Ledger mark: three horizontal rules in a square — financial identity -->
+        <svg class="sidebar-mark" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x=".75" y=".75" width="14.5" height="14.5" rx="3.25" stroke="currentColor" stroke-width="1.1" stroke-opacity=".35"/>
+          <line x1="4" y1="5.5" x2="12" y2="5.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+          <line x1="4" y1="8"   x2="12" y2="8"   stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+          <line x1="4" y1="10.5" x2="8.5" y2="10.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
         </svg>
+        <span class="sidebar-product">Payout Manager</span>
       </div>
-      <div>
-        <div class="logo-name">Payout Manager</div>
-        <div class="logo-sub" id="sidebarLogoSub"></div>
+      <div class="sidebar-context">
+        <div class="sidebar-agency-name" id="sidebarAgencyName">—</div>
+        <div class="sidebar-agency-meta" id="sidebarModelsCount"></div>
       </div>
     </div>
 
+    <!-- Navigation — text-first, grouped by function -->
     <nav class="sidebar-nav">
-      <button class="tab-btn act" data-tab="dashboard" onclick="showTab('dashboard',this)">
-        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/>
-          <rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>
-        </svg>
-        Dashboard
-      </button>
-      <button class="tab-btn" data-tab="revenue" onclick="showTab('revenue',this)">
-        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <rect x="3" y="12" width="4" height="9" rx="1"/><rect x="10" y="7" width="4" height="14" rx="1"/><rect x="17" y="3" width="4" height="18" rx="1"/>
-        </svg>
-        Revenue
-      </button>
-      <button class="tab-btn" data-tab="expenses" onclick="showTab('expenses',this)">
-        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-        </svg>
-        Expenses
-      </button>
-      <button class="tab-btn" data-tab="withdrawals" onclick="showTab('withdrawals',this)">
-        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>
-        </svg>
-        Withdrawals
-      </button>
-      <button class="tab-btn" data-tab="settings" onclick="showTab('settings',this)">
-        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="3"/>
-          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-        </svg>
-        Settings
-      </button>
+      <div class="sidebar-nav-group">
+        <button class="tab-btn act" data-tab="dashboard" onclick="showTab('dashboard',this)">Overview</button>
+        <button class="tab-btn" data-tab="revenue"      onclick="showTab('revenue',this)">Revenue</button>
+        <button class="tab-btn" data-tab="expenses"     onclick="showTab('expenses',this)">Expenses</button>
+        <button class="tab-btn" data-tab="withdrawals"  onclick="showTab('withdrawals',this)">Withdrawals</button>
+      </div>
+      <div class="sidebar-nav-group">
+        <button class="tab-btn" data-tab="settings"     onclick="showTab('settings',this)">Settings</button>
+      </div>
     </nav>
 
-    <!-- Model switcher -->
+    <!-- Model context -->
     <div class="sidebar-model-section">
       <div class="nav-section-label">Model</div>
       <div id="modelSwitcher"></div>
     </div>
 
-    <!-- Agency card -->
-    <div class="sidebar-agency-card">
-      <div class="sac-label">Agency</div>
-      <div class="sac-name" id="sidebarAgencyName">—</div>
-      <div class="sac-models" id="sidebarModelsCount">— models</div>
-    </div>
-
-    <!-- Quick stats -->
+    <!-- Financial summary -->
     <div class="sidebar-quick-stats" id="sidebarQuickStats">
       <div class="sqs-item">
-        <div class="sqs-label">This month</div>
-        <div class="sqs-val" id="sidebarThisMonth">—</div>
+        <span class="sqs-label">MTD Revenue</span>
+        <span class="sqs-val" id="sidebarThisMonth">—</span>
       </div>
       <div class="sqs-item">
-        <div class="sqs-label">Total withdrawn</div>
-        <div class="sqs-val" id="sidebarTotalWithdrawn">—</div>
+        <span class="sqs-label">Paid out</span>
+        <span class="sqs-val" id="sidebarTotalWithdrawn">—</span>
       </div>
     </div>
 
+    <!-- Status footer -->
     <div class="sidebar-footer">
       <div class="live-indicator">
         <div class="live-dot" id="liveDot"></div>
@@ -2959,7 +3038,7 @@ button { font-family: var(--sans); }
 
     <!-- TOP BAR -->
     <div class="topbar">
-      <div class="page-title" id="pageTitle">Dashboard</div>
+      <div class="page-title" id="pageTitle">Overview</div>
       <!-- Mobile model switcher — only visible on mobile -->
       <div id="mobileModelPill" style="display:none;align-items:center;gap:6px;background:var(--card2);border:1px solid var(--border2);border-radius:20px;padding:5px 12px 5px 8px;cursor:pointer;max-width:160px" onclick="toggleMobileModelMenu()">
         <span id="mobileModelDot" style="width:7px;height:7px;border-radius:50%;background:var(--green);flex-shrink:0"></span>
@@ -3603,7 +3682,7 @@ button { font-family: var(--sans); }
         <rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/>
         <rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>
       </svg>
-      Dashboard
+      Overview
     </button>
     <button class="tab-mob" id="mob-revenue" onclick="showTab('revenue',this,true)">
       <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
@@ -5180,7 +5259,7 @@ function toggleTheme(){
 
 /* ---- Page title update ---- */
 var PAGE_TITLES={
-  dashboard:'Dashboard',
+  dashboard:'Overview',
   revenue:'Revenue',
   expenses:'Expenses',
   withdrawals:'Withdrawals',
@@ -6748,15 +6827,18 @@ function updateSidebarStats(){
   var tm=g('sidebarThisMonth');
   var tw=g('sidebarTotalWithdrawn');
   if(nm&&_agencyName)nm.textContent=_agencyName;
-  if(mc)mc.textContent=ALL_MODELS.length+' model'+(ALL_MODELS.length!==1?'s':'');
+  if(mc){
+    var mCount=ALL_MODELS.length;
+    mc.textContent=mCount?mCount+' model'+(mCount!==1?'s':''):'';
+  }
   var curM=S.months[S.am]||S.months[S.months.length-1];
   if(tm){
     tm.textContent=curM?fc(mTot(curM)):'—';
     var curRevVal=curM?mTot(curM):0;
-    tm.style.color=curRevVal>0?'var(--green-text)':'var(--text)';
+    tm.style.color=curRevVal>0?'var(--pos-txt)':'var(--t2)';
   }
   var totalWdrawn=r2(S.ws.filter(function(w){return w.st==='ok';}).reduce(function(s,w){return s+w.usd;},0));
-  if(tw){tw.textContent=fc(totalWdrawn);tw.style.color='var(--text)';}
+  if(tw){tw.textContent=fc(totalWdrawn);tw.style.color='var(--t2)';}
 }
 
 function exportTransactionsCSV(){

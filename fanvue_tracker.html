@@ -2807,6 +2807,189 @@ button { font-family: var(--sans); }
 }
 .list-section-label:first-child { margin-top: 0; }
 
+/* ══ 42. FORMS & SETTINGS REDESIGN ═══════════════════════════════
+   Replaces card+sec-row+add-row with a structured panel system.
+   Do not preserve old layouts — new system is authoritative.
+   ══════════════════════════════════════════════════════════════ */
+
+/* Form Panel ─ primary form container */
+.form-panel {
+  border: 1px solid var(--line-2);
+  border-radius: var(--r3);
+  background: var(--surface);
+  overflow: hidden;
+  margin-bottom: var(--s4);
+}
+.form-panel:last-child { margin-bottom: 0; }
+
+.form-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 20px;
+  border-bottom: 1px solid var(--line-1);
+  background: var(--surface-2);
+}
+.form-panel-title {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--t3);
+  text-transform: uppercase;
+  letter-spacing: .09em;
+}
+.form-panel-meta {
+  font-size: 10px;
+  color: var(--t4);
+}
+
+.form-panel-body {
+  padding: 20px;
+}
+
+/* Form grids */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 16px;
+  margin-bottom: 14px;
+}
+.form-grid:last-child { margin-bottom: 0; }
+.form-grid .field    { margin-bottom: 0; }
+
+.form-grid-4 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 16px;
+  margin-bottom: 14px;
+}
+.form-grid-4 .field  { margin-bottom: 0; }
+
+/* Inline row: field + button side-by-side */
+.form-inline {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.form-inline .field  { flex: 1; margin-bottom: 0; }
+
+/* Separator between zones inside form-panel-body */
+.form-sep {
+  border: none;
+  border-top: 1px solid var(--line-1);
+  margin: 16px 0;
+}
+
+/* Form actions: bottom bar */
+.form-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+}
+.form-actions .form-status {
+  flex: 1;
+  font-size: var(--f11);
+  color: var(--t3);
+  min-height: 16px;
+}
+
+/* Field refinements: deeper bg, more padding, refined label */
+.field input,
+.field select,
+.field textarea {
+  padding: 8px 11px;
+  background: var(--bg);
+}
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  border-color: var(--line-3);
+  box-shadow: 0 0 0 2px rgba(255,255,255,.035);
+}
+.field label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--t4);
+  letter-spacing: .08em;
+}
+
+/* Suggest banner: smart withdrawal hint */
+.suggest-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: rgba(99,102,241,.05);
+  border: 1px solid rgba(99,102,241,.16);
+  border-radius: var(--r2);
+  padding: 10px 14px;
+  margin-bottom: 14px;
+}
+.suggest-banner-copy { flex: 1; min-width: 0; }
+.suggest-banner-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--p2);
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+.suggest-banner-text {
+  font-size: var(--f12);
+  color: var(--t3);
+  line-height: 1.4;
+}
+
+/* Settings: remove icon boxes, tighten header */
+.settings-section-icon   { display: none !important; }
+.settings-section-header {
+  gap: 0;
+  margin-bottom: var(--s5);
+  padding-bottom: var(--s4);
+  border-bottom: 1px solid var(--line-1);
+}
+.settings-section-title {
+  font-size: var(--f14);
+  font-weight: 700;
+  letter-spacing: -.015em;
+  color: var(--t1);
+  margin-bottom: 3px;
+}
+.settings-section-subtitle {
+  font-size: var(--f12);
+  color: var(--t4);
+  line-height: 1.5;
+}
+
+/* Settings cards: tighter spacing */
+.settings-section > .card {
+  margin-bottom: var(--s2);
+  padding: var(--s4) var(--s5);
+}
+.settings-section > .card:last-child { margin-bottom: 0; }
+
+/* Setting rows: tighter, more legible hierarchy */
+.setting-row {
+  min-height: 50px;
+  padding: 11px 0;
+}
+.setting-label {
+  font-size: var(--f13);
+  font-weight: 500;
+  color: var(--t1);
+  margin-bottom: 2px;
+}
+.setting-desc {
+  font-size: 11px;
+  color: var(--t4);
+  line-height: 1.5;
+}
+
+/* Card sec-label override: suppress redundant labels where form-panel-header is used */
+.form-panel .sec-label   { display: none; }
+.form-panel .sec-row     { display: none; }
+
 </style>
 </head>
 <body>
@@ -3214,31 +3397,35 @@ button { font-family: var(--sans); }
       <div class="tab-page" id="tab-revenue">
 
         <!-- Manual transaction entry — collapsed by default -->
-        <div class="card" id="addTxForm" style="display:none">
-          <div class="sec-row">
-            <div class="sec-label">Add Transaction</div>
-            <span style="font-size:11px;color:var(--text3)">Manual entry</span>
+        <div class="form-panel" id="addTxForm" style="display:none">
+          <div class="form-panel-header">
+            <span class="form-panel-title">Add Transaction</span>
+            <span class="form-panel-meta">Manual entry</span>
           </div>
-          <div class="add-row">
-            <div class="field">
-              <label>Platform</label>
-              <select id="txPl" onchange="onTxPlatformChange()"></select>
+          <div class="form-panel-body">
+            <div class="form-grid">
+              <div class="field">
+                <label>Platform</label>
+                <select id="txPl" onchange="onTxPlatformChange()"></select>
+              </div>
+              <div class="field">
+                <label>Date</label>
+                <input type="date" id="txDate">
+              </div>
             </div>
-            <div class="field">
-              <label>Amount (USD)</label>
-              <input id="txAmt" class="num" placeholder="50.00 or -10.00">
+            <div class="field" id="txNoteField">
+              <label>Note (optional)</label>
+              <input id="txNote" placeholder="e.g. Received €540 via PayPal">
             </div>
-            <div class="field">
-              <label>Date</label>
-              <input type="date" id="txDate">
+            <div class="form-actions">
+              <div class="field" style="flex:1;margin-bottom:0">
+                <label>Amount (USD)</label>
+                <input id="txAmt" class="num" placeholder="50.00 or -10.00">
+              </div>
+              <button class="btn btn-primary" id="txAddBtn" onclick="addTransaction()" style="align-self:flex-end">Add transaction</button>
             </div>
-            <button class="btn" id="txAddBtn" onclick="addTransaction()" style="align-self:flex-end">Add</button>
+            <div id="txStatus" style="font-size:11px;margin-top:8px;min-height:16px"></div>
           </div>
-          <div class="field" id="txNoteField">
-            <label>Note (optional)</label>
-            <input id="txNote" placeholder="e.g. Received €540 via PayPal">
-          </div>
-          <div id="txStatus" style="font-size:11px;margin-top:8px;min-height:16px"></div>
         </div>
 
         <div class="card">
@@ -3261,47 +3448,53 @@ button { font-family: var(--sans); }
       <div class="tab-page" id="tab-expenses">
 
         <!-- Add expense form — collapsed by default -->
-        <div class="card" id="expensesCard" style="display:none">
-          <div class="sec-row">
-            <div class="sec-label" style="margin:0">Add Expense</div>
+        <div class="form-panel" id="expensesCard" style="display:none">
+          <div class="form-panel-header">
+            <span class="form-panel-title">Add Expense</span>
           </div>
-          <div class="add-row" style="margin-bottom:14px">
-            <div class="field" id="expPartnerRow">
-              <label>Partner</label>
-              <select id="expPartner"></select>
-              <div style="font-size:11px;color:var(--text3);margin-top:2px;line-height:1.5">This expense is deducted from the partner's share of revenue.</div>
+          <div class="form-panel-body">
+            <div class="form-grid" id="expPartnerRow">
+              <div class="field">
+                <label>Partner</label>
+                <select id="expPartner"></select>
+                <div class="sub-hint">Deducted from partner's revenue share.</div>
+              </div>
+              <div class="field">
+                <label>Model</label>
+                <select id="expModel"></select>
+              </div>
             </div>
-            <div class="field">
-              <label>Model</label>
-              <select id="expModel"></select>
+            <div class="form-grid">
+              <div class="field">
+                <label>Amount (USD)</label>
+                <input id="expAmt" class="num" placeholder="0.00">
+              </div>
+              <div class="field">
+                <label>Date</label>
+                <input type="date" id="expDate">
+              </div>
             </div>
-            <div class="field">
-              <label>Amount (USD)</label>
-              <input id="expAmt" class="num" placeholder="0.00">
+            <div class="form-grid">
+              <div class="field">
+                <label>Category</label>
+                <select id="expCat">
+                  <option value="">— None —</option>
+                  <option value="Marketing">Marketing</option>
+                  <option value="Software">Software</option>
+                  <option value="Equipment">Equipment</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Description (optional)</label>
+                <input id="expDesc" placeholder="Ads, content, tools…">
+              </div>
             </div>
-            <div class="field">
-              <label>Date</label>
-              <input type="date" id="expDate">
+            <div class="form-actions">
+              <div id="expStatus" class="form-status"></div>
+              <button class="btn btn-primary" id="expAddBtn" onclick="addExpense()">Add expense</button>
             </div>
-            <button class="btn" id="expAddBtn" onclick="addExpense()" style="align-self:flex-end">Add</button>
           </div>
-          <div class="g2">
-            <div class="field">
-              <label>Category</label>
-              <select id="expCat">
-                <option value="">— None —</option>
-                <option value="Marketing">Marketing</option>
-                <option value="Software">Software</option>
-                <option value="Equipment">Equipment</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-            <div class="field">
-              <label>Description (optional)</label>
-              <input id="expDesc" placeholder="Ads, content, tools…">
-            </div>
-          </div>
-          <div id="expStatus" style="font-size:11px;margin-bottom:8px;min-height:16px"></div>
         </div>
 
         <!-- Expense history by month -->
@@ -3330,47 +3523,60 @@ button { font-family: var(--sans); }
             </div>
           </div>
         </div>
-        <div class="card" id="addWithdrawalForm" style="display:none">
-          <div class="sec-label">New Withdrawal Request</div>
-          <div class="add-row">
-            <div class="field">
-              <label>Model</label>
-              <select id="wModel"></select>
-            </div>
-            <div class="field">
-              <label>Platform</label>
-              <select id="nPl"></select>
-            </div>
-            <div class="field">
-              <label>Amount (USD)</label>
-              <input id="nUSD" class="num" placeholder="200" oninput="onWithdrawalUSDChange(this.value)">
-            </div>
-            <div class="field">
-              <label>Date</label>
-              <input type="date" id="nDate">
-            </div>
+        <div class="form-panel" id="addWithdrawalForm" style="display:none">
+          <div class="form-panel-header">
+            <span class="form-panel-title">New Withdrawal</span>
           </div>
-          <div id="smartSuggestRow" style="display:none;margin-bottom:12px">
-            <div style="background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px">
-              <div>
-                <div style="font-size:12px;font-weight:600;color:var(--indigo-l);margin-bottom:2px">💡 Suggested withdrawal</div>
-                <div id="smartSuggestText" style="font-size:12px;color:var(--text2)">—</div>
+          <div class="form-panel-body">
+            <!-- Zone 1: request fields -->
+            <div class="form-grid">
+              <div class="field">
+                <label>Model</label>
+                <select id="wModel"></select>
               </div>
-              <button class="btn" onclick="applySmartSuggestion()" style="font-size:12px;padding:6px 12px;flex-shrink:0;white-space:nowrap">Use suggestion</button>
+              <div class="field">
+                <label>Platform</label>
+                <select id="nPl"></select>
+              </div>
             </div>
-          </div>
-          <div class="add-row" style="align-items:flex-end;margin-top:10px">
+            <div class="form-grid">
+              <div class="field">
+                <label>Amount (USD)</label>
+                <input id="nUSD" class="num" placeholder="200" oninput="onWithdrawalUSDChange(this.value)">
+              </div>
+              <div class="field">
+                <label>Date</label>
+                <input type="date" id="nDate">
+              </div>
+            </div>
+            <!-- Smart suggestion -->
+            <div id="smartSuggestRow" style="display:none">
+              <div class="suggest-banner">
+                <div class="suggest-banner-copy">
+                  <div class="suggest-banner-label">Suggested withdrawal</div>
+                  <div class="suggest-banner-text" id="smartSuggestText">—</div>
+                </div>
+                <button class="btn" onclick="applySmartSuggestion()" style="flex-shrink:0;white-space:nowrap">Use suggestion</button>
+              </div>
+            </div>
+            <!-- Zone 2: FX rate -->
+            <hr class="form-sep">
+            <div class="form-inline">
+              <div class="field">
+                <label>FX Rate (USD→EUR)</label>
+                <input id="nFxRate" class="num" placeholder="0.0000">
+                <div id="fxRateHint" class="sub-hint"></div>
+              </div>
+              <button class="btn" style="white-space:nowrap;flex-shrink:0" onclick="if(WISE_RATE){g('nFxRate').value=WISE_RATE.toFixed(4)}">Use current rate</button>
+            </div>
+            <!-- Zone 3: description + actions -->
             <div class="field">
-              <label>FX Rate (USD→EUR)</label>
-              <input id="nFxRate" class="num" placeholder="0.0000">
-              <div id="fxRateHint" style="font-size:11px;color:var(--text3);margin-top:3px"></div>
+              <label>Description (optional)</label>
+              <input id="wdDesc" placeholder="e.g. Monthly payout, Fanvue April">
             </div>
-            <button class="btn" style="font-size:12px;padding:8px 12px;white-space:nowrap;align-self:flex-end" onclick="if(WISE_RATE){g('nFxRate').value=WISE_RATE.toFixed(4)}">Use current rate</button>
-            <button class="btn btn-primary" id="addBtn" onclick="addW()" style="align-self:flex-end">Add withdrawal</button>
-          </div>
-          <div class="field" style="margin-top:10px;max-width:400px">
-            <label>Description (optional)</label>
-            <input id="wdDesc" placeholder="e.g. Monthly payout, Fanvue April">
+            <div class="form-actions">
+              <button class="btn btn-primary" id="addBtn" onclick="addW()">Add withdrawal</button>
+            </div>
           </div>
         </div>
         <div id="wList"></div>
@@ -3406,27 +3612,31 @@ button { font-family: var(--sans); }
             <div id="partnersList"></div>
           </div>
           <!-- Invite form (admin only) -->
-          <div class="card" id="inviteNewPartner" style="display:none">
-            <div class="sec-label">Invite new partner</div>
-
-            <div class="field">
-              <label>Name</label>
-              <input id="inviteName" placeholder="Partner name" maxlength="60">
+          <div class="form-panel" id="inviteNewPartner" style="display:none">
+            <div class="form-panel-header">
+              <span class="form-panel-title">Invite Partner</span>
             </div>
-
-            <div class="field">
-              <label>Email</label>
-              <input id="inviteEmail" type="email" placeholder="partner@example.com">
+            <div class="form-panel-body">
+              <div class="form-grid">
+                <div class="field">
+                  <label>Name</label>
+                  <input id="inviteName" placeholder="Partner name" maxlength="60">
+                </div>
+                <div class="field">
+                  <label>Email</label>
+                  <input id="inviteEmail" type="email" placeholder="partner@example.com">
+                </div>
+              </div>
+              <div class="field">
+                <label>Models &amp; Splits</label>
+                <div id="inviteModelSplits" style="display:flex;flex-direction:column;gap:6px;margin-top:6px"></div>
+                <div class="sub-hint" style="margin-top:6px">Select models and set split % for each.</div>
+              </div>
+              <div class="form-actions">
+                <div id="inviteStatus" class="form-status"></div>
+                <button class="btn btn-primary" onclick="invitePartner()">Send invite</button>
+              </div>
             </div>
-
-            <div class="field" style="margin-bottom:var(--space-3)">
-              <label>Models &amp; Splits</label>
-              <div id="inviteModelSplits" style="display:flex;flex-direction:column;gap:var(--space-2);margin-top:var(--space-1)"></div>
-              <div style="font-size:11px;color:var(--text3);margin-top:var(--space-1)">Select models and set split % for each.</div>
-            </div>
-
-            <button class="btn btn-primary" onclick="invitePartner()" style="margin-top:var(--space-1)">Send invite</button>
-            <div id="inviteStatus" style="font-size:12px;margin-top:var(--space-2);min-height:18px"></div>
           </div>
           <!-- Model revenue splits -->
           <div class="card" id="modelSplitSection" style="display:none">
@@ -6316,14 +6526,15 @@ function renderRecentTx(){
     }
     var noteText=tx.note?'<div class="meta">'+escHtml(tx.note)+'</div>':'';
     return '<tr>'
-      +'<td>'
+      +'<td style="background:linear-gradient(to right,'+plColor+' 2px,transparent 2px);padding-left:18px">'
         +'<div style="display:flex;align-items:center;gap:8px">'
           +'<div style="width:6px;height:6px;border-radius:50%;background:'+plColor+';flex-shrink:0"></div>'
-          +'<span>'+escHtml(pl)+autoTag+modelTag+'</span>'
+          +'<span style="font-size:var(--f13);font-weight:600;color:var(--t1)">'+escHtml(pl)+'</span>'
+          +autoTag+modelTag
         +'</div>'
         +noteText
       +'</td>'
-      +'<td class="dim" style="white-space:nowrap">'+fdate(tx.date)+'</td>'
+      +'<td class="dim date-col">'+fdate(tx.date)+'</td>'
       +'<td class="num '+(pos?'amt-pos':'amt-neg')+'">'+(pos?'+':'−')+fu(tx.amount)+'</td>'
     +'</tr>';
   }).join('');
@@ -6635,35 +6846,34 @@ function renderMonths(){
             }
           }
         }
-        html+='<div class="tx-item">'
+        html+='<div class="tx-item" style="border-left-color:'+plColor+'">'
           +'<div class="tx-row">'
+          /* col 1: platform identity */
           +'<div class="tx-left">'
-          +(isAdmin?'<input type="checkbox" class="tx-check"'+(isSelected?' checked':'')
-            +' onchange="toggleTxSelect(\''+tx.id+'\',this.checked)" onclick="event.stopPropagation()">':'')
-          +'<div class="tx-platform-icon" style="background:'+plColor+'"></div>'
-          +'<div class="tx-info">'
-          +'<div style="display:flex;align-items:center;gap:6px">'
-          +'<span class="tx-plname">'+escHtml(plLabel)+'</span>'
-          +(tx.source==='scraper'?'<span class="tx-source">auto</span>':'')
+            +(isAdmin?'<input type="checkbox" class="tx-check"'+(isSelected?' checked':'')
+              +' onchange="toggleTxSelect(\''+tx.id+'\',this.checked)" onclick="event.stopPropagation()">':'')
+            +'<div class="tx-platform-icon" style="background:'+plColor+'"></div>'
+            +'<span class="tx-plname">'+escHtml(plLabel)+'</span>'
+            +(tx.source==='scraper'?'<span class="tx-source">auto</span>':'')
           +'</div>'
+          /* col 2: date — right-aligned, always aligned across rows */
           +'<span class="tx-date">'+fdate(tx.date)+'</span>'
-          +'</div>'
-          +'</div>'
-          +'<div style="display:flex;align-items:center;gap:8px">'
-          +'<span class="tx-amt '+(isPos?'pos':'neg')+'">'+(isPos?'+':'−')+fu(Math.abs(tx.amount))+'</span>'
-          +partnerShareHtml
-          +(isAdmin
-            ?'<div class="tx-actions">'
-              +'<button class="btn-edit" onclick="txEditStart(\''+tx.id+'\')">Edit</button>'
-              +'<button class="btn-del" onclick="txDelete(\''+tx.id+'\',\''+tx.source+'\')" title="Delete">'
-              +'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
-              +'<polyline points="3 6 5 6 21 6"/>'
-              +'<path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>'
-              +'<path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>'
-              +'</svg>'
-              +'</button>'
-              +'</div>'
-            :'')
+          /* col 3: amount + actions */
+          +'<div class="tx-right">'
+            +'<span class="tx-amt '+(isPos?'pos':'neg')+'">'+(isPos?'+':'−')+fu(Math.abs(tx.amount))+'</span>'
+            +partnerShareHtml
+            +(isAdmin
+              ?'<div class="tx-actions">'
+                +'<button class="btn-edit" onclick="txEditStart(\''+tx.id+'\')">Edit</button>'
+                +'<button class="btn-del" onclick="txDelete(\''+tx.id+'\',\''+tx.source+'\')" title="Delete">'
+                +'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
+                +'<polyline points="3 6 5 6 21 6"/>'
+                +'<path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>'
+                +'<path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>'
+                +'</svg>'
+                +'</button>'
+                +'</div>'
+              :'')
           +'</div>'
           +'</div>'
           +(tx.description?'<div class="tx-desc">'+escHtml(tx.description)+'</div>':'')

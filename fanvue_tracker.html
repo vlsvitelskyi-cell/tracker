@@ -19,24 +19,26 @@
 /* ── 1. TOKENS ─────────────────────────────────────────────── */
 :root {
 
-  /* SURFACES — single axis of depth, no gradients ever */
-  --bg:        #08080A;
-  --surface:   #0F0F12;
-  --surface-2: #161619;
-  --surface-3: #1D1D21;
-  --surface-4: #242428;
+  /* SURFACES — dark navy base. Elevation chain: bg → surface → surface-2 → surface-3 → surface-4.
+     Each step is visibly distinct. Navy tint adds depth without appearing "themed". */
+  --bg:        #0D0F16;   /* body: darkest — no pure black */
+  --surface:   #141520;   /* chrome: sidebar, topbar, subnav strips */
+  --surface-2: #1C1E2C;   /* containers: cards, panels, auth box */
+  --surface-3: #252838;   /* header chrome within containers */
+  --surface-4: #2E3047;   /* peak elevation: modals, dropdowns */
 
-  /* BORDERS — hairline only. 1px max. Depth through opacity. */
-  --line-1: rgba(255,255,255,.05);   /* background separation */
-  --line-2: rgba(255,255,255,.09);   /* standard UI borders   */
-  --line-3: rgba(255,255,255,.16);   /* emphasized borders     */
-  --line-4: rgba(255,255,255,.28);   /* focus rings            */
+  /* BORDERS — hairline only. 1px max. Bumped from original — navy bg needs more contrast. */
+  --line-1: rgba(255,255,255,.07);   /* background separation */
+  --line-2: rgba(255,255,255,.12);   /* standard UI borders   */
+  --line-3: rgba(255,255,255,.20);   /* emphasized borders     */
+  --line-4: rgba(255,255,255,.32);   /* focus rings            */
 
-  /* TEXT — 4 levels, strict roles. Never skip levels. */
-  --t1: #EFEFF1;  /* primary: figures, headings, active */
-  --t2: #9898A2;  /* secondary: body copy, descriptions */
-  --t3: #56565E;  /* tertiary: labels, captions, col headers */
-  --t4: #363640;  /* quaternary: placeholders, disabled, dividers */
+  /* TEXT — 4 levels, strict roles. Never skip levels.
+     t3/t4 lifted significantly — old values were unreadable on dark surfaces. */
+  --t1: #EEEEF2;  /* primary: figures, headings, active */
+  --t2: #9E9EAE;  /* secondary: body copy, descriptions */
+  --t3: #68687A;  /* tertiary: labels, captions, col headers */
+  --t4: #46465A;  /* quaternary: placeholders, disabled, dividers */
 
   /* SEMANTIC — financial signal. Never decorative. */
   --pos:     #22C55E;
@@ -69,20 +71,21 @@
   --paypal-bg:   rgba(59,130,246,.10);
   --telegram:    #0EA5E9;
   --telegram-bg: rgba(14,165,233,.10);
-  --other:       #56565E;
-  --other-bg:    rgba(255,255,255,.05);
+  --other:       #72727E;
+  --other-bg:    rgba(255,255,255,.06);
 
   /* TYPOGRAPHY */
   --sans: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --mono: 'Outfit', 'Roboto Mono', monospace;
 
-  /* TYPE SCALE — 9 sizes only. Comment shows role. */
+  /* TYPE SCALE — 10 sizes. Comment shows role. */
   --f10: 10px;   /* micro: timestamps, nested labels        */
   --f11: 11px;   /* small: col headers, badges, field labels */
   --f12: 12px;   /* secondary body, metadata, captions      */
   --f13: 13px;   /* primary body, nav, buttons              */
   --f14: 14px;   /* comfortable body, card titles           */
   --f15: 15px;   /* section headings, emphasis              */
+  --f16: 16px;   /* financial figures, stat bar values      */
   --f18: 18px;   /* page titles, modal headings             */
   --f22: 22px;   /* summary strip KPIs                      */
   --f32: 32px;   /* single primary figure per context       */
@@ -99,9 +102,9 @@
   --r4: 8px;    /* large containers, modals */
   --r5: 12px;   /* auth forms only */
 
-  /* SHADOWS — floating elements only. Never on cards. */
-  --shadow-float:   0 4px 24px rgba(0,0,0,.70), 0 1px 0 rgba(255,255,255,.04);
-  --shadow-overlay: 0 24px 80px rgba(0,0,0,.90), 0 1px 0 rgba(255,255,255,.04);
+  /* SHADOWS — floating elements only. Never on cards. Reduced opacity — bg is no longer pure black. */
+  --shadow-float:   0 4px 24px rgba(0,0,0,.55), 0 1px 0 rgba(255,255,255,.06);
+  --shadow-overlay: 0 24px 80px rgba(0,0,0,.75), 0 1px 0 rgba(255,255,255,.06);
 
   /* MOTION */
   --fast:   80ms ease;
@@ -136,7 +139,7 @@
   --shadow-xs:0 1px 2px rgba(0,0,0,.6);--shadow-sm:0 1px 4px rgba(0,0,0,.6);
   --shadow-md:var(--shadow-float);--shadow-lg:var(--shadow-overlay);
   --shadow-glow-blue:none;--shadow-glow-green:none;
-  --topbar-bg:rgba(8,8,10,.96);
+  --topbar-bg:rgba(13,15,22,.97);
   --dur-fast:80ms;--dur-normal:150ms;--dur-slow:260ms;
   --ease-out:cubic-bezier(.16,1,.3,1);--ease-spring:cubic-bezier(.34,1.56,.64,1);
   --r-xs:var(--r1);--r-sm:var(--r2);--r-md:var(--r3);
@@ -2807,6 +2810,300 @@ button { font-family: var(--sans); }
 }
 .list-section-label:first-child { margin-top: 0; }
 
+/* ══ 45. MOBILE OPERATIONAL LAYOUT ═══════════════════════════════
+   Purpose-built for on-the-go financial management.
+   Not desktop compressed — purpose-built mobile patterns.
+   Breakpoints: 960px (tablet/mobile), 640px (phone), 430px (small).
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Bottom navigation: ergonomic, thumb-friendly ── */
+.tabs-mobile {
+  background: var(--bg);
+  border-top: 1px solid var(--line-2);
+  padding-bottom: max(env(safe-area-inset-bottom), 4px);
+}
+.tabs-mobile-inner { gap: 0; }
+.tab-mob {
+  min-height: 52px;
+  padding: 6px 0 4px;
+  gap: 2px;
+  position: relative;
+}
+.tab-mob::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 25%; right: 25%;
+  height: 2px;
+  border-radius: 0 0 2px 2px;
+  background: var(--t1);
+  opacity: 0;
+  transition: opacity var(--fast);
+}
+.tab-mob.act::after { opacity: 1; }
+.tab-mob svg { width: 20px; height: 20px; }
+.tab-mob.act svg { opacity: 1; }
+
+/* ── Mobile model pill: CSS class (not inline) ── */
+.mob-model-pill {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--surface-2);
+  border: 1px solid var(--line-2);
+  border-radius: 20px;
+  padding: 5px 10px 5px 7px;
+  cursor: pointer;
+  max-width: 160px;
+  transition: background var(--fast), border-color var(--fast);
+  -webkit-tap-highlight-color: transparent;
+}
+.mob-model-pill:active { background: var(--surface-3); border-color: var(--line-3); }
+.mob-model-dot-pill {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--pos);
+}
+.mob-model-name-pill {
+  font-size: var(--f12);
+  font-weight: 600;
+  color: var(--t1);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100px;
+}
+.mob-model-chevron {
+  color: var(--t4);
+  flex-shrink: 0;
+  transition: transform var(--fast);
+}
+
+/* ── Bottom sheet: model switcher ── */
+.mob-sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.55);
+  z-index: 490;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .22s;
+}
+.mob-sheet-backdrop.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+.mob-model-sheet {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: var(--surface);
+  border-top: 1px solid var(--line-2);
+  border-radius: 16px 16px 0 0;
+  z-index: 500;
+  transform: translateY(100%);
+  transition: transform .26s cubic-bezier(.32,.72,0,1);
+  max-height: 72vh;
+  overflow-y: auto;
+  padding-bottom: max(env(safe-area-inset-bottom), 12px);
+  -webkit-overflow-scrolling: touch;
+}
+.mob-model-sheet.open { transform: translateY(0); }
+.mob-sheet-handle {
+  width: 36px; height: 4px;
+  border-radius: 2px;
+  background: var(--line-3);
+  margin: 10px auto 6px;
+}
+.mob-sheet-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--t4);
+  text-transform: uppercase;
+  letter-spacing: .09em;
+  padding: 4px 18px 10px;
+  border-bottom: 1px solid var(--line-1);
+  margin-bottom: 4px;
+}
+.mob-model-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 52px;
+  padding: 12px 18px;
+  border: none;
+  border-bottom: 1px solid var(--line-1);
+  background: transparent;
+  color: var(--t2);
+  font-size: var(--f14);
+  font-weight: 400;
+  font-family: var(--sans);
+  cursor: pointer;
+  text-align: left;
+  -webkit-tap-highlight-color: transparent;
+  transition: background var(--fast);
+}
+.mob-model-item:last-child { border-bottom: none; }
+.mob-model-item:active { background: var(--surface-2); }
+.mob-model-item.act { color: var(--t1); font-weight: 600; }
+.mob-model-item-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.mob-model-item-check {
+  margin-left: auto;
+  color: var(--pos-txt);
+  font-size: var(--f12);
+  font-weight: 700;
+  flex-shrink: 0;
+  opacity: 0;
+}
+.mob-model-item.act .mob-model-item-check { opacity: 1; }
+
+/* ── 960px: tablet/mobile base ── */
+@media (max-width: 960px) {
+
+  /* Page padding — tighter horizontal, more bottom for nav */
+  .page-content { padding: var(--s4) var(--s4) 76px; }
+
+  /* Prevent horizontal bleed */
+  .main-area { overflow-x: hidden; }
+
+  /* Skeleton partner rows: match live 3-col grid */
+  .sk-dpt-row { grid-template-columns: 1fr 96px 96px; }
+  .sk-dpt-row > *:nth-child(2),
+  .sk-dpt-row > *:nth-child(4) { display: none; }
+
+  /* Topbar height */
+  .topbar { height: 48px; }
+
+  /* Summary rail: show 2 of 3 items, larger values */
+  .srl-item:nth-child(3) { display: none; }
+  .srl-val { font-size: var(--f16); }
+
+  /* Partner payout table: 3 cols (Partner | Revenue | Outstanding) */
+  .dpt-head,
+  .dpt-row { grid-template-columns: 1fr 96px 96px; }
+  .dpt-col:nth-child(2), .dpt-col:nth-child(4),
+  .dpt-row > .dpt-cell.split-col,
+  .dpt-row > .dpt-cell:nth-child(4) { display: none; }
+  .dpt-cell, .dpt-col { padding: 0 10px; }
+  .dpt-name { padding-left: 14px; }
+  .dpt-footer { padding: 10px 14px; }
+
+  /* Activity section: single column */
+  .dash-two-col { grid-template-columns: 1fr; }
+  .dash-activity-rail { display: none; } /* hide split bar rail on mobile */
+
+  /* Transaction rows: 2-col (identity | amount), no date column */
+  .tx-row {
+    grid-template-columns: 1fr auto;
+    height: 52px;
+    padding: 0 16px;
+  }
+  .tx-date { display: none; }
+  .tx-right { gap: 6px; }
+  .tx-actions { display: none; } /* hide edit/delete actions on mobile */
+  .tx-amt { font-size: var(--f14); }
+  .tx-plname { font-size: var(--f13); }
+  .tx-list-wrap { border-radius: var(--r2); }
+
+  /* Expense items: tighter */
+  .exp-item { padding: 10px 14px; min-height: 44px; }
+  .exp-amt  { font-size: var(--f14); }
+
+  /* Withdrawal rows */
+  .wd-row { padding: 12px 14px; }
+
+  /* Forms: single column everywhere */
+  .form-grid,
+  .form-grid-4 { grid-template-columns: 1fr; gap: 10px; }
+  .form-inline  { flex-direction: column; gap: 10px; }
+  .form-actions { gap: 8px; }
+
+  /* Fields: touch-sized */
+  .field input,
+  .field select,
+  .field textarea { min-height: 42px; font-size: var(--f14); }
+
+  /* Settings: compact card padding */
+  .settings-section > .card { padding: var(--s3) var(--s4); }
+  .setting-row { min-height: 48px; padding: 10px 0; }
+  .setting-label { font-size: var(--f13); }
+
+  /* Month tabs: smaller, scrollable */
+  .mtab { padding: 6px 12px; font-size: var(--f12); }
+
+  /* Bulk bar: full-width, above nav */
+  .bulk-bar { bottom: 60px; }
+
+  /* Section header: tighter */
+  .section-header { margin-bottom: var(--s3); }
+  .section-title  { font-size: var(--f13); }
+}
+
+/* ── 640px: phone ── */
+@media (max-width: 640px) {
+
+  /* Topbar: compact */
+  .topbar { height: 44px; }
+  .page-title { font-size: var(--f13); }
+
+  /* Page padding: tighter */
+  .page-content { padding: var(--s3) var(--s3) 72px; }
+
+  /* Partner table: 2 cols (Partner | Outstanding) */
+  .dpt-head,
+  .dpt-row { grid-template-columns: 1fr 88px; }
+  .dpt-col:not(:first-child):not(:last-child),
+  .dpt-row > .dpt-cell:not(.due-val) { display: none; }
+
+  /* Skeleton partner rows: match live 2-col grid */
+  .sk-dpt-row { grid-template-columns: 1fr 88px; }
+  .sk-dpt-row > *:nth-child(2),
+  .sk-dpt-row > *:nth-child(3),
+  .sk-dpt-row > *:nth-child(4) { display: none; }
+  .dpt-cell.due-val { padding-right: 14px; }
+  .dpt-due-tag { font-size: 8px; padding: 1px 4px; }
+  .dpt-footer-total { font-size: var(--f15); }
+
+  /* Summary rail: stacked values */
+  .srl-item { padding: 0 var(--s4); }
+  .srl-val   { font-size: var(--f15); }
+  .srl-label { font-size: 9px; }
+
+  /* Transaction rows: compact */
+  .tx-row { height: 48px; padding: 0 14px; }
+  .tx-plname { font-size: var(--f12); }
+  .tx-amt    { font-size: var(--f13); letter-spacing: -.02em; }
+
+  /* Bottom nav: icon + smaller label */
+  .tab-mob { font-size: 9px; min-height: 50px; }
+
+  /* Cards: tighter */
+  .card { padding: var(--s3) var(--s4); }
+
+  /* Form panel body: tighter */
+  .form-panel-body { padding: 14px; }
+  .form-grid, .form-grid-4 { gap: 8px; }
+
+  /* Suggest banner: stack */
+  .suggest-banner { flex-direction: column; align-items: flex-start; gap: 8px; }
+
+  /* Modals */
+  .w-confirm-box { padding: 20px 18px; border-radius: 16px; }
+}
+
+/* ── 430px: small phone ── */
+@media (max-width: 430px) {
+  .page-content { padding: var(--s2) var(--s3) 68px; }
+  .topbar { padding: 0 var(--s3); }
+  .tab-mob span { display: none; } /* icon-only nav on very small screens */
+  .tab-mob { min-height: 48px; justify-content: center; }
+  .tab-mob::after { left: 30%; right: 30%; }
+}
+
 /* ══ 44. EMPTY STATES, SKELETONS & LOADING ═══════════════════════
    Intentional, premium, production-grade loading geometry.
    Empty states: contextual, operational, guidance-first.
@@ -3310,6 +3607,460 @@ button { font-family: var(--sans); }
 .form-panel .sec-label   { display: none; }
 .form-panel .sec-row     { display: none; }
 
+/* ══ 47. PRODUCT POLISH PASS ══════════════════════════════════════
+   Systematic consistency across all surfaces.
+   Goals: spacing rhythm, typography authority, financial hierarchy,
+   institutional trust, operational clarity.
+   ════════════════════════════════════════════════════════════════ */
+
+/* ── A. Typography hierarchy ──────────────────────────────────── */
+
+/* Page title: primary identifier — must read at full brightness */
+.page-title {
+  color: var(--t1);
+  font-size: var(--f14);
+  font-weight: 600;
+  letter-spacing: -.02em;
+}
+
+/* Sidebar agency: identity anchor — needs weight */
+.sidebar-agency-name { font-weight: 500; color: var(--t2); }
+
+/* Sidebar model chips: resting → t3, active → t1 */
+.model-chip { color: var(--t3); }
+.model-chip.act { color: var(--t1); }
+
+/* Sidebar quick stats: financial figures always at primary */
+.sqs-val { color: var(--t1); }
+.sqs-label { letter-spacing: .05em; }
+
+/* Section context meta: one step above invisible */
+.section-meta { color: var(--t3); font-size: var(--f11); }
+
+/* Section action buttons: consistent size & weight */
+.section-actions .btn-ghost { font-size: var(--f11); }
+
+/* Nav section label: tighter rhythm */
+.nav-section-label { padding: 10px 18px 3px; letter-spacing: .1em; }
+
+/* ── B. Fix: srl-value class name inconsistency ──────────────── */
+/* Sections 45 & 46 targeted .srl-val — correct class is .srl-value */
+.srl-value { transition: color 220ms ease; }
+@media (max-width: 960px) { .srl-value { font-size: var(--f16); } }
+@media (max-width: 640px) { .srl-value { font-size: var(--f15); } }
+
+/* ── C. Sticky offset: topbar is 48px — synchronize stickies ─── */
+.summary-rail    { top: 48px; }
+.settings-subnav { top: 48px; }
+@media (max-width: 640px) {
+  .summary-rail    { top: 44px; }
+  .settings-subnav { top: 44px; }
+}
+
+/* ── D. Surface lift: headers on surface-2, not raw bg ──────── */
+/* Creates structural depth: page < surface < surface-2 (header) */
+.section-header    { background: var(--surface-2); border-bottom: 1px solid var(--line-2); }
+.dpt-head          { background: var(--surface-2); border-bottom: 1px solid var(--line-2); }
+.rev-stmt-hdr      { background: var(--surface-2); }
+.fin-table thead th { background: var(--surface-2); border-bottom: 1px solid var(--line-2); }
+.hist-summary      { background: var(--surface); }
+.stat-box          { background: var(--surface); border-right: 1px solid var(--line-1); }
+
+/* ── E. Hover: standardize all data rows at 2.8% white ──────── */
+.dpt-row:hover           { background: rgba(255,255,255,.028); }
+.exp-item:hover          { background: rgba(255,255,255,.028); }
+.srl-item:hover          { background: rgba(255,255,255,.028); }
+.rev-stmt-row:hover      { background: rgba(255,255,255,.022); }
+.fin-table tbody tr:hover td { background: rgba(255,255,255,.028); }
+
+/* ── F. Financial typography: tokens over raw px ─────────────── */
+.stat-val              { font-size: var(--f16); font-weight: 800; letter-spacing: -.03em; }
+.dpt-footer-total      { font-size: var(--f16); font-weight: 800; }
+.dpt-footer            { height: 44px; }  /* normalize to 4px grid */
+.exp-amt               { font-size: var(--f14); }
+.fin-table .num        { font-size: var(--f13); }
+.dpt-col.due-col       { color: rgba(74,222,128,.65); }   /* brighter outstanding header */
+.dpt-footer-label      { color: var(--t4); font-size: var(--f10); }
+
+/* ── G. Revenue card: align legacy .sec-row with .section-header  */
+/* Revenue tab uses .card > .sec-row — pull it flush to card edges */
+.card .sec-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 36px;
+  padding: 0 20px;
+  margin: -16px -20px 16px;  /* counter .card padding */
+  border-bottom: 1px solid var(--line-2);
+  background: var(--surface-2);
+  flex-shrink: 0;
+}
+.card .sec-label {
+  font-size: var(--f10);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .09em;
+  color: var(--t3);
+}
+
+/* ── H. Form panel header: stronger divider, consistent color ─── */
+.form-panel-header {
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--line-2);
+}
+.field label {
+  font-size: var(--f10);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--t3);
+  margin-bottom: 5px;
+}
+
+/* ── I. Withdrawal stat bar + list: unified border radius ─────── */
+.hist-summary { border-radius: var(--r3) var(--r3) 0 0; }
+.wd-list-wrap { border-radius: 0 0 var(--r3) var(--r3); }
+
+/* ── J. Dashboard rail: normalize horizontal padding to 24px ──── */
+.dash-rail-section { padding: var(--s4) 24px; }
+
+/* ── K. Summary rail label: match column header spec ─────────── */
+.srl-label { font-weight: 700; letter-spacing: .09em; color: var(--t4); }
+
+/* ── L. Settings subnav: stronger visual identity ─────────────── */
+.ssnav-item { font-size: var(--f12); font-weight: 500; letter-spacing: -.01em; }
+.ssnav-item.act { color: var(--t1); font-weight: 600; }
+.settings-subnav { background: var(--surface); }
+
+/* ── M. Month tabs: sharper active indicator ─────────────────── */
+.mtab.act { color: var(--t1); font-weight: 600; border-bottom-color: var(--t1); }
+.mtab { color: var(--t3); }
+
+/* ── N. Partner balance table: tighter row height ────────────── */
+.dpt-row { min-height: 44px; }
+
+/* ── O. Section title: slight color lift ─────────────────────── */
+.section-title { color: var(--t4); letter-spacing: .09em; }
+
+/* ── P. Page section border: slightly stronger ───────────────── */
+.page-section { border-bottom: 1px solid var(--line-2); }
+.page-section:last-child { border-bottom: none; }
+
+/* ── Q. Empty state: more breathing room ─────────────────────── */
+.empty-state { padding: 52px 24px 44px; }
+.empty-state-title { font-size: var(--f14); font-weight: 600; color: var(--t1); }
+.empty-state-sub { color: var(--t3); max-width: 300px; }
+
+/* ── R. Topbar user chip: consistent geometry ────────────────── */
+.user-chip { border: none; background: transparent; }
+#userEmail { font-size: var(--f12); color: var(--t3); }
+
+/* ── S. Withdrawal / expense row: tighter min-height ─────────── */
+.wd-row { min-height: 0; }
+.exp-item { min-height: 46px; }
+
+/* ── T. Fin-table: tbody primary data should be t1 ───────────── */
+.fin-table tbody td.primary { color: var(--t1); font-weight: 600; }
+
+/* ── U. Sidebar footer: tighter, more refined ────────────────── */
+.sidebar-footer { padding: 8px 18px 10px; border-top: 1px solid var(--line-1); }
+#liveStatus     { font-size: 10px; color: var(--t4); letter-spacing: .02em; }
+#lastRefreshLabel { font-size: 9px; color: var(--t4); opacity: .45; }
+
+/* ── V. Welcome card: align to design system surfaces ─────────── */
+.welcome-card {
+  background: var(--surface);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r3);
+  margin: var(--s7) auto;
+  max-width: 560px;
+}
+
+/* ── W. Suggest banner: tighten vertical rhythm ──────────────── */
+.suggest-banner { padding: 9px 14px; }
+.suggest-banner-label { letter-spacing: .09em; }
+
+/* ── X. Mobile: recalibrate after topology changes ───────────── */
+@media (max-width: 960px) {
+  .section-header { padding: 0 16px; }
+  .dpt-head { padding: 0 12px; }
+  .dpt-row  { padding: 0 12px; }
+  .dpt-footer { padding: 0 12px; }
+  .card .sec-row { padding: 0 16px; margin: -16px -16px 12px; }
+}
+@media (max-width: 640px) {
+  .card .sec-row { padding: 0 14px; margin: -14px -14px 10px; }
+  .empty-state   { padding: 36px 20px 32px; }
+}
+
+/* ══ end 47 ══════════════════════════════════════════════════════ */
+
+/* ══ 46. MICROINTERACTIONS ════════════════════════════════════════
+   Motion that is felt, not seen.
+   Minimal · Expensive · Systematic · Professional.
+
+   Easing vocabulary:
+     Hover color/bg  → var(--fast) = 80ms ease
+     Press feedback  → 60ms ease (instantaneous)
+     Decelerate in   → 160ms cubic-bezier(.2,0,0,1)
+     Subtle hop      → 120–160ms cubic-bezier(.34,1.08,.64,1)
+   ════════════════════════════════════════════════════════════════ */
+
+/* ── 1. Button system: press compression ─────────────────────── */
+/* Each class gets transform added to its existing transition */
+.btn-primary {
+  transition: opacity var(--fast), transform 60ms ease;
+}
+.btn-primary:active:not(:disabled):not([data-loading]) {
+  transform: scale(.977);
+}
+
+.btn {
+  transition: color var(--fast), border-color var(--fast),
+              background var(--fast), transform 60ms ease;
+}
+.btn:active:not(:disabled) {
+  transform: scale(.983);
+}
+
+.btn-ghost,
+.btn-ghost-sm,
+.btn-cancel {
+  transition: color var(--fast), background var(--fast),
+              border-color var(--fast), transform 60ms ease;
+}
+.btn-ghost:active,
+.btn-ghost-sm:active,
+.btn-cancel:active { transform: scale(.967); }
+
+.btn-danger,
+.btn-del,
+.btn-disconnect,
+.btn-edit {
+  transition: color var(--fast), background var(--fast),
+              border-color var(--fast), transform 60ms ease;
+}
+.btn-danger:active,
+.btn-del:active,
+.btn-disconnect:active,
+.btn-edit:active { transform: scale(.96); }
+
+.btn-save,
+.btn-outline,
+.btn-connect,
+.btn-blue {
+  transition: opacity var(--fast), transform 60ms ease;
+}
+.btn-save:active:not([data-loading]),
+.btn-outline:active,
+.btn-connect:active,
+.btn-blue:active { transform: scale(.977); }
+
+/* Topbar icon buttons: small targets, snappy spring */
+.topbar-icon-btn {
+  transition: color var(--fast), background var(--fast),
+              transform 80ms cubic-bezier(.34,1.08,.64,1);
+}
+.topbar-icon-btn:active { transform: scale(.84); }
+
+/* Empty-state action links */
+.empty-state-action {
+  transition: color var(--fast), border-color var(--fast),
+              background var(--fast), transform 60ms ease;
+}
+.empty-state-action:active { transform: scale(.972); }
+
+/* ── 2. Sidebar navigation: border-left reveals smoothly ─────── */
+.tab-btn {
+  transition: color var(--fast), border-left-color 120ms ease;
+}
+
+/* ── 3. Mobile bottom nav: icon lifts on active ──────────────── */
+.tab-mob {
+  transition: color var(--fast);
+  -webkit-tap-highlight-color: transparent;
+}
+.tab-mob svg {
+  transition: opacity var(--fast),
+              transform 160ms cubic-bezier(.34,1.08,.64,1);
+}
+.tab-mob.act svg { transform: translateY(-1.5px); }
+
+/* ── 4. Month tabs: smooth underline transition ──────────────── */
+.mtab {
+  transition: color var(--fast), border-bottom-color 120ms ease,
+              background var(--fast), opacity var(--fast);
+}
+
+/* ── 5. Model chips: press feedback ─────────────────────────── */
+.model-chip {
+  transition: color var(--fast), background var(--fast),
+              border-color var(--fast), transform 60ms ease;
+}
+.model-chip:active { transform: scale(.96); }
+
+/* ── 6. Form fields: smooth focus ring expansion ─────────────── */
+.field input,
+.field select,
+.field textarea {
+  transition: border-color var(--fast),
+              box-shadow 140ms cubic-bezier(.2,0,0,1),
+              background var(--fast);
+}
+.auth-field input,
+.auth-field select {
+  transition: border-color var(--fast),
+              box-shadow 140ms cubic-bezier(.2,0,0,1);
+}
+
+/* ── 7. Toast: decisive deceleration enter, soft exit ────────── */
+.toast {
+  transition: opacity 160ms cubic-bezier(.2,0,0,1),
+              transform 160ms cubic-bezier(.2,0,0,1);
+}
+.toast:not(.show) {
+  transition: opacity 220ms ease,
+              transform 220ms ease;
+}
+
+/* ── 8. Table rows: consistent hover timing ──────────────────── */
+.dpt-row   { transition: background 100ms ease; }
+.wd-row    { transition: background 100ms ease; }
+.exp-item  { transition: background 100ms ease; }
+.tx-row    { transition: background 100ms ease, border-left-color 140ms ease; }
+.fin-table tbody tr { transition: background 100ms ease; }
+.rev-stmt-row       { transition: background 100ms ease; }
+.setting-row        { transition: background 100ms ease; }
+
+/* Partner name text lifts to primary on row hover */
+.dpt-name-text { transition: color var(--fast); }
+.dpt-row:hover .dpt-name-text { color: var(--t1); }
+
+/* ── 9. Status line: smooth type-change color ────────────────── */
+.status-line { transition: color 120ms ease; }
+
+/* ── 10. Integrity chips: smooth state transitions ───────────── */
+.integrity-chip {
+  transition: background var(--fast), color var(--fast),
+              border-color var(--fast);
+}
+
+/* ── 11. Summary rail values: smooth data updates ───────────── */
+.srl-val { transition: color 220ms ease; }
+
+/* ── 12. Mobile model pill chevron: rotates when sheet is open ── */
+.mob-model-chevron {
+  transition: transform 200ms cubic-bezier(.2,0,0,1);
+}
+#mobileModelPill.sheet-open .mob-model-chevron {
+  transform: rotate(180deg);
+}
+
+/* ── 13. Bottom sheet items: responsive to touch ────────────── */
+.mob-model-item {
+  transition: background var(--fast);
+}
+
+/* ── 14. Sidebar quick-stats values ─────────────────────────── */
+.sqs-val { transition: color 220ms ease; }
+
+/* ── 15. Form panel — smooth open/close ─────────────────────── */
+@keyframes panel-reveal {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── 16. Modal: smooth enter/exit ───────────────────────────── */
+.w-confirm-modal {
+  transition: opacity 180ms ease;
+}
+@keyframes modal-drop {
+  from { opacity: 0; transform: translateY(-8px) scale(.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.w-confirm-modal.open .w-confirm-box {
+  animation: modal-drop 200ms cubic-bezier(.2,0,0,1) both;
+}
+
+/* ── 17. Withdrawal expand section ──────────────────────────── */
+.wd-confirm-section {
+  transition: opacity 180ms ease;
+}
+
+/* ══ 48. LUMINANCE ARCHITECTURE ══════════════════════════════════
+   Structural elevation chain — overrides base element backgrounds
+   to enforce the four-layer tonal system.
+
+   Layer 0 │ --bg        (#0D0F16) │ page body
+   Layer 1 │ --surface   (#141520) │ sidebar, topbar, subnav
+   Layer 2 │ --surface-2 (#1C1E2C) │ cards, panels, auth form
+   Layer 3 │ --surface-3 (#252838) │ header chrome inside containers
+   Layer 4 │ --surface-4 (#2E3047) │ modals, dropdowns, peak float
+══════════════════════════════════════════════════════════════════ */
+
+/* ── A. Layer 1: sidebar elevates off page body ──────────────── */
+.sidebar {
+  background: var(--surface);
+  border-right: 1px solid var(--line-2);
+}
+.sidebar-brand    { border-bottom-color: var(--line-2); }
+.sidebar-footer   { border-top-color:    var(--line-2); }
+
+/* ── B. Layer 2: content containers ─────────────────────────── */
+.card         { background: var(--surface-2); border-color: var(--line-2); }
+.form-panel   { background: var(--surface-2); border-color: var(--line-2); }
+.auth-box     { background: var(--surface-2); }
+.welcome-card { background: var(--surface-2); border-color: var(--line-2); }
+
+/* ── C. Layer 3: header chrome inside containers ─────────────── */
+.section-header    { background: var(--surface-3); }
+.dpt-head          { background: var(--surface-3); }
+.rev-stmt-hdr      { background: var(--surface-3); }
+.fin-table thead th { background: var(--surface-3); border-bottom-color: var(--line-2); }
+.form-panel-header { background: var(--surface-3); border-bottom-color: var(--line-2); }
+.card .sec-row     { background: var(--surface-3); }
+.hist-summary      { background: var(--surface-2); border-color: var(--line-2); }
+.stat-box          { background: var(--surface-2); border-right-color: var(--line-2); }
+
+/* ── D. Inputs: recessed below card body — visible input wells ─ */
+.field input,
+.field select,
+.field textarea           { background: var(--bg); }
+.auth-field input,
+.auth-field select        { background: var(--surface); }
+
+/* ── E. Buttons inside cards hover to layer 3 ───────────────── */
+/* Cards are now surface-2; buttons must lift to surface-3 to show hover */
+.btn:hover                   { background: var(--surface-3); }
+.btn.act                     { background: var(--surface-3); }
+.btn-ghost:hover             { background: var(--surface-3); }
+.btn-ghost-sm:hover          { background: var(--surface-3); }
+.btn-cancel:hover            { background: var(--surface-3); }
+.btn-edit:hover              { background: var(--surface-3); }
+.sort-btn:hover:not(.act)    { background: var(--surface-3); }
+.sort-btn.act                { background: var(--surface-3); }
+.empty-state-action:hover    { background: var(--surface-3); border-color: var(--line-3); }
+
+/* ── F. Sidebar hover states: relative opacity, not layer jump ─ */
+/* Sidebar is layer 1; absolute surface levels feel too heavy here */
+.fin-kpi:hover                    { background: rgba(255,255,255,.05); }
+.model-chip                       { background: transparent; }
+.model-chip:hover                 { background: rgba(255,255,255,.06); }
+.model-chip.act                   { background: rgba(255,255,255,.07); border-color: rgba(255,255,255,.15); }
+
+/* ── G. Topbar: visible separation from page content below ───── */
+.topbar { border-bottom-color: var(--line-2); }
+
+/* ── H. Settings subnav: chrome layer, not content layer ─────── */
+.settings-subnav { background: var(--surface); border-bottom-color: var(--line-2); }
+.ssnav-item:hover { background: rgba(255,255,255,.05); }
+
+/* ── I. Summary rail: chrome layer ───────────────────────────── */
+.summary-rail { background: var(--surface); border-bottom-color: var(--line-2); }
+
+/* ── J. Mobile bottom nav: chrome layer ─────────────────────── */
+.bottom-nav { background: var(--surface); border-top: 1px solid var(--line-2); }
+
 </style>
 </head>
 <body>
@@ -3543,12 +4294,11 @@ button { font-family: var(--sans); }
     <div class="topbar">
       <div class="page-title" id="pageTitle">Overview</div>
       <!-- Mobile model switcher — only visible on mobile -->
-      <div id="mobileModelPill" style="display:none;align-items:center;gap:6px;background:var(--card2);border:1px solid var(--border2);border-radius:20px;padding:5px 12px 5px 8px;cursor:pointer;max-width:160px" onclick="toggleMobileModelMenu()">
-        <span id="mobileModelDot" style="width:7px;height:7px;border-radius:50%;background:var(--green);flex-shrink:0"></span>
-        <span id="mobileModelName" style="font-size:12px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100px">—</span>
-        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="color:var(--text3);flex-shrink:0"><polyline points="6 9 12 15 18 9"/></svg>
+      <div id="mobileModelPill" class="mob-model-pill" style="display:none" onclick="openMobModelSheet()">
+        <span id="mobileModelDot" class="mob-model-dot-pill"></span>
+        <span id="mobileModelName" class="mob-model-name-pill">—</span>
+        <svg width="10" height="10" class="mob-model-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
       </div>
-      <div id="mobileModelMenu" style="display:none;position:absolute;top:56px;left:50%;transform:translateX(-50%);background:var(--card);border:1px solid var(--border2);border-radius:var(--r-md);padding:6px;z-index:200;min-width:200px;box-shadow:var(--shadow-lg)"></div>
       <div class="topbar-right">
         <div class="user-chip" id="userChip" style="display:none">
           <span id="userEmail" style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
@@ -4249,6 +4999,14 @@ button { font-family: var(--sans); }
   </div>
 </nav>
 
+<!-- MOBILE MODEL BOTTOM SHEET -->
+<div id="mobSheetBackdrop" class="mob-sheet-backdrop" onclick="closeMobModelSheet()"></div>
+<div id="mobModelSheet" class="mob-model-sheet">
+  <div class="mob-sheet-handle"></div>
+  <div class="mob-sheet-label">Switch model</div>
+  <div id="mobModelSheetItems"></div>
+</div>
+
 <script>
 /* ---- Supabase ---- */
 var SUPA_URL='https://bhrwrrosvmjuprkpjush.supabase.co';
@@ -4506,40 +5264,53 @@ function renderModelSwitcher(){
 function updateMobileModelPill(){
   var pill=g('mobileModelPill');
   var nameEl=g('mobileModelName');
+  var dot=g('mobileModelDot');
   if(!pill)return;
   if(!ALL_MODELS.length){pill.style.display='none';return;}
+  var pColors=['var(--p0)','var(--p1)','var(--p2)','var(--p3)','var(--p4)'];
   var active=ALL_MODELS.find(function(m){return m.id===ACTIVE_MODEL_ID;});
   var label=active?active.name:(ALL_MODELS.length>1?'All models':ALL_MODELS[0].name);
   if(nameEl)nameEl.textContent=label;
+  if(dot){
+    var idx=active?ALL_MODELS.indexOf(active):-1;
+    dot.style.background=idx>=0?pColors[idx%5]:'var(--t3)';
+  }
 }
 
-function toggleMobileModelMenu(){
-  var menu=g('mobileModelMenu');
-  if(!menu)return;
-  if(menu.style.display!=='none'){menu.style.display='none';return;}
+function openMobModelSheet(){
+  var sheet=g('mobModelSheet'),backdrop=g('mobSheetBackdrop'),pill=g('mobileModelPill');
+  if(!sheet)return;
+  var pColors=['var(--p0)','var(--p1)','var(--p2)','var(--p3)','var(--p4)'];
   var items=[];
   if(ALL_MODELS.length>1){
-    items.push('<button onclick="selectModel(\'\');closeMobileModelMenu()" style="display:block;width:100%;text-align:left;padding:9px 12px;border:none;background:transparent;color:var(--text2);font-size:13px;cursor:pointer;border-radius:6px;font-family:inherit">All models</button>');
+    var isAct=!ACTIVE_MODEL_ID;
+    items.push('<button class="mob-model-item'+(isAct?' act':'')+'" onclick="selectModel(\'\');closeMobModelSheet()">'
+      +'<span class="mob-model-item-dot" style="background:var(--t3)"></span>'
+      +'All models'
+      +'<span class="mob-model-item-check">✓</span>'
+      +'</button>');
   }
-  ALL_MODELS.forEach(function(m){
+  ALL_MODELS.forEach(function(m,i){
     var isAct=m.id===ACTIVE_MODEL_ID;
-    items.push('<button onclick="selectModel(\''+m.id+'\');closeMobileModelMenu()" style="display:block;width:100%;text-align:left;padding:9px 12px;border:none;background:'+(isAct?'var(--blue-bg)':'transparent')+';color:'+(isAct?'var(--blue-text)':'var(--text)')+';font-size:13px;font-weight:'+(isAct?'600':'400')+';cursor:pointer;border-radius:6px;font-family:inherit">'+escHtml(m.name)+'</button>');
+    items.push('<button class="mob-model-item'+(isAct?' act':'')+'" onclick="selectModel(\''+m.id+'\');closeMobModelSheet()">'
+      +'<span class="mob-model-item-dot" style="background:'+pColors[i%5]+'"></span>'
+      +escHtml(m.name)
+      +'<span class="mob-model-item-check">✓</span>'
+      +'</button>');
   });
-  menu.innerHTML=items.join('');
-  menu.style.display='block';
-  setTimeout(function(){
-    document.addEventListener('click',function handler(e){
-      if(!menu.contains(e.target)&&e.target!==g('mobileModelPill')){
-        menu.style.display='none';
-        document.removeEventListener('click',handler);
-      }
-    });
-  },10);
+  g('mobModelSheetItems').innerHTML=items.join('');
+  requestAnimationFrame(function(){
+    sheet.classList.add('open');
+    backdrop.classList.add('open');
+    if(pill)pill.classList.add('sheet-open');
+  });
 }
 
-function closeMobileModelMenu(){
-  var menu=g('mobileModelMenu');
-  if(menu)menu.style.display='none';
+function closeMobModelSheet(){
+  var sheet=g('mobModelSheet'),backdrop=g('mobSheetBackdrop'),pill=g('mobileModelPill');
+  if(sheet)sheet.classList.remove('open');
+  if(backdrop)backdrop.classList.remove('open');
+  if(pill)pill.classList.remove('sheet-open');
   updateMobileModelPill();
 }
 

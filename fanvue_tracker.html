@@ -2429,6 +2429,283 @@ button { font-family: var(--sans); }
   letter-spacing: 0;
 }
 
+/* ── 40. FINANCIAL STATEMENT SYSTEM ─────────────────────────── */
+/* Institutional financial presentation. Refs: Mercury, Ramp,   */
+/* Stripe Finance, Bloomberg-lite.                               */
+
+/* —— Revenue Statement (month summary in Revenue tab) ——————— */
+/* Breaks out of .card padding → edge-to-edge hairline sections */
+.rev-stmt {
+  margin: var(--s3) calc(-1 * var(--s5)) calc(-1 * var(--s4));
+  border-top: 1px solid var(--line-1);
+}
+.rev-stmt-section { border-bottom: 1px solid var(--line-2); }
+.rev-stmt-section:last-child { border-bottom: none; }
+.rev-stmt-hdr {
+  display: flex; align-items: center;
+  height: 28px; padding: 0 var(--s5);
+  background: var(--bg); border-bottom: 1px solid var(--line-1);
+  font-size: var(--f10); font-weight: 700;
+  text-transform: uppercase; letter-spacing: .09em; color: var(--t4);
+}
+.rev-stmt-row {
+  display: flex; align-items: center;
+  padding: 0 var(--s5); height: 40px;
+  border-bottom: 1px solid var(--line-1);
+  gap: 12px; transition: background var(--fast);
+}
+.rev-stmt-row:last-child { border-bottom: none; }
+.rev-stmt-row:hover { background: rgba(255,255,255,.016); }
+.rev-stmt-row.total {
+  height: 46px; background: var(--surface);
+  border-top: 1px solid var(--line-2); border-bottom: none;
+}
+.rev-stmt-label { font-size: var(--f12); color: var(--t2); white-space: nowrap; }
+.rev-stmt-label.bold {
+  font-size: var(--f11); font-weight: 700; color: var(--t2);
+  text-transform: uppercase; letter-spacing: .06em;
+}
+.rev-stmt-label.dim { color: var(--t4); }
+.rev-stmt-fill {
+  flex: 1; height: 1px; min-width: 16px;
+  background: rgba(255,255,255,.05);
+}
+.rev-stmt-amt {
+  font-family: var(--mono); font-variant-numeric: tabular-nums;
+  font-size: var(--f13); font-weight: 600;
+  letter-spacing: -.025em; color: var(--t2);
+  white-space: nowrap; text-align: right; flex-shrink: 0;
+}
+.rev-stmt-amt.pos  { color: var(--pos-txt); }
+.rev-stmt-amt.neg  { color: var(--neg-txt); }
+.rev-stmt-amt.dim  { color: var(--t4); }
+.rev-stmt-amt.lg   { font-size: 15px; font-weight: 700; letter-spacing: -.03em; color: var(--t1); }
+.rev-stmt-amt.xl   { font-size: 17px; font-weight: 800; letter-spacing: -.035em; color: var(--t1); }
+.rev-stmt-pct {
+  font-size: var(--f11); font-family: var(--mono); color: var(--t4);
+  width: 32px; text-align: right; flex-shrink: 0;
+}
+.rev-pl-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+
+/* Partner summary (partner role view) */
+.my-share-block {
+  display: flex; gap: 32px; flex-wrap: wrap;
+  padding: var(--s4) var(--s5); border-bottom: 1px solid var(--line-1);
+}
+.my-share-block-item {}
+.my-share-label {
+  font-size: var(--f10); font-weight: 700; text-transform: uppercase;
+  letter-spacing: .09em; color: var(--t4); margin-bottom: 4px;
+}
+.my-share-value {
+  font-size: 20px; font-weight: 800; font-family: var(--mono);
+  font-variant-numeric: tabular-nums; letter-spacing: -.03em; color: var(--t1);
+}
+.my-share-meta { font-size: var(--f11); color: var(--t4); margin-top: 3px; }
+
+/* —— Transaction rows (Revenue tab) ————————————————————————— */
+/* Replaced letter-icon with 8px dot; improved amount hierarchy  */
+.tx-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 var(--s5); height: 44px; transition: background var(--fast);
+}
+.tx-row:hover { background: rgba(255,255,255,.02); }
+.tx-row:hover .tx-actions { opacity: 1; pointer-events: auto; }
+.tx-left { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; }
+.tx-platform-icon {
+  width: 8px; height: 8px; border-radius: 50%;
+  flex-shrink: 0; font-size: 0; color: transparent;
+}
+.tx-info { min-width: 0; }
+.tx-plname { font-size: var(--f13); font-weight: 600; color: var(--t1); }
+.tx-date { font-size: var(--f11); color: var(--t4); font-family: var(--mono); }
+.tx-source {
+  font-size: 9px; font-weight: 700; letter-spacing: .06em;
+  color: var(--t4); background: rgba(255,255,255,.04);
+  border: 1px solid var(--line-1); border-radius: 3px; padding: 1px 5px;
+}
+.tx-amt {
+  font-size: 14px; font-weight: 700;
+  font-variant-numeric: tabular-nums; font-family: var(--mono);
+  letter-spacing: -.025em; white-space: nowrap; flex-shrink: 0;
+  padding-left: 16px;
+}
+.tx-amt.pos { color: var(--pos-txt); }
+.tx-amt.neg { color: var(--neg-txt); }
+.tx-actions {
+  display: flex; gap: var(--s1); align-items: center; flex-shrink: 0;
+  opacity: 0; pointer-events: none; transition: opacity var(--fast);
+}
+.tx-item:hover .tx-actions { opacity: 1; pointer-events: auto; }
+.tx-desc { font-size: var(--f11); color: var(--t4); padding: 0 var(--s5) var(--s2); font-style: italic; }
+
+/* —— Withdrawal rows ————————————————————————————————————————— */
+/* Statement-style: EUR primary, USD+FX secondary, tags beneath  */
+.wd-row {
+  display: grid; grid-template-columns: 1fr auto;
+  padding: 16px var(--s5); gap: 16px; align-items: start;
+  border-bottom: 1px solid var(--line-1); transition: background var(--fast);
+}
+.wd-row:last-child { border-bottom: none; }
+.wd-row:hover { background: rgba(255,255,255,.012); }
+.wd-row.pending-row  { border-left: 2px solid var(--warn-txt); padding-left: calc(var(--s5) - 2px); }
+.wd-row.confirmed-row{ border-left: 2px solid rgba(74,222,128,.35); padding-left: calc(var(--s5) - 2px); }
+.wd-left { min-width: 0; }
+.wd-amount {
+  font-family: var(--mono); font-variant-numeric: tabular-nums;
+  font-size: 20px; font-weight: 800; letter-spacing: -.035em;
+  color: var(--t1); line-height: 1.15;
+}
+.wd-amount.pending-amt { color: var(--warn-txt); }
+.wd-amount.confirmed   { color: var(--pos-txt); }
+.wd-fx-line {
+  font-size: var(--f12); font-family: var(--mono);
+  font-variant-numeric: tabular-nums; color: var(--t3); margin-top: 3px;
+  letter-spacing: -.01em;
+}
+.wd-fx-line .fx-rate { color: var(--t4); }
+.wd-fx-line .fx-loss { color: var(--neg-txt); font-weight: 700; }
+.wd-meta-row { display: flex; align-items: center; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+.wd-badge {
+  font-size: 10px; font-weight: 700; letter-spacing: .05em;
+  text-transform: uppercase; padding: 2px 6px; border-radius: 3px;
+  border: 1px solid transparent;
+}
+.wd-badge.confirmed { color: var(--pos-txt); background: rgba(74,222,128,.08); border-color: rgba(74,222,128,.18); }
+.wd-badge.pending   { color: var(--warn-txt); background: rgba(252,211,77,.08); border-color: rgba(252,211,77,.18); }
+.wd-badge.platform  { color: var(--t4); background: rgba(255,255,255,.04); border-color: var(--line-1); }
+.wd-badge.model-b   { color: var(--t4); background: rgba(255,255,255,.03); border-color: var(--line-1); }
+.wd-badge.pl-fanvue { color: var(--fanvue); background: var(--fanvue-bg); border-color: rgba(139,92,246,.18); }
+.wd-badge.pl-paypal { color: var(--paypal); background: var(--paypal-bg); }
+.wd-badge.pl-telegram { color: var(--telegram); background: var(--telegram-bg); }
+.wd-splits-row { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 8px; }
+.wd-split-pill {
+  display: flex; align-items: center; gap: 5px;
+  font-size: var(--f12); color: var(--t3);
+  font-family: var(--mono); font-variant-numeric: tabular-nums;
+  letter-spacing: -.01em;
+}
+.wd-split-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.wd-split-name { color: var(--t2); font-family: inherit; font-size: var(--f11); margin-right: 2px; }
+.wd-detail {
+  font-size: var(--f11); color: var(--t4); margin-top: 6px;
+  font-family: var(--mono); letter-spacing: -.005em;
+}
+.wd-description { font-size: var(--f11); color: var(--t3); margin-top: 4px; font-style: italic; }
+.wd-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; }
+.wd-delete-btn {
+  background: none; border: none; cursor: pointer; color: var(--t4);
+  padding: 4px; border-radius: var(--r1); opacity: 0;
+  transition: opacity var(--fast), color var(--fast);
+}
+.wd-delete-btn:hover { color: var(--neg-txt); }
+.wd-row:hover .wd-delete-btn { opacity: 1; }
+.wd-loss { display: none; } /* now inlined in .wd-fx-line */
+
+/* —— Withdrawal history stat bar ————————————————————————————— */
+.hist-summary {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(110px,1fr));
+  margin-bottom: 0; gap: 0;
+  border: 1px solid var(--line-2); border-bottom: none;
+  border-radius: var(--r2) var(--r2) 0 0; overflow: hidden; background: var(--bg);
+}
+.stat-box {
+  padding: 14px var(--s5); border-right: 1px solid var(--line-1); background: var(--bg);
+}
+.stat-box:last-child { border-right: none; }
+.stat-lbl {
+  font-size: var(--f10); font-weight: 700; text-transform: uppercase;
+  letter-spacing: .09em; color: var(--t4); margin: 0 0 5px;
+}
+.stat-val {
+  font-size: 17px; font-weight: 800;
+  font-family: var(--mono); font-variant-numeric: tabular-nums;
+  letter-spacing: -.03em; color: var(--t1); margin: 0;
+}
+.stat-val.red   { color: var(--neg-txt); }
+.stat-val.green { color: var(--pos-txt); }
+.stat-val.blue  { color: var(--p0); }
+.stat-val.dim   { color: var(--t2); }
+
+/* Withdrawal list wrap: connects under the stat bar */
+.wd-list-wrap {
+  border: 1px solid var(--line-2);
+  border-radius: 0 0 var(--r2) var(--r2);
+  overflow: hidden;
+  background: var(--surface);
+  margin-bottom: var(--s4);
+}
+
+/* —— Expense rows ————————————————————————————————————————————— */
+.exp-item {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto auto;
+  align-items: center; gap: 0;
+  min-height: 44px; padding: 0 var(--s5);
+  border-bottom: 1px solid var(--line-1);
+  transition: background var(--fast);
+}
+.exp-item:last-child { border-bottom: none; }
+.exp-item:hover { background: rgba(255,255,255,.016); }
+.exp-item.editing-item { background: var(--surface-2); flex-direction: column; align-items: stretch; gap: 10px; padding: var(--s4) var(--s5); display: flex; }
+.exp-left { display: contents; } /* flatten into grid */
+.exp-who {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  margin-right: 12px;
+}
+.exp-who.p0 { background: var(--p0); }
+.exp-who.p1 { background: var(--p1); }
+.exp-who.p2 { background: var(--p2); }
+.exp-who.p3 { background: var(--p3); }
+.exp-who.p4 { background: var(--p4); }
+.exp-item-body { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.exp-item-name {
+  font-size: var(--f13); color: var(--t2);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.exp-cat-badge {
+  font-size: 9px; font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--t4);
+  background: rgba(255,255,255,.04); border: 1px solid var(--line-1);
+  border-radius: 3px; padding: 2px 5px; flex-shrink: 0;
+}
+.exp-date {
+  font-size: var(--f11); color: var(--t4); font-family: var(--mono);
+  white-space: nowrap; padding: 0 16px; flex-shrink: 0;
+}
+.exp-amt {
+  font-size: 14px; font-weight: 700;
+  font-family: var(--mono); font-variant-numeric: tabular-nums;
+  letter-spacing: -.022em; color: var(--neg-txt);
+  white-space: nowrap; padding-left: 16px; flex-shrink: 0;
+}
+
+/* —— Improved fin-table (dashboard + inline tables) —————————— */
+.fin-table { width: 100%; border-collapse: collapse; }
+.fin-table thead th {
+  font-size: var(--f10); font-weight: 700; color: var(--t4);
+  text-transform: uppercase; letter-spacing: .09em;
+  padding: 0 16px; height: 30px; text-align: left;
+  border-bottom: 1px solid var(--line-1); background: var(--bg); white-space: nowrap;
+}
+.fin-table thead th.num { text-align: right; }
+.fin-table tbody td {
+  padding: 0 16px; height: 42px; border-bottom: 1px solid var(--line-1);
+  font-size: var(--f13); color: var(--t2); vertical-align: middle;
+}
+.fin-table tbody tr:last-child td { border-bottom: none; }
+.fin-table tbody tr:hover td { background: rgba(255,255,255,.018); }
+.fin-table .num {
+  text-align: right; font-family: var(--mono);
+  font-variant-numeric: tabular-nums; letter-spacing: -.022em;
+  font-weight: 600; font-size: 14px;
+}
+.fin-table .amt-pos { color: var(--pos-txt); }
+.fin-table .amt-neg { color: var(--neg-txt); }
+.fin-table .amt-dim { color: var(--t3); }
+.fin-table .dim     { color: var(--t3); }
+.fin-table .meta    { font-size: var(--f11); color: var(--t4); margin-top: 2px; }
+
 </style>
 </head>
 <body>
@@ -5549,15 +5826,21 @@ function renderExpenses(){
   if(totalLabel)totalLabel.textContent='−'+fu(totalExp);
 
   var isAdmin=currentRole==='admin';
+  var EXP_DEL_SVG='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
+    +'<polyline points="3 6 5 6 21 6"/>'
+    +'<path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>'
+    +'<path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>'
+    +'</svg>';
   el.innerHTML=filtered.map(function(exp){
     var p=PARTNERS.find(function(x){return x.id===exp.partner_id;})||{name:'?'};
     var pIdx=PARTNERS.findIndex(function(x){return x.id===exp.partner_id;});
-    var cls=pIdx===0?'p0':'p1';
+    var cls='p'+(pIdx>=0?pIdx%5:0);
     if(isAdmin&&EXP_EDIT[exp.id]){
-      return '<div class="exp-item" style="flex-direction:column;align-items:stretch;gap:10px">'
+      return '<div class="exp-item editing-item">'
         +'<div style="display:flex;align-items:center;gap:8px">'
-        +'<span class="exp-who '+cls+'">'+p.name+'</span>'
-        +'<span style="font-size:11px;color:var(--blue-text);font-weight:600">Editing</span>'
+        +'<div class="exp-who '+cls+'"></div>'
+        +'<span style="font-size:var(--f12);color:var(--t2);font-weight:600">'+escHtml(p.name)+'</span>'
+        +'<span style="font-size:10px;color:var(--warn-txt);font-weight:700;letter-spacing:.05em;text-transform:uppercase">Editing</span>'
         +'</div>'
         +'<div class="add-row">'
         +'<div class="field"><label>Amount (USD)</label>'
@@ -5572,27 +5855,24 @@ function renderExpenses(){
         +'</div>';
     }
     var parsed=parseExpDesc(exp.description);
-    var catBadge=parsed.cat?'<span class="exp-cat-badge '+catClass(parsed.cat)+'">'+parsed.cat+'</span>':'';
+    var catBadge=parsed.cat?'<span class="exp-cat-badge">'+parsed.cat+'</span>':'';
     var mObj=exp.model_id?ALL_MODELS.find(function(m){return m.id===exp.model_id;}):{name:'Agency'};
     var modelBadge=(!ACTIVE_MODEL_ID&&ALL_MODELS.length>1)
-      ?'<span style="font-size:9px;font-weight:700;padding:1px 5px;border-radius:8px;background:var(--blue-bg);color:var(--blue-text)">'+(mObj?escHtml(mObj.name):'Agency')+'</span>'
+      ?'<span style="font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;border:1px solid var(--line-1);color:var(--t4)">'+(mObj?escHtml(mObj.name):'Agency')+'</span>'
       :'';
+    var nameHtml=parsed.text
+      ?'<span class="exp-item-name">'+escHtml(parsed.text)+'</span>'
+      :'<span class="exp-item-name" style="color:var(--t4)">'+escHtml(p.name)+'</span>';
     return '<div class="exp-item">'
       +'<div class="exp-left">'
-      +'<span class="exp-who '+cls+'">'+p.name+'</span>'
-      +'<span class="exp-amt">'+fu(exp.amount)+'</span>'
-      +catBadge+modelBadge
-      +(parsed.text?'<span class="exp-desc" title="'+parsed.text+'">'+parsed.text+'</span>':'')
+        +'<div class="exp-who '+cls+'"></div>'
+        +'<div class="exp-item-body">'+nameHtml+catBadge+modelBadge+'</div>'
       +'</div>'
-      +'<div style="display:flex;align-items:center;gap:6px;flex-shrink:0">'
       +'<span class="exp-date">'+fdate(exp.date)+'</span>'
-      +(isAdmin?'<button class="btn-edit" onclick="expEditStart(\''+exp.id+'\')">Edit</button>':'')
-      +(isAdmin?'<button class="btn-del" onclick="deleteExpense(\''+exp.id+'\')" title="Delete">'
-        +'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
-        +'<polyline points="3 6 5 6 21 6"/>'
-        +'<path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>'
-        +'<path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>'
-        +'</svg></button>':'')
+      +'<span class="exp-amt">−'+fu(exp.amount)+'</span>'
+      +'<div style="display:flex;align-items:center;gap:4px;padding-left:8px">'
+        +(isAdmin?'<button class="btn-edit" onclick="expEditStart(\''+exp.id+'\')">Edit</button>':'')
+        +(isAdmin?'<button class="btn-del" onclick="deleteExpense(\''+exp.id+'\')" title="Delete">'+EXP_DEL_SVG+'</button>':'')
       +'</div>'
       +'</div>';
   }).join('');
@@ -6056,31 +6336,8 @@ function renderMonths(){
   var activePartners=PARTNERS.filter(function(p){return p.status==='active';});
 
   var pColorVars=['var(--p0)','var(--p1)','var(--p2)','var(--p3)','var(--p4)'];
-  var revBoxes=S.platforms.map(function(p,pi){
-    var val=(m.revenues||{})[p]||0;
-    var pColor=platformColorForName(p)||pColorVars[pi%5];
-    return '<div class="fin-kpi">'
-      +'<div class="fin-kpi-label">'+escHtml(p)+'</div>'
-      +'<div class="fin-kpi-value" style="color:'+pColor+'">'+fu(val)+'</div>'
-      +'</div>';
-  }).join('');
 
-  var partnerExpBoxes=activePartners.map(function(p,i){
-    var pColor=pColorVars[i%5];
-    var exp=(m.expByPartner||{})[p.id]||0;
-    var isMe=currentUser&&p.user_id===currentUser.id;
-    var label=isMe?'Your expenses':(p.name.length>9?p.name.slice(0,9)+'…':p.name);
-    return '<div class="fin-kpi"><div class="fin-kpi-label">'+escHtml(label)+'</div><div class="fin-kpi-value" style="color:'+pColor+'">'+fu(exp)+'</div></div>';
-  }).join('');
-
-  var partnerShareBoxes=activePartners.map(function(p,i){
-    var pColor=pColorVars[i%5];
-    var share=r2(partnerShareForMonth(p.id,m));
-    var isMe=currentUser&&p.user_id===currentUser.id;
-    var label=isMe?'Your share':(p.name.length>9?p.name.slice(0,9)+'…':p.name);
-    return '<div class="fin-kpi"><div class="fin-kpi-label">'+escHtml(label)+'</div><div class="fin-kpi-value" style="color:'+pColor+'">'+fu(share)+'</div></div>';
-  }).join('');
-
+  /* Partner-role: personal summary header */
   var partnerSummaryHtml='';
   if(currentRole==='partner'){
     var myPartner=PARTNERS.find(function(p){return currentUser&&p.user_id===currentUser.id;});
@@ -6090,31 +6347,96 @@ function renderMonths(){
         return s+((w.splitsByPartner||{})[myPartner.id]||0);
       },0));
       var mySplit=getCurrentSplit(ACTIVE_MODEL_ID,myPartner.id);
-      partnerSummaryHtml='<div style="background:var(--card2);border:1px solid var(--border2);border-radius:10px;'
-        +'padding:16px 18px;margin-bottom:16px;display:flex;gap:24px;flex-wrap:wrap">'
-        +'<div>'
-        +'<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:4px">Your share this month</div>'
-        +'<div style="font-size:22px;font-weight:700;color:var(--text)">'+fu(myShare)+'</div>'
-        +'<div style="font-size:11px;color:var(--text3);margin-top:2px">'+mySplit+'% split · based on '+fu(r2(mTot(m)))+' total</div>'
+      partnerSummaryHtml='<div class="my-share-block">'
+        +'<div class="my-share-block-item">'
+        +'<div class="my-share-label">Your share this month</div>'
+        +'<div class="my-share-value">'+fu(myShare)+'</div>'
+        +'<div class="my-share-meta">'+mySplit+'% split · '+fu(r2(mTot(m)))+' total</div>'
         +'</div>'
-        +'<div>'
-        +'<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:4px">Withdrawn (all time)</div>'
-        +'<div style="font-size:22px;font-weight:700;color:var(--text)">'+fe(myWithdrawnEUR)+'</div>'
+        +'<div class="my-share-block-item">'
+        +'<div class="my-share-label">Withdrawn (all time)</div>'
+        +'<div class="my-share-value">'+fe(myWithdrawnEUR)+'</div>'
         +'</div>'
         +'</div>';
     }
   }
 
-  var html=partnerSummaryHtml+
-    '<div class="sec-label" style="margin-bottom:var(--s2)">Revenue</div>'
-    +'<div class="fin-summary" style="margin-bottom:var(--s4)">'+revBoxes+'</div>'
-    +(activePartners.length?'<div class="sec-label" style="margin-bottom:var(--s2)">Expenses</div>'
-    +'<div class="fin-summary" style="margin-bottom:var(--s3)">'+partnerExpBoxes+'</div>':'')
-    +'<div class="divider"></div>'
-    +'<div class="fin-summary" style="margin-bottom:0">'
-    +'<div class="fin-kpi"><div class="fin-kpi-label">Total</div><div class="fin-kpi-value">'+fu(tot)+'</div></div>'
-    +partnerShareBoxes
+  /* Build financial statement */
+  var html=partnerSummaryHtml+'<div class="rev-stmt">';
+
+  /* Section 1: Revenue by platform */
+  html+='<div class="rev-stmt-section"><div class="rev-stmt-hdr">Revenue</div>';
+  var hasRevRows=false;
+  S.platforms.forEach(function(plat,pi){
+    var val=(m.revenues||{})[plat]||0;
+    if(val<=0)return;
+    hasRevRows=true;
+    var pColor=platformColorForName(plat)||pColorVars[pi%5];
+    html+='<div class="rev-stmt-row">'
+      +'<div style="display:flex;align-items:center;gap:10px">'
+        +'<div class="rev-pl-dot" style="background:'+pColor+'"></div>'
+        +'<span class="rev-stmt-label">'+escHtml(plat)+'</span>'
+      +'</div>'
+      +'<div class="rev-stmt-fill"></div>'
+      +'<span class="rev-stmt-amt">'+fu(val)+'</span>'
     +'</div>';
+  });
+  if(!hasRevRows){
+    html+='<div class="rev-stmt-row"><span class="rev-stmt-label dim">No revenue recorded this month</span></div>';
+  }
+  html+='<div class="rev-stmt-row total">'
+    +'<span class="rev-stmt-label bold">Total Revenue</span>'
+    +'<div class="rev-stmt-fill"></div>'
+    +'<span class="rev-stmt-amt xl">'+fu(tot)+'</span>'
+  +'</div>';
+  html+='</div>'; /* end revenue section */
+
+  /* Section 2: Expenses (if any) */
+  var totalExp=0;
+  var expRows='';
+  activePartners.forEach(function(p){
+    var exp=(m.expByPartner||{})[p.id]||0;
+    if(exp<=0)return;
+    totalExp+=exp;
+    expRows+='<div class="rev-stmt-row">'
+      +'<span class="rev-stmt-label">'+escHtml(p.name)+'</span>'
+      +'<div class="rev-stmt-fill"></div>'
+      +'<span class="rev-stmt-amt neg">−'+fu(exp)+'</span>'
+    +'</div>';
+  });
+  if(expRows){
+    html+='<div class="rev-stmt-section"><div class="rev-stmt-hdr">Expenses</div>';
+    html+=expRows;
+    html+='<div class="rev-stmt-row total">'
+      +'<span class="rev-stmt-label bold">Net Revenue</span>'
+      +'<div class="rev-stmt-fill"></div>'
+      +'<span class="rev-stmt-amt xl">'+fu(r2(tot-totalExp))+'</span>'
+    +'</div>';
+    html+='</div>';
+  }
+
+  /* Section 3: Distribution by partner */
+  if(activePartners.length){
+    html+='<div class="rev-stmt-section"><div class="rev-stmt-hdr">Distribution</div>';
+    activePartners.forEach(function(p,i){
+      var pColor=pColorVars[i%5];
+      var share=r2(partnerShareForMonth(p.id,m));
+      var splitPct=getCurrentSplit(ACTIVE_MODEL_ID,p.id)||0;
+      var isMe=currentUser&&p.user_id===currentUser.id;
+      html+='<div class="rev-stmt-row">'
+        +'<div style="display:flex;align-items:center;gap:10px">'
+          +'<div class="rev-pl-dot" style="background:'+pColor+'"></div>'
+          +'<span class="rev-stmt-label">'+escHtml(p.name)+(isMe?' <span style="font-size:10px;color:var(--t4);font-family:var(--mono)">(You)</span>':'')+'</span>'
+        +'</div>'
+        +(splitPct?'<span class="rev-stmt-pct">'+splitPct+'%</span>':'')
+        +'<div class="rev-stmt-fill"></div>'
+        +'<span class="rev-stmt-amt" style="color:'+pColor+'">'+fu(share)+'</span>'
+      +'</div>';
+    });
+    html+='</div>';
+  }
+
+  html+='</div>'; /* end rev-stmt */
 
   var monthKey=m.id;
   var monthTxs=S.txs.filter(function(tx){return tx.date&&tx.date.slice(0,7)===monthKey;});
@@ -6239,17 +6561,17 @@ function renderMonths(){
           +'<div class="tx-left">'
           +(isAdmin?'<input type="checkbox" class="tx-check"'+(isSelected?' checked':'')
             +' onchange="toggleTxSelect(\''+tx.id+'\',this.checked)" onclick="event.stopPropagation()">':'')
-          +'<div class="tx-platform-icon" style="background:'+plColor+'15;color:'+plColor+'">'+escHtml(plLabel.charAt(0).toUpperCase())+'</div>'
-          +'<div>'
+          +'<div class="tx-platform-icon" style="background:'+plColor+'"></div>'
+          +'<div class="tx-info">'
           +'<div style="display:flex;align-items:center;gap:6px">'
-          +'<span style="font-size:13px;font-weight:600;color:var(--text)">'+escHtml(plLabel)+'</span>'
+          +'<span class="tx-plname">'+escHtml(plLabel)+'</span>'
           +(tx.source==='scraper'?'<span class="tx-source">auto</span>':'')
           +'</div>'
           +'<span class="tx-date">'+fdate(tx.date)+'</span>'
           +'</div>'
           +'</div>'
-          +'<div style="display:flex;align-items:center;gap:12px">'
-          +'<span class="tx-amt '+(isPos?'pos':'neg')+'">'+(isPos?'+':'-')+fu(Math.abs(tx.amount))+'</span>'
+          +'<div style="display:flex;align-items:center;gap:8px">'
+          +'<span class="tx-amt '+(isPos?'pos':'neg')+'">'+(isPos?'+':'−')+fu(Math.abs(tx.amount))+'</span>'
           +partnerShareHtml
           +(isAdmin
             ?'<div class="tx-actions">'
@@ -6297,10 +6619,15 @@ function renderList(){
   var done=S.ws.filter(function(w){return w.st==='ok';});
   var h='';
 
+  var DEL_SVG='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
+    +'<polyline points="3 6 5 6 21 6"/>'
+    +'<path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>'
+    +'<path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>';
+
   /* ---- Pending ---- */
   if(pend.length){
     h+='<p class="list-section-label">Pending receipt</p>';
-    h+='<div style="border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;background:var(--card);padding:0 20px;margin-bottom:16px">';
+    h+='<div class="wd-list-wrap" style="margin-bottom:var(--s4)">';
     pend.forEach(function(w){
       var isE=!!EXP[w.id],expE=expectedEur(w.usd);
       var wMObj=w.model_id?ALL_MODELS.find(function(m){return m.id===w.model_id;}):null;
@@ -6308,31 +6635,26 @@ function renderList(){
         ?'<span class="wd-badge model-b">'+(wMObj?escHtml(wMObj.name):'Agency')+'</span>'
         :'';
       var plCls2=platformCssClass(w.pl);
-      var descHtmlPend=w.description
-        ?'<div class="wd-description">'+escHtml(w.description)+'</div>'
-        :'';
-      h+='<div class="wd-row">'
+      var descHtmlPend=w.description?'<div class="wd-description">'+escHtml(w.description)+'</div>':'';
+      h+='<div class="wd-row pending-row">'
         +'<div class="wd-left">'
-        +'<div class="wd-amount">'+fu(w.usd)+'</div>'
-        +'<div class="wd-meta-row">'
-        +'<span class="wd-badge platform '+plCls2+'">'+escHtml(w.pl)+'</span>'
-        +'<span class="wd-badge pending">Pending</span>'
-        +mBadge
-        +'</div>'
-        +'<div class="wd-detail">'+fdate(w.date)+' &nbsp;·&nbsp; Expected ≈ '+fe(expE)+'</div>'
-        +descHtmlPend
+          +'<div class="wd-amount pending-amt">'+fu(w.usd)+'</div>'
+          +'<div class="wd-fx-line">Expected ≈ <strong style="color:var(--t2)">'+fe(expE)+'</strong>'
+            +(WISE_RATE?' &nbsp;·&nbsp; <span class="fx-rate">est. @ '+WISE_RATE.toFixed(4)+'</span>':'')
+          +'</div>'
+          +'<div class="wd-meta-row">'
+            +'<span class="wd-badge platform '+plCls2+'">'+escHtml(w.pl)+'</span>'
+            +'<span class="wd-badge pending">Pending</span>'
+            +mBadge
+          +'</div>'
+          +'<div class="wd-detail">'+fdate(w.date)+'</div>'
+          +descHtmlPend
         +'</div>'
         +'<div class="wd-right">'
-        +'<button class="wd-delete-btn" onclick="delW(\''+w.id+'\')" title="Delete">'
-        +'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
-        +'<polyline points="3 6 5 6 21 6"/>'
-        +'<path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>'
-        +'<path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>'
-        +'</svg>'
-        +'</button>'
-        +'<button class="btn" style="font-size:12px;padding:5px 12px" onclick="toggleExp(\''+w.id+'\')">'+(isE?'Cancel':'Money received →')+'</button>'
+          +'<button class="wd-delete-btn" onclick="delW(\''+w.id+'\')" title="Delete">'+DEL_SVG+'</button>'
+          +'<button class="btn" style="font-size:12px;padding:5px 12px" onclick="toggleExp(\''+w.id+'\')">'+(isE?'Cancel':'Money received →')+'</button>'
         +'</div>'
-        +'</div>';
+      +'</div>';
       if(isE){
         h+='<div class="w-expand" style="margin:0 -20px;padding:16px 20px">'
           +'<div class="g2" style="margin-bottom:.875rem">'
@@ -6364,14 +6686,14 @@ function renderList(){
     done.forEach(function(w){tU+=w.usd;tE+=w.eur;var l=r2(expectedEur(w.usd)-w.eur);if(l>0){tLoss+=l;hasLoss=true;}});
     h+='<p class="list-section-label"'+(pend.length?' style="margin-top:8px"':'')+'>Withdrawal history</p>';
     h+='<div class="hist-summary">'
-      +'<div class="stat-box"><p class="stat-lbl">Requested</p><p class="stat-val">'+fu(r2(tU))+'</p></div>'
-      +'<div class="stat-box"><p class="stat-lbl">Received</p><p class="stat-val">'+fe(r2(tE))+'</p></div>'
-      +'<div class="stat-box"><p class="stat-lbl">Avg rate</p><p class="stat-val">'+(tU>0?(tE/tU).toFixed(4):'-')+'</p></div>'
-      +(hasLoss?'<div class="stat-box"><p class="stat-lbl">FX loss</p><p class="stat-val red">'+fe(r2(tLoss))+'</p></div>':'')
+      +'<div class="stat-box"><p class="stat-lbl">Requested (USD)</p><p class="stat-val">'+fu(r2(tU))+'</p></div>'
+      +'<div class="stat-box"><p class="stat-lbl">Received (EUR)</p><p class="stat-val green">'+fe(r2(tE))+'</p></div>'
+      +'<div class="stat-box"><p class="stat-lbl">Avg FX rate</p><p class="stat-val dim">'+(tU>0?(tE/tU).toFixed(4):'—')+'</p></div>'
+      +(hasLoss?'<div class="stat-box"><p class="stat-lbl">FX loss</p><p class="stat-val red">−'+fe(r2(tLoss))+'</p></div>':'')
       +'</div>';
-    h+='<div style="border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;background:var(--card);padding:0 20px">';
+    h+='<div class="wd-list-wrap">';
     done.forEach(function(w){
-      var rate=w.usd>0?(w.eur/w.usd).toFixed(4):'-';
+      var rate=w.usd>0?(w.eur/w.usd).toFixed(4):'—';
       var loss=r2(expectedEur(w.usd)-w.eur);
       var dwMObj=w.model_id?ALL_MODELS.find(function(m){return m.id===w.model_id;}):null;
       var mBadge2=(!ACTIVE_MODEL_ID&&ALL_MODELS.length>1)
@@ -6380,38 +6702,40 @@ function renderList(){
       var splitsData=PARTNERS.filter(function(p){
         return p.status==='active'&&((w.splitsByPartner||{})[p.id]||0)>0;
       });
-      var splitBadges=splitsData.map(function(p,si){
-        return '<span class="wd-split-badge split-'+si+'">'+escHtml(p.name)+' '+fe(w.splitsByPartner[p.id])+'</span>';
+      /* Partner split pills with color dots */
+      var splitPills=splitsData.map(function(p,si){
+        var pColor=['var(--p0)','var(--p1)','var(--p2)','var(--p3)','var(--p4)'][si%5];
+        return '<div class="wd-split-pill">'
+          +'<div class="wd-split-dot" style="background:'+pColor+'"></div>'
+          +'<span class="wd-split-name">'+escHtml(p.name)+'</span>'
+          +'<span>'+fe(w.splitsByPartner[p.id])+'</span>'
+        +'</div>';
       }).join('');
-      var descHtmlDone=w.description
-        ?'<div class="wd-description">'+escHtml(w.description)+'</div>'
-        :'';
+      var descHtmlDone=w.description?'<div class="wd-description">'+escHtml(w.description)+'</div>':'';
       var plClsDone=platformCssClass(w.pl);
-      h+='<div class="wd-row" data-wd-id="'+w.id+'">'
+      h+='<div class="wd-row confirmed-row" data-wd-id="'+w.id+'">'
         +'<div class="wd-left">'
-        +'<div class="wd-amount confirmed">'+fe(w.eur)+'</div>'
-        +'<div class="wd-meta-row">'
-        +'<span class="wd-badge platform '+plClsDone+'">'+escHtml(w.pl)+'</span>'
-        +'<span class="wd-badge confirmed">Confirmed</span>'
-        +mBadge2
-        +(loss>0?'<span class="wd-loss">FX -'+fe(loss)+'</span>':'')
-        +'</div>'
-        +'<div class="wd-detail">'+fu(w.usd)+' &nbsp;·&nbsp; rate '+rate+' &nbsp;·&nbsp; '+fdate(w.date)+(w.rd?' → '+fdate(w.rd):'')+'</div>'
-        +descHtmlDone
+          +'<div class="wd-amount confirmed">'+fe(w.eur)+'</div>'
+          +'<div class="wd-fx-line">'
+            +fu(w.usd)+' → '+fe(w.eur)
+            +' &nbsp;·&nbsp; <span class="fx-rate">@ '+rate+'</span>'
+            +(loss>0?' &nbsp;·&nbsp; <span class="fx-loss">FX −'+fe(loss)+'</span>':'')
+          +'</div>'
+          +'<div class="wd-meta-row">'
+            +'<span class="wd-badge platform '+plClsDone+'">'+escHtml(w.pl)+'</span>'
+            +'<span class="wd-badge confirmed">Confirmed</span>'
+            +mBadge2
+          +'</div>'
+          +(splitPills?'<div class="wd-splits-row">'+splitPills+'</div>':'')
+          +'<div class="wd-detail">'+fdate(w.date)+(w.rd?' → '+fdate(w.rd):'')+'</div>'
+          +descHtmlDone
         +'</div>'
         +'<div class="wd-right">'
-        +'<button class="wd-delete-btn" onclick="delW(\''+w.id+'\')" title="Delete">'
-        +'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
-        +'<polyline points="3 6 5 6 21 6"/>'
-        +'<path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>'
-        +'<path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>'
-        +'</svg>'
-        +'</button>'
-        +'<button class="btn btn-ghost" style="font-size:11px;padding:4px 10px" onclick="editWdSplits(\''+w.id+'\')">Edit splits</button>'
-        +'<button class="btn btn-ghost" style="font-size:11px;padding:4px 10px" onclick="editWdDesc(\''+w.id+'\')">Edit note</button>'
-        +(splitBadges?'<div class="wd-splits">'+splitBadges+'</div>':'')
+          +'<button class="wd-delete-btn" onclick="delW(\''+w.id+'\')" title="Delete">'+DEL_SVG+'</button>'
+          +'<button class="btn btn-ghost" style="font-size:11px;padding:4px 10px" onclick="editWdSplits(\''+w.id+'\')">Edit splits</button>'
+          +'<button class="btn btn-ghost" style="font-size:11px;padding:4px 10px" onclick="editWdDesc(\''+w.id+'\')">Edit note</button>'
         +'</div>'
-        +'</div>';
+      +'</div>';
     });
     h+='</div>';
   }

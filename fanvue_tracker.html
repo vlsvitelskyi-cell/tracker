@@ -19,14 +19,14 @@
 /* ── 1. TOKENS ─────────────────────────────────────────────── */
 :root {
 
-  /* SURFACES — deep saturated navy. Elevation chain: bg → surface → surface-2 → surface-3 → surface-4.
-     Each step is visibly distinct. Rich indigo-navy — not gray-blue, not pure black.
-     B/R channel ratio ≈ 2.4 throughout for cinematic premium depth. */
-  --bg:        #0B0D1A;   /* deep navy base — H232° S40% L7% */
-  --surface:   #11152A;   /* chrome: sidebar, topbar, subnav */
-  --surface-2: #191E36;   /* containers: cards, panels, auth box */
-  --surface-3: #222742;   /* header chrome within containers */
-  --surface-4: #2B304F;   /* peak elevation: modals, dropdowns */
+  /* SURFACES — neutral-dark graphite. Elevation chain: bg → surface → surface-2 → surface-3 → surface-4.
+     Premium depth through darkness, not colour. B/R ≈ 1.25 — barely-cool graphite.
+     Cinematic character lives in text contrast, not surface saturation. */
+  --bg:        #0C0C0F;   /* near-black graphite — no pure black, no blue */
+  --surface:   #131318;   /* chrome: sidebar, topbar, subnav */
+  --surface-2: #1A1A21;   /* containers: cards, panels, auth box */
+  --surface-3: #21212A;   /* header chrome within containers */
+  --surface-4: #292933;   /* peak elevation: modals, dropdowns */
 
   /* BORDERS — hairline only. 1px max. White opacity reads as cool-blue on deep navy. */
   --line-1: rgba(255,255,255,.08);   /* background separation */
@@ -34,12 +34,13 @@
   --line-3: rgba(255,255,255,.26);   /* emphasized borders     */
   --line-4: rgba(255,255,255,.42);   /* focus rings            */
 
-  /* TEXT — 4 levels, strict roles. Aggressive contrast hierarchy against deep navy.
-     Gap between t1 and t2 is intentionally wide for financial emphasis. */
-  --t1: #F0F0FA;  /* primary: figures, headings — near-white, cool tint */
-  --t2: #B4B4CE;  /* secondary: body copy — clearly readable, violet-cool */
-  --t3: #6E6E8A;  /* tertiary: labels, captions — clearly subordinate */
-  --t4: #48485E;  /* quaternary: placeholders, dividers — barely visible */
+  /* TEXT — 4 levels, strict roles. Cinematic gap between t1 and t2 is intentional:
+     financial figures must immediately dominate over supporting copy.
+     t3/t4 substantially lifted from original — these were the main readability failures. */
+  --t1: #EEEEF2;  /* primary: figures, headings — near-white */
+  --t2: #9C9CAE;  /* secondary: body copy — readable, not competing with t1 */
+  --t3: #646476;  /* tertiary: labels, captions — clearly subordinate but usable */
+  --t4: #424254;  /* quaternary: placeholders, dividers — barely-there */
 
   /* SEMANTIC — financial signal. Never decorative. */
   --pos:     #22C55E;

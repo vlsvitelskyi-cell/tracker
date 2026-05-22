@@ -5155,6 +5155,39 @@ html { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
 .neg-color  { color: var(--neg-txt); }
 .pos-color  { color: var(--pos-txt); }
 
+/* Full-width Revenue by Month chart section */
+.dash-chart-section {
+  border-top: 1px solid var(--line-1);
+  border-bottom: 1px solid var(--line-1);
+  padding: var(--s5) var(--s6);
+  background: var(--surface);
+}
+.dash-chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--s4);
+}
+.dash-chart-title {
+  font-size: var(--f11);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--t3);
+}
+.dash-chart-body {
+  height: 200px;
+  position: relative;
+}
+.dash-chart-body > div {
+  width: 100%;
+  height: 100%;
+}
+.dash-chart-body canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
 </style>
 </head>
 <body>
@@ -5530,7 +5563,7 @@ html { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
             </div>
           </div>
 
-          <!-- Right rail: distribution + chart + action -->
+          <!-- Right rail: Revenue Split only -->
           <div class="dash-activity-rail">
             <div class="section-header">
               <span class="section-title">Revenue Split</span>
@@ -5540,18 +5573,24 @@ html { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
               <div class="split-bar" id="splitBar"></div>
               <div class="split-hint" id="splitHint"></div>
             </div>
-            <div class="section-header">
-              <span class="section-title">Revenue by Month</span>
-              <span id="revLoadStatus" class="section-meta"></span>
-            </div>
-            <div class="dash-rail-section">
-              <div class="chart-legend" id="chartLegend"></div>
-              <div class="chart-wrap"><div id="chartContainer"></div></div>
-            </div>
             <div class="dash-rail-cta"></div>
           </div>
 
         </div><!-- end dash-activity -->
+
+        <!-- Revenue by Month — full-width chart section -->
+        <div class="dash-chart-section" id="revenueChartSection">
+          <div class="dash-chart-header">
+            <span class="dash-chart-title">Revenue by Month</span>
+            <div style="display:flex;align-items:center;gap:var(--s4)">
+              <div class="chart-legend" id="chartLegend"></div>
+              <span id="revLoadStatus" class="section-meta"></span>
+            </div>
+          </div>
+          <div class="dash-chart-body">
+            <div id="chartContainer"></div>
+          </div>
+        </div>
 
         <!-- Model profitability — admin only -->
         <div id="modelProfitSection" style="display:none">
@@ -7786,7 +7825,9 @@ function showTab(name,btn,isMobile){
     btn.classList.add('act');
     var mb=g('mob-'+name);if(mb)mb.classList.add('act');
   }
-  if(name==='dashboard'||name==='revenue')setTimeout(renderChart,50);
+  if(name==='dashboard'||name==='revenue'){
+    requestAnimationFrame(function(){requestAnimationFrame(function(){renderChart();});});
+  }
   if(name==='settings'){loadAgencySettings();renderModelSplitSection();loadFanvueConnection();renderInviteModelRows();}
   /* KPI grid: only visible on dashboard */
   var dashStats=g('dashStats');
@@ -8619,11 +8660,9 @@ function renderModelProfitSection(){
   }
   var modelStats={};
   ALL_MODELS.forEach(function(m){modelStats[m.id]={name:m.name,revenue:0,expenses:0};});
-  S.months.forEach(function(mo){
-    (mo.txs||[]).forEach(function(tx){
-      var mid=tx.model_id||ACTIVE_MODEL_ID;
-      if(modelStats[mid])modelStats[mid].revenue+=tx.amt||0;
-    });
+  S.txs.forEach(function(tx){
+    var mid=tx.model_id||ACTIVE_MODEL_ID;
+    if(mid&&modelStats[mid])modelStats[mid].revenue+=tx.amount||0;
   });
   S.exps.forEach(function(ex){
     var mid=ex.model_id;
@@ -8710,10 +8749,7 @@ function renderBal(){
       mkSrl('This month (all)',fc(curRev),'',trendHtml)
       +mkSrl('Total revenue',fc(totalRev))
       +(totalOutstanding>0.01?mkSrl('Outstanding',fc(totalOutstanding),'warn'):'')
-      +mkSrl('Withdrawn',fc(totalW),'dim')
-      +mkSrl('Models',ALL_MODELS.length,'dim')
-      +(avgRate?mkSrl('Avg rate',avgRate,'dim'):'')
-      +(tLoss>0?mkSrl('FX loss',fe(tLoss),'neg'):'');
+      +mkSrl('FX Loss',tLoss>0?'−'+fe(tLoss):'—',tLoss>0?'neg':'dim');
     g('dashStats')&&g('dashStats').querySelectorAll('.srl-value').forEach(function(el){animateCountUp(el,el.textContent,500);});
     return;
   }
@@ -8723,8 +8759,7 @@ function renderBal(){
     mkSrl('This month',fc(curRev),'',trendHtml)
     +mkSrl('Total revenue',fc(totalRev))
     +(totalOutstanding>0.01?mkSrl('Outstanding',fc(totalOutstanding),'warn'):'')
-    +(avgRate?mkSrl('Avg rate',avgRate,'dim'):'')
-    +(tLoss>0?mkSrl('FX loss',fe(tLoss),'neg'):'');
+    +mkSrl('FX Loss',tLoss>0?'−'+fe(tLoss):'—',tLoss>0?'neg':'dim');
   g('dashStats')&&g('dashStats').querySelectorAll('.srl-value').forEach(function(el){animateCountUp(el,el.textContent,500);});
 
   /* Partner cards */
@@ -8989,7 +9024,7 @@ function renderMonths(){
         +'</div>'
         +(splitPct?'<span class="rev-stmt-pct">'+splitPct+'%</span>':'')
         +'<div class="rev-stmt-fill"></div>'
-        +'<span class="rev-stmt-amt" style="color:'+pColor+'">'+fu(share)+'</span>'
+        +'<span class="rev-stmt-amt" style="color:var(--t1)">'+fu(share)+'</span>'
       +'</div>';
     });
     html+='</div>';
@@ -9400,6 +9435,7 @@ async function init(){
   renderAll();
   renderInviteModelRows();
   checkSubscriptionGate();
+  requestAnimationFrame(function(){requestAnimationFrame(function(){renderChart();});});
 
   setupRealtime();
 }

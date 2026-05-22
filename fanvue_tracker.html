@@ -5191,6 +5191,114 @@ html { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
 /* expAddBtn всегда справа — clearStatus() сбрасывает flex:1 на статусе */
 #expAddBtn { margin-left: auto; }
 
+/* ═══════════════════════════════════════════════════════════════
+   ROW DESIGN CONSISTENCY — единый visual language на всех вкладках
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── 1. Dashboard Ledger: platform-pill → dot + text (как в Revenue) ── */
+#recentTxList .platform-pill {
+  position: relative;
+  background: transparent !important;
+  padding: 0 0 0 18px !important;
+  height: auto !important;
+  font-size: var(--f13) !important;
+  font-weight: 600 !important;
+  color: var(--t1) !important;
+  text-transform: none;
+  letter-spacing: 0;
+  border-radius: 0;
+  flex-shrink: 0;
+}
+#recentTxList .platform-pill::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 50%; transform: translateY(-50%);
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--t3);
+}
+#recentTxList .platform-pill--fanvue::before   { background: var(--fanvue); }
+#recentTxList .platform-pill--paypal::before   { background: var(--paypal); }
+#recentTxList .platform-pill--telegram::before { background: var(--telegram); }
+#recentTxList .platform-pill--other::before    { background: var(--t3); }
+
+/* Dashboard ledger row: match Revenue row height */
+#recentTxList .tx-row {
+  height: 44px !important;
+  padding: 0 20px !important;
+}
+/* Date separator: subtle background, tighter */
+#recentTxList .tx-date-sep {
+  padding: 3px 20px;
+  background: var(--surface-2);
+}
+
+/* ── 2. Expense items: левый цветной бордер (как border-left у tx-item) ── */
+.exp-item {
+  border-left: 2px solid var(--line-2);
+  padding-left: calc(var(--s5) - 2px) !important;
+}
+.exp-item:has(.exp-who.p0) { border-left-color: var(--p0); }
+.exp-item:has(.exp-who.p1) { border-left-color: var(--p1); }
+.exp-item:has(.exp-who.p2) { border-left-color: var(--p2); }
+.exp-item:has(.exp-who.p3) { border-left-color: var(--p3); }
+.exp-item:has(.exp-who.p4) { border-left-color: var(--p4); }
+
+/* ── 3. Partner badge внутри строки расходов ── */
+.exp-partner-badge {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .04em;
+  color: var(--t4);
+  white-space: nowrap;
+  flex-shrink: 0;
+  padding: 1px 5px;
+  border: 1px solid var(--line-1);
+  border-radius: var(--r1);
+}
+
+/* ── 4. Выравнивание колонок: date + amount фиксированная ширина ── */
+.exp-date { min-width: 54px; text-align: right; }
+.exp-amt  { min-width: 80px; text-align: right; padding-right: 4px; }
+
+/* ── 5. Скрыть кнопку "Add expense" в histCard когда форма открыта ── */
+#expensesCard[style*="block"] ~ #expensesHistCard .sec-row .btn-primary {
+  display: none !important;
+}
+
+/* ── 6. Кнопка закрытия формы расходов ── */
+.form-panel-close {
+  font-size: var(--f13);
+  color: var(--t4);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: var(--r1);
+  line-height: 1;
+  transition: color var(--fast), background var(--fast);
+  flex-shrink: 0;
+}
+.form-panel-close:hover {
+  color: var(--t2);
+  background: var(--surface-3);
+}
+
+/* ── 7. Кнопки: глобальный audit — одинаковая высота для btn и btn-primary ── */
+/* btn уже 32px через .btn-primary, btn остаётся через line-height */
+.btn {
+  height: 32px; /* явная высота как у btn-primary */
+}
+.btn-edit,
+.btn-del {
+  height: 26px; /* маленькие inline-кнопки — меньше основных */
+}
+
+/* ── 8. Empty-state кнопка: авто-ширина, не растягивается ── */
+.empty-page-state .btn-primary {
+  width: auto;
+  padding: 0 20px;
+}
+
 /* Full-width Revenue by Month chart section */
 .dash-chart-section {
   border-top: 1px solid var(--line-1);
@@ -5698,6 +5806,7 @@ html { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
         <div class="form-panel" id="expensesCard" style="display:none">
           <div class="form-panel-header">
             <span class="form-panel-title">Add Expense</span>
+            <button class="form-panel-close" onclick="toggleAddExpenseForm()" title="Close">✕</button>
           </div>
           <div class="form-panel-body">
             <div class="form-grid" id="expPartnerRow">
@@ -5739,7 +5848,7 @@ html { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
             </div>
             <div class="form-actions">
               <div id="expStatus" class="form-status"></div>
-              <button class="btn btn-primary" id="expAddBtn" onclick="addExpense()">Add expense</button>
+              <button class="btn btn-primary" id="expAddBtn" onclick="addExpense()">Save expense</button>
             </div>
           </div>
         </div>
@@ -5763,8 +5872,8 @@ html { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
 
         <!-- Expense history by month -->
         <div class="card" id="expensesHistCard">
-          <div class="sec-row" style="margin-bottom:14px">
-            <div class="sec-label" style="margin:0">Expense History</div>
+          <div class="sec-row">
+            <div class="sec-label">Expense History</div>
             <div style="display:flex;gap:8px;align-items:center">
               <span id="expTotalLabel" style="font-size:13px;font-weight:600;color:var(--neg-txt)"></span>
               <button class="btn-primary" onclick="toggleAddExpenseForm()">Add expense</button>
@@ -8551,9 +8660,10 @@ function renderExpenses(){
     var modelBadge=(!ACTIVE_MODEL_ID&&ALL_MODELS.length>1)
       ?'<span style="font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;border:1px solid var(--line-1);color:var(--t4)">'+(mObj?escHtml(mObj.name):'Agency')+'</span>'
       :'';
+    var partnerBadge='<span class="exp-partner-badge">'+escHtml(p.name)+'</span>';
     var nameHtml=parsed.text
-      ?'<span class="exp-item-name">'+escHtml(parsed.text)+'</span>'
-      :'<span class="exp-item-name" style="color:var(--t4)">'+escHtml(p.name)+'</span>';
+      ?'<span class="exp-item-name">'+escHtml(parsed.text)+'</span>'+partnerBadge
+      :'<span class="exp-item-name">'+escHtml(p.name)+'</span>';
     return '<div class="exp-item">'
       +'<div class="exp-left">'
         +'<div class="exp-who '+cls+'"></div>'

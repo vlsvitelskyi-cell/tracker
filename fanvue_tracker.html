@@ -4644,6 +4644,94 @@ button { font-family: var(--sans); }
 
 /* ══ end 55 ════════════════════════════════════════════════════════ */
 
+/* ══ 56. FINAL POLISH PASS ══════════════════════════════════════════
+   Non-destructive precision refinement only.
+   No redesign. No rewrites. No functional changes.
+   Targets: transition completeness, remaining t4 legibility gaps,
+   financial number precision, keyboard accessibility, scrollbar
+   refinement, input cursor, selection, compositional micro-details.
+   ════════════════════════════════════════════════════════════════ */
+
+/* ─ A. Hover transitions — snap-free, smooth state changes */
+.card            { transition: border-color var(--fast); }
+.partner-card    { transition: border-color var(--fast); }
+.stat-box        { transition: background   var(--fast); }
+.srl-item        { transition: background   var(--fast); }
+
+/* ─ B. Remaining t4 color gaps — lift to readable without noise */
+.card-meta            { color: var(--t3); }   /* was --t4 */
+.status-line.note     { color: var(--t3); }   /* was --t4 */
+.sys-note             { color: var(--t3); }   /* was --t4 */
+.rev-stmt-amt.dim     { color: var(--t3); }   /* was --t4 */
+.rev-stmt-pct         { color: var(--t3); }   /* was --t4 */
+
+/* ─ C. Expense item hover — consistency with all other rows */
+.exp-item:hover { background: var(--surface-3); }
+
+/* ─ D. Withdrawal amount — premium financial number treatment */
+.w-amt { font-family: var(--mono); letter-spacing: -.025em; }
+
+/* ─ E. Input placeholder — readable hint, not invisible noise */
+.field input::placeholder,
+.field textarea::placeholder { color: rgba(255,255,255,.16); }  /* was --t4 ≈ .08 */
+
+/* ─ F. Text cursor — use secondary text color for precision feel */
+input, textarea, [contenteditable] { caret-color: var(--t2); }
+
+/* ─ G. Keyboard focus — clean visible ring for accessibility */
+:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(255,255,255,.16);
+}
+/* Inputs: lighter ring since border already shifts */
+.field input:focus-visible,
+.field select:focus-visible,
+.field textarea:focus-visible {
+  box-shadow: 0 0 0 2px rgba(255,255,255,.06);
+}
+/* Buttons within section headers: skip box-shadow (layout too tight) */
+.section-actions :focus-visible { box-shadow: none; }
+
+/* ─ H. Body scrollbar — barely-there, premium dark treatment */
+html { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
+::-webkit-scrollbar         { width: 4px; height: 4px; }
+::-webkit-scrollbar-track   { background: transparent; }
+::-webkit-scrollbar-thumb   { background: var(--line-2); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--line-3); }
+/* Restore hidden scrollbars for overflow areas that suppress them */
+.mtab-row::-webkit-scrollbar,
+.settings-subnav::-webkit-scrollbar,
+.summary-rail::-webkit-scrollbar { display: none; }
+
+/* ─ I. Selection — slightly more perceptible without being loud */
+::selection { background: rgba(255,255,255,.14); }
+
+/* ─ J. Link button hover — smooth and consistent */
+.s-link-btn:hover { opacity: .75; }
+
+/* ─ K. Sidebar brand — wordmark at full primary weight */
+.sidebar-product { color: var(--t1); letter-spacing: .05em; }
+
+/* ─ L. Financial number consistency — mono on all key amounts */
+.w-amt,
+.dpt-cell { letter-spacing: -.025em; }
+
+/* ─ M. Topbar connection indicator — cap at t3 instead of raw --t4 */
+#connectionDot ~ span,
+.topbar-status-text { color: var(--t3); }
+
+/* ─ N. Sort button label — cleaner hierarchy */
+.sort-lbl { letter-spacing: .03em; }
+
+/* ─ O. KPI strip dividers — hair-fine separation between cells */
+.fin-kpi:not(:last-child) { border-right: 1px solid var(--line-1); }
+
+/* ─ P. Empty-state row link color — lift link from invisible */
+.empty-state-row a { color: var(--t2); }
+.empty-state-row a:hover { color: var(--t1); }
+
+/* ══ end 56 ════════════════════════════════════════════════════════ */
+
 </style>
 </head>
 <body>

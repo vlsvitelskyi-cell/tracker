@@ -4886,46 +4886,57 @@ html { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
 /* ── DASHBOARD BODY: two-column layout ─────────────────────────── */
 .dash-activity {
   display: flex !important;
-  align-items: flex-start;
+  align-items: stretch;           /* оба столбца одинаковой высоты      */
   border-top: none;
+  /* НЕТ фиксированной высоты — высота = max(левый, правый) столбец   */
 }
 .dash-activity-main {
-  flex: 1;
+  flex: 3;                        /* уже: ~60% ширины                   */
   min-width: 0;
-  border-right: 1px solid var(--line-1);
-}
-.dash-activity-rail {
-  width: 340px;
-  flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  position: sticky;
-  top: 48px;
-  height: calc(100vh - 48px - 89px);
-  overflow-y: auto;
+  border-right: 1px solid var(--line-1);
+}
+.dash-activity-main .section-header {
+  flex-shrink: 0;
+}
+.dash-activity-main .fin-table-wrap {
+  flex: 1;
+  overflow-y: auto;               /* скролл внутри если много строк     */
+  max-height: 340px;              /* не растёт бесконечно               */
   scrollbar-width: thin;
   scrollbar-color: var(--line-2) transparent;
+}
+.dash-activity-rail {
+  flex: 2;                        /* шире: ~40% ширины                  */
+  width: auto;                    /* сбрасываем фиксированный 340px     */
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  position: static;               /* без sticky                         */
+  height: auto;                   /* высота = по контенту               */
+  overflow: visible;
 }
 .dash-rail-section {
   padding: var(--s5) var(--s6);
   border-bottom: 1px solid var(--line-1);
+  flex-shrink: 0;
 }
 .dash-rail-section:last-child { border-bottom: none; }
 .dash-rail-cta { display: none; }
 
-/* Rail chart block — flex-grow fills remaining rail height */
+/* Rail chart block */
 .rail-block--chart {
-  flex: 1;
-  min-height: 0;
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
   padding: var(--s5) var(--s6);
   border-top: 1px solid var(--line-1);
 }
 .rail-block--chart .dash-chart-body {
-  flex: 1;
-  min-height: 0;
+  height: 220px;                  /* фиксированная высота чарта         */
   position: relative;
+  overflow: hidden;
 }
 .rail-block--chart #chartContainer,
 .rail-block--chart canvas {

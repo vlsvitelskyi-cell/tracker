@@ -4,277 +4,254 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Privacy Policy — Payout Manager</title>
-<meta name="description" content="Privacy Policy for Payout Manager — Financial OS for Fanvue agencies.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth;font-size:16px}
-body{
-  font-family:'DM Sans',system-ui,sans-serif;
-  background:#0B0D13;
-  color:#EEF0F8;
-  line-height:1.7;
-  -webkit-font-smoothing:antialiased;
-}
-:root{
-  --bg:#0B0D13;
-  --bg2:#10131C;
-  --card:#161B27;
-  --border:rgba(255,255,255,0.07);
-  --border2:rgba(255,255,255,0.12);
-  --indigo:#6366F1;
-  --indigo-l:#818CF8;
-  --indigo-dim:rgba(99,102,241,0.14);
-  --text:#EEF0F8;
-  --text2:#94A3B8;
-  --text3:#5A6680;
-}
-
-/* Nav */
-.nav{
-  position:fixed;top:0;left:0;right:0;z-index:200;
-  background:rgba(11,13,19,0.85);
-  backdrop-filter:blur(18px);
-  -webkit-backdrop-filter:blur(18px);
-  border-bottom:1px solid var(--border);
-  padding:0 28px;
-}
-.nav-inner{
-  max-width:780px;margin:0 auto;
-  height:66px;
-  display:flex;align-items:center;justify-content:space-between;
-}
-.nav-logo{
-  display:flex;align-items:center;gap:9px;
-  text-decoration:none;color:var(--text);
-  font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:16px;
-}
-.nav-logo-icon{
-  width:30px;height:30px;
-  background:var(--indigo-dim);
-  border:1px solid rgba(99,102,241,.2);
-  border-radius:8px;
-  display:flex;align-items:center;justify-content:center;
-}
-.nav-back{
-  font-size:14px;color:var(--text2);text-decoration:none;
-  display:flex;align-items:center;gap:6px;
-  transition:color .2s;
-}
-.nav-back:hover{color:var(--text);}
-
-/* Main layout */
-.page-wrap{
-  max-width:780px;margin:0 auto;padding:120px 28px 80px;
-}
-.page-tag{
-  display:inline-block;
-  font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
-  color:var(--indigo-l);
-  background:var(--indigo-dim);
-  border:1px solid rgba(99,102,241,.2);
-  border-radius:20px;padding:4px 12px;
-  margin-bottom:18px;
-}
-.page-title{
-  font-family:'Chakra Petch',sans-serif;font-weight:700;
-  font-size:clamp(26px,4vw,38px);
-  letter-spacing:-.02em;color:var(--text);
-  margin-bottom:10px;
-}
-.page-meta{
-  font-size:14px;color:var(--text3);
-  margin-bottom:56px;
-}
-
-/* Content */
-.doc-section{
-  border-top:1px solid var(--border);
-  padding:36px 0;
-}
-.doc-section:first-of-type{border-top:none;padding-top:0;}
-h2{
-  font-family:'Chakra Petch',sans-serif;font-weight:600;
-  font-size:18px;letter-spacing:-.01em;color:var(--text);
-  margin-bottom:14px;
-}
-p{
-  font-size:15px;color:var(--text2);
-  margin-bottom:14px;
-}
-p:last-child{margin-bottom:0;}
-ul{
-  list-style:none;padding:0;margin-bottom:14px;
-}
-ul li{
-  font-size:15px;color:var(--text2);
-  padding:5px 0 5px 20px;
-  position:relative;
-}
-ul li::before{
-  content:'—';
-  position:absolute;left:0;
-  color:var(--text3);
-}
-a{color:var(--indigo-l);text-decoration:none;}
-a:hover{text-decoration:underline;}
-strong{color:var(--text);font-weight:600;}
-
-.highlight-box{
-  background:var(--card);
-  border:1px solid var(--border2);
-  border-radius:10px;
-  padding:20px 22px;
-  margin:20px 0;
-}
-.highlight-box p{margin-bottom:0;}
-
-/* Footer */
-.footer{
-  border-top:1px solid var(--border);
-  padding:32px 28px;
-  text-align:center;
-}
-.footer-inner{
-  max-width:780px;margin:0 auto;
-  display:flex;align-items:center;justify-content:space-between;
-  flex-wrap:wrap;gap:12px;
-}
-.footer-wordmark{
-  font-family:'Chakra Petch',sans-serif;font-weight:700;
-  font-size:14px;color:var(--text3);
-}
-.footer-right{display:flex;align-items:center;gap:20px;flex-wrap:wrap;}
-.footer-right a{font-size:13px;color:var(--text3);text-decoration:none;}
-.footer-right a:hover{color:var(--text);}
-.footer-copy{font-size:13px;color:var(--text3);}
+  :root {
+    --bg: #08080A;
+    --surface: #0F0F12;
+    --line: rgba(255,255,255,.08);
+    --t1: #F0F0F2;
+    --t2: #A0A0AA;
+    --t3: #747480;
+    --cta: #10B981;
+    --sans: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--t1);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+  .topbar {
+    position: sticky; top: 0; z-index: 10;
+    background: rgba(8,8,10,.95);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--line);
+    padding: 0 32px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .topbar-brand {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--t1);
+    text-decoration: none;
+  }
+  .topbar-back {
+    font-size: 13px;
+    color: var(--t3);
+    text-decoration: none;
+    transition: color .15s;
+  }
+  .topbar-back:hover { color: var(--t1); }
+  .wrap {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 64px 32px 120px;
+  }
+  .doc-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--cta);
+    margin-bottom: 16px;
+  }
+  h1 {
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -.04em;
+    line-height: 1.1;
+    color: var(--t1);
+    margin-bottom: 12px;
+  }
+  .meta {
+    font-size: 13px;
+    color: var(--t3);
+    margin-bottom: 56px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid var(--line);
+  }
+  h2 {
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: -.02em;
+    color: var(--t1);
+    margin: 44px 0 12px;
+  }
+  h3 {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--t2);
+    margin: 24px 0 8px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+  }
+  p { color: var(--t2); margin-bottom: 14px; }
+  ul, ol { color: var(--t2); padding-left: 22px; margin-bottom: 14px; }
+  li { margin-bottom: 6px; }
+  a { color: var(--cta); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .highlight-box {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin: 24px 0;
+  }
+  .highlight-box p { margin: 0; font-size: 13px; }
+  strong { color: var(--t1); font-weight: 600; }
+  footer {
+    border-top: 1px solid var(--line);
+    padding: 32px;
+    text-align: center;
+    font-size: 12px;
+    color: var(--t3);
+  }
+  footer a { color: var(--t3); margin: 0 12px; }
+  footer a:hover { color: var(--t1); }
 </style>
 </head>
 <body>
 
-<nav class="nav">
-  <div class="nav-inner">
-    <a class="nav-logo" href="/">
-      <div class="nav-logo-icon">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-          <rect x="2" y="2" width="5" height="5" rx="1.5" fill="#6366F1"/>
-          <rect x="9" y="2" width="5" height="5" rx="1.5" fill="#6366F1" opacity=".5"/>
-          <rect x="2" y="9" width="5" height="5" rx="1.5" fill="#6366F1" opacity=".5"/>
-          <rect x="9" y="9" width="5" height="5" rx="1.5" fill="#6366F1" opacity=".3"/>
-        </svg>
-      </div>
-      Payout Manager
-    </a>
-    <a class="nav-back" href="/">
-      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-        <path d="M9 2L4 7l5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-      Back to home
-    </a>
-  </div>
-</nav>
+<div class="topbar">
+  <a class="topbar-brand" href="/">Payout Manager</a>
+  <a class="topbar-back" href="/">← Back to home</a>
+</div>
 
-<main class="page-wrap">
+<div class="wrap">
+  <div class="doc-label">Legal</div>
+  <h1>Privacy Policy</h1>
+  <p class="meta">Last updated: 22 May 2026 &nbsp;·&nbsp; Effective date: 22 May 2026</p>
 
-  <div class="page-tag">Legal</div>
-  <h1 class="page-title">Privacy Policy</h1>
-  <div class="page-meta">Effective date: May 17, 2026 &nbsp;·&nbsp; Last updated: May 17, 2026</div>
-
-  <div class="doc-section">
-    <h2>1. Who we are</h2>
-    <p>Payout Manager ("we", "us", "our") is a financial management tool for Fanvue creators and agencies, accessible at <a href="https://payoutmanager.app">payoutmanager.app</a>. This Privacy Policy explains what personal data we collect, how we use it, and your rights.</p>
-    <p>For GDPR purposes, the data controller is the individual or entity operating the Payout Manager account (the agency admin). Questions about this policy can be sent to: <a href="mailto:privacy@payoutmanager.app">privacy@payoutmanager.app</a>.</p>
+  <div class="highlight-box">
+    <p><strong>Summary:</strong> Payout Manager collects only the data needed to provide its financial tracking features. We do not sell your data, share it with advertisers, or use it for any purpose other than operating the service. You can request full deletion of your data at any time.</p>
   </div>
 
-  <div class="doc-section">
-    <h2>2. Data we collect</h2>
-    <p><strong>Account data.</strong> When you register, we collect your email address and the password you set (stored as a hashed value — we never see your plaintext password). This is handled by Supabase Auth.</p>
-    <p><strong>Agency and financial data.</strong> We store the data you enter: agency name, partner names and split percentages, model names, revenue transactions, expenses, and withdrawal records. This data is necessary to provide the service.</p>
-    <p><strong>Fanvue OAuth data.</strong> When you connect a Fanvue account, we receive and store an OAuth access token and refresh token issued by Fanvue. We also store your Fanvue username and creator ID. We never receive or store your Fanvue password.</p>
-    <p><strong>Usage data.</strong> We do not run analytics or tracking scripts. We do not use cookies for advertising. Standard server logs (IP address, browser user-agent, timestamps) may be generated by our infrastructure providers.</p>
-  </div>
+  <h2>1. Who We Are</h2>
+  <p>Payout Manager is operated by <strong>Vladyslav Svitelskyi</strong> ("we", "us", "our"), an individual developer based in the European Union. Payout Manager is a financial management tool for Fanvue agencies, available via the Fanvue App Store at <a href="https://payoutmanager.app">payoutmanager.app</a>.</p>
+  <p>For the purposes of the General Data Protection Regulation (GDPR), Vladyslav Svitelskyi is the <strong>data controller</strong> of your personal data.</p>
+  <p><strong>Contact:</strong> <a href="mailto:support@payoutmanager.app">support@payoutmanager.app</a></p>
 
-  <div class="doc-section">
-    <h2>3. How we use your data</h2>
-    <ul>
-      <li>To provide and operate the Payout Manager service</li>
-      <li>To sync your Fanvue earnings via the official Fanvue API using OAuth tokens you authorise</li>
-      <li>To send transactional emails (invite links, account notifications) via Resend</li>
-      <li>To authenticate you and manage your session</li>
-      <li>To comply with legal obligations</li>
-    </ul>
-    <p>We do not sell your data. We do not use your data for advertising. We do not share your financial data with third parties except as described in Section 4.</p>
-  </div>
+  <h2>2. Data We Collect</h2>
+  <p>We collect only the data necessary to provide Payout Manager's features. This includes:</p>
 
-  <div class="doc-section">
-    <h2>4. Third-party services</h2>
-    <p>We use the following sub-processors to operate the service:</p>
-    <ul>
-      <li><strong>Supabase</strong> (supabase.com) — database, authentication, and server-side functions. Data is stored on Supabase infrastructure. <a href="https://supabase.com/privacy" target="_blank" rel="noopener">Supabase Privacy Policy</a>.</li>
-      <li><strong>Fanvue</strong> (fanvue.com) — OAuth authentication and earnings data API. Subscription billing is handled by the Fanvue App Store. <a href="https://www.fanvue.com/privacy-policy" target="_blank" rel="noopener">Fanvue Privacy Policy</a>.</li>
-      <li><strong>Resend</strong> (resend.com) — transactional email delivery (invite emails, notifications). <a href="https://resend.com/privacy" target="_blank" rel="noopener">Resend Privacy Policy</a>.</li>
-      <li><strong>Cloudflare</strong> (cloudflare.com) — DNS and CDN. Cloudflare may process request metadata. <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener">Cloudflare Privacy Policy</a>.</li>
-      <li><strong>GitHub Pages</strong> (github.com) — static file hosting. <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" target="_blank" rel="noopener">GitHub Privacy Policy</a>.</li>
-    </ul>
-  </div>
+  <h3>Account Data</h3>
+  <ul>
+    <li>Your name and email address (provided at sign-up or via Fanvue OAuth)</li>
+    <li>Your role within your agency (admin or partner)</li>
+  </ul>
 
-  <div class="doc-section">
-    <h2>5. Data retention</h2>
-    <p>We retain your account and financial data for as long as your account is active. If you delete your account, we permanently delete all associated personal data — including your email, partner records, transactions, expenses, withdrawals, and Fanvue OAuth tokens — within 30 days.</p>
-    <p>Some data may be retained longer if required by applicable law (e.g., tax record obligations in your jurisdiction). In that case, we will inform you at the time of account deletion.</p>
-  </div>
+  <h3>Fanvue Integration Data</h3>
+  <ul>
+    <li>OAuth access tokens used to connect your Fanvue account (stored securely server-side)</li>
+    <li>Earnings and transaction data synced from Fanvue (amounts, dates, platform sources)</li>
+    <li>Creator/model names associated with your agency account</li>
+  </ul>
 
-  <div class="doc-section">
-    <h2>6. Your rights (GDPR)</h2>
-    <p>If you are located in the European Economic Area (EEA) or United Kingdom, you have the following rights under GDPR:</p>
-    <ul>
-      <li><strong>Access</strong> — request a copy of your personal data</li>
-      <li><strong>Correction</strong> — request correction of inaccurate data</li>
-      <li><strong>Erasure</strong> — request deletion of your personal data ("right to be forgotten")</li>
-      <li><strong>Restriction</strong> — request that we limit processing of your data</li>
-      <li><strong>Portability</strong> — receive your data in a portable format</li>
-      <li><strong>Objection</strong> — object to processing based on legitimate interest</li>
-    </ul>
-    <div class="highlight-box">
-      <p>To exercise your right to deletion, go to <strong>Settings → About → Legal → Delete my data</strong> inside the app, or email <a href="mailto:privacy@payoutmanager.app">privacy@payoutmanager.app</a>. We will process your request within 30 days.</p>
-    </div>
-    <p>You also have the right to lodge a complaint with your local data protection authority.</p>
-  </div>
+  <h3>Financial Records You Create</h3>
+  <ul>
+    <li>Withdrawal records (amounts, dates, EUR/USD conversions, partner splits)</li>
+    <li>Expense records (descriptions, amounts, categories)</li>
+    <li>Revenue entries added manually</li>
+  </ul>
 
-  <div class="doc-section">
-    <h2>7. Security</h2>
-    <p>All data in transit is encrypted via HTTPS/TLS. Data at rest is stored in Supabase with encryption. Fanvue OAuth tokens are stored server-side and never exposed to the browser beyond the authenticated user's own session. We apply row-level security (RLS) so each agency's data is isolated and inaccessible to other users.</p>
-    <p>No system is perfectly secure. If you suspect a security issue, please contact us immediately at <a href="mailto:privacy@payoutmanager.app">privacy@payoutmanager.app</a>.</p>
-  </div>
+  <h3>Partner Data</h3>
+  <ul>
+    <li>Names and email addresses of partners you invite to your agency workspace</li>
+    <li>Revenue split percentages per partner and per model</li>
+  </ul>
 
-  <div class="doc-section">
-    <h2>8. Children</h2>
-    <p>Payout Manager is intended for use by adults operating Fanvue creator agencies. We do not knowingly collect data from individuals under the age of 18. If we become aware that a minor has provided personal data, we will delete it promptly.</p>
-  </div>
+  <h3>Technical Data</h3>
+  <ul>
+    <li>Authentication session tokens (stored securely)</li>
+    <li>Basic usage logs for error monitoring (no behavioural tracking)</li>
+  </ul>
 
-  <div class="doc-section">
-    <h2>9. Changes to this policy</h2>
-    <p>We may update this Privacy Policy from time to time. If we make material changes, we will notify registered users by email at least 14 days before the change takes effect. Continued use of the service after that date constitutes acceptance of the updated policy.</p>
-    <p>The current version of this policy is always available at <a href="https://payoutmanager.app/privacy.html">payoutmanager.app/privacy.html</a>.</p>
-  </div>
+  <p>We do <strong>not</strong> collect: passwords, payment card details, government IDs, or any content from your Fanvue profile or messages.</p>
 
-  <div class="doc-section">
-    <h2>10. Contact</h2>
-    <p>For privacy-related questions or requests, contact us at: <a href="mailto:privacy@payoutmanager.app">privacy@payoutmanager.app</a>.</p>
-  </div>
+  <h2>3. How We Use Your Data</h2>
+  <p>We use your data solely to operate Payout Manager:</p>
+  <ul>
+    <li>To authenticate you and manage your workspace</li>
+    <li>To sync and display your Fanvue earnings in the tracker</li>
+    <li>To calculate partner splits, outstanding balances, and FX conversions</li>
+    <li>To display financial reports and charts within the app</li>
+    <li>To send operational emails (if email notifications are enabled by you)</li>
+    <li>To respond to your support requests</li>
+  </ul>
 
-</main>
+  <h2>4. Legal Basis for Processing (GDPR)</h2>
+  <p>We process your personal data under the following legal bases:</p>
+  <ul>
+    <li><strong>Contract performance (Art. 6(1)(b) GDPR):</strong> processing is necessary to provide the service you signed up for</li>
+    <li><strong>Legitimate interests (Art. 6(1)(f) GDPR):</strong> security logging and error monitoring to maintain a stable service</li>
+    <li><strong>Consent (Art. 6(1)(a) GDPR):</strong> for optional email notifications, which you can disable at any time in Settings</li>
+  </ul>
 
-<footer class="footer">
-  <div class="footer-inner">
-    <div class="footer-wordmark">Payout Manager</div>
-    <div class="footer-right">
-      <a href="/privacy.html">Privacy Policy</a>
-      <a href="/terms.html">Terms of Service</a>
-      <span class="footer-copy">© 2026 Payout Manager</span>
-    </div>
+  <h2>5. Data Sharing</h2>
+  <p>We do not sell, rent, or share your personal data with third parties for marketing purposes. We use the following sub-processors to operate the service:</p>
+  <ul>
+    <li><strong>Supabase</strong> (database and authentication) — data stored in EU region</li>
+    <li><strong>Wise API</strong> (exchange rate data) — only mid-market rates are fetched; no personal data is sent</li>
+    <li><strong>Fanvue API</strong> — your earnings data is retrieved via OAuth with your explicit authorisation</li>
+  </ul>
+  <p>We may disclose data if required by law or to comply with a valid legal process.</p>
+
+  <h2>6. Data Retention</h2>
+  <p>We retain your data for as long as your account is active. If you delete your account, all associated data (workspace records, withdrawal history, transaction logs, partner information) is permanently deleted within 30 days.</p>
+
+  <h2>7. Your Rights Under GDPR</h2>
+  <p>As a data subject in the EU, you have the following rights:</p>
+  <ul>
+    <li><strong>Right of access:</strong> request a copy of all data we hold about you</li>
+    <li><strong>Right to rectification:</strong> request correction of inaccurate data</li>
+    <li><strong>Right to erasure ("right to be forgotten"):</strong> request full deletion of your account and data</li>
+    <li><strong>Right to data portability:</strong> request your data in a machine-readable format (CSV export available in-app)</li>
+    <li><strong>Right to object:</strong> object to processing based on legitimate interests</li>
+    <li><strong>Right to restrict processing:</strong> request that we limit how we use your data</li>
+  </ul>
+  <p>To exercise any of these rights, contact us at <a href="mailto:support@payoutmanager.app">support@payoutmanager.app</a>. We will respond within 30 days.</p>
+  <p><strong>Data deletion in-app:</strong> You can permanently delete your account and all associated data directly in Settings → About → Delete my data.</p>
+
+  <h2>8. Data Security</h2>
+  <ul>
+    <li>All data is transmitted over HTTPS with valid TLS certificates</li>
+    <li>OAuth tokens and session credentials are stored securely server-side and never exposed in client-side code</li>
+    <li>Access to production data is restricted to the operator</li>
+    <li>We do not log sensitive tokens or personal credentials</li>
+  </ul>
+
+  <h2>9. International Transfers</h2>
+  <p>Your data is stored within the EU (Supabase EU region). Where any sub-processor operates outside the EU, we ensure appropriate safeguards are in place in accordance with GDPR Chapter V.</p>
+
+  <h2>10. Children</h2>
+  <p>Payout Manager is intended for adult agency operators and is not directed at anyone under 18. We do not knowingly collect data from minors.</p>
+
+  <h2>11. Changes to This Policy</h2>
+  <p>We may update this Privacy Policy from time to time. We will notify you of material changes by updating the "Last updated" date at the top of this page. Continued use of the service after changes constitutes acceptance of the updated policy.</p>
+
+  <h2>12. Supervisory Authority</h2>
+  <p>If you believe we have not handled your data correctly, you have the right to lodge a complaint with your local EU data protection supervisory authority.</p>
+
+  <h2>13. Contact</h2>
+  <p>For any privacy-related questions or requests:<br>
+  <strong>Vladyslav Svitelskyi</strong><br>
+  <a href="mailto:support@payoutmanager.app">support@payoutmanager.app</a></p>
+</div>
+
+<footer>
+  <div>© 2026 Payout Manager · Vladyslav Svitelskyi</div>
+  <div style="margin-top:8px">
+    <a href="/privacy-policy.html">Privacy Policy</a>
+    <a href="/terms-of-service.html">Terms of Service</a>
+    <a href="/">Home</a>
   </div>
 </footer>
 

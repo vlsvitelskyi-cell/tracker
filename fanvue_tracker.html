@@ -3086,9 +3086,6 @@ button { font-family: var(--sans); }
   .form-panel-body { padding: 14px; }
   .form-grid, .form-grid-4 { gap: 8px; }
 
-  /* Suggest banner: stack */
-  .suggest-banner { flex-direction: column; align-items: flex-start; gap: 8px; }
-
   /* Modals */
   .w-confirm-box { padding: 20px 18px; border-radius: 16px; }
 }
@@ -3529,33 +3526,6 @@ button { font-family: var(--sans); }
   letter-spacing: .08em;
 }
 
-/* Suggest banner: smart withdrawal hint */
-.suggest-banner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  background: rgba(99,102,241,.05);
-  border: 1px solid rgba(99,102,241,.16);
-  border-radius: var(--r2);
-  padding: 10px 14px;
-  margin-bottom: 14px;
-}
-.suggest-banner-copy { flex: 1; min-width: 0; }
-.suggest-banner-label {
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--p2);
-  letter-spacing: .04em;
-  text-transform: uppercase;
-  margin-bottom: 2px;
-}
-.suggest-banner-text {
-  font-size: var(--f12);
-  color: var(--t3);
-  line-height: 1.4;
-}
-
 /* Settings: remove icon boxes, tighten header */
 .settings-section-icon   { display: none !important; }
 .settings-section-header {
@@ -3774,10 +3744,6 @@ button { font-family: var(--sans); }
   max-width: 560px;
 }
 
-/* ── W. Suggest banner: tighten vertical rhythm ──────────────── */
-.suggest-banner { padding: 9px 14px; }
-.suggest-banner-label { letter-spacing: .09em; }
-
 /* ── X. Mobile: recalibrate after topology changes ───────────── */
 @media (max-width: 960px) {
   .section-header { padding: 0 16px; }
@@ -3985,6 +3951,699 @@ button { font-family: var(--sans); }
   transition: opacity 180ms ease;
 }
 
+/* ══ 50. UX CLARITY ═══════════════════════════════════════════════
+   Systematic readability, hierarchy, and discoverability.
+
+   Core rule: 10px uppercase label text at --t4 is illegible.
+   Minimum for any scannable label = --t3.
+   Nav resting state must be readable (t3), not invisible (t4).
+   Primary action per view must be visually distinct.
+   Form labels must not require squinting.
+   ══════════════════════════════════════════════════════════════════ */
+
+/* ─ 0. CASCADE FIX: .btn.btn-primary combination ─────────────────
+   .btn-primary (line 734) is declared BEFORE .btn (line 758).
+   Same specificity → .btn wins → white buttons rendered as outline.
+   A two-class selector (0,2,0) overrides both single-class selectors.
+   ────────────────────────────────────────────────────────────────── */
+.btn.btn-primary {
+  background: var(--accent);
+  color: #08080A;
+  border: none;
+  font-size: var(--f13);
+  font-weight: 600;
+  padding: 7px 14px;
+  letter-spacing: -.01em;
+}
+.btn.btn-primary:hover {
+  opacity: .88;
+  background: var(--accent);
+  color: #08080A;
+  border: none;
+}
+.btn.btn-primary:active:not(:disabled):not([data-loading]) {
+  transform: scale(.977);
+  opacity: .82;
+}
+.btn.btn-primary:disabled {
+  opacity: .3;
+  cursor: not-allowed;
+  pointer-events: none;
+  background: var(--accent);
+  color: #08080A;
+  border: none;
+}
+.btn.btn-primary[data-loading="true"]::after {
+  border-color: rgba(0,0,0,.12);
+  border-top-color: rgba(0,0,0,.55);
+}
+
+/* ─ 1. Section labels and column headers: t4 → t3 ─────────────── */
+/* 10px uppercase text at t4 (#363640) reads as decorative noise.
+   At t3 it becomes structural signal — hierarchy the eye can use.  */
+.section-title       { color: var(--t3); }
+.nav-section-label   { color: var(--t3); }
+.dpt-col             { color: var(--t3); }
+.dpt-col.due-col     { color: rgba(74,222,128,.65); }
+.dpt-you-badge       { color: var(--t3); }
+.srl-label           { color: var(--t3); }
+.stat-lbl            { color: var(--t3); }
+.list-section-label  { color: var(--t3); }
+.fin-table thead th  { color: var(--t3); }
+.rev-stmt-hdr        { color: var(--t3); }
+.form-panel-title    { color: var(--t2); font-weight: 700; }
+.form-panel-meta     { color: var(--t3); }
+
+/* ─ 2. Navigation: resting state visible, not invisible ─────────── */
+/* t4 navigation items look disabled. t3 reads as available but idle. */
+.tab-btn             { color: var(--t3); }
+.model-chip          { color: var(--t3); }
+
+/* ─ 3. Sidebar financial summary: labels legible ─────────────────── */
+.sqs-label           { color: var(--t3); letter-spacing: .04em; }
+
+/* ─ 4. Form field labels: functional, not decorative ─────────────── */
+.field label {
+  color: var(--t3);
+  font-size: var(--f10);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  margin-bottom: 5px;
+}
+
+/* ─ 5. Card section labels: identity ─────────────────────────────── */
+.card-title { color: var(--t1); }
+
+/* ─ 6. Section meta text: one step above invisible ───────────────── */
+.section-meta { color: var(--t3); font-size: var(--f11); }
+
+/* ─ 7. Section header actions: scale up for clickability ─────────── */
+/* Inline font-size:var(--f11) on ghost buttons in section headers
+   makes them unclickably small. Override to btn-ghost default.       */
+.section-actions .btn-ghost {
+  font-size: var(--f12);
+  color: var(--t2);
+  padding: 5px 10px;
+}
+.section-actions .btn-ghost:hover { color: var(--t1); }
+
+/* ─ 8. Revenue statement rows: body labels one level up ──────────── */
+.rev-stmt-label      { color: var(--t2); }
+.rev-stmt-label.dim  { color: var(--t3); }
+.rev-stmt-label.bold { color: var(--t2); }
+
+/* ─ 9. Empty state action: inviting, not forgotten ───────────────── */
+.empty-state-action {
+  color: var(--t2);
+  border-color: var(--line-3);
+}
+.empty-state-action:hover { color: var(--t1); }
+
+/* ─ 10. Withdrawal FX secondary line: legible detail ─────────────── */
+.wd-fx-line { color: var(--t3); }
+
+/* ─ 11. Split pill partner name: slightly elevated ───────────────── */
+.wd-split-name { color: var(--t2); }
+
+/* ─ 12. Transaction source badge: consistent style ───────────────── */
+.tx-source { color: var(--t3); }
+
+/* ─ 13. Expense category badge: readable ─────────────────────────── */
+.exp-cat-badge { color: var(--t3); }
+
+/* ─ 14. Summary rail: slightly wider label–value gap ─────────────── */
+.srl-item { gap: 12px; }
+
+/* ─ 15. Partner payout footer label: t4 → t3 ─────────────────────── */
+.dpt-footer-label { color: var(--t3); }
+
+/* ══ end 50 ════════════════════════════════════════════════════════ */
+
+/* ══ 51. TYPOGRAPHY HIERARCHY ══════════════════════════════════════
+   Goal: make the full hierarchy readable without changing surfaces,
+   borders, or the cinematic dark atmosphere. Typography-only pass.
+
+   Strategy:
+   A. Token lift — t2 and t3 slightly up; still dark, now readable
+   B. Timestamp + metadata rescue — t4 elements that carry real info
+   C. Section chrome clarity — headers, labels, rails at t3 minimum
+   D. Financial figure polish — weight, letter-spacing, line-height
+   ══════════════════════════════════════════════════════════════════ */
+
+/* ─ A. Token refinements ────────────────────────────────────────── */
+/* t2: #9898A2 → #A2A2AE  (~5.85:1 → ~8.1:1 on --bg)              */
+/* t3: #56565E → #68687A  (~2.56:1 → ~3.9:1 on --bg — now legible) */
+:root {
+  --t2: #A2A2AE;
+  --t3: #68687A;
+}
+
+/* ─ B. Timestamp + metadata rescue (all were at t4 = invisible) ── */
+/* Dashboard: recent transaction metadata and dates */
+.rtx-meta  { color: var(--t3); }
+.rtx-date  { color: var(--t3); }
+
+/* Transaction ledger: dates and source badge text */
+.tx-date   { color: var(--t3); }
+.tx-source { color: var(--t3); }
+
+/* Expense rows: dates and category badge text */
+.exp-date     { color: var(--t3); }
+.exp-cat-badge { color: var(--t3); }
+
+/* Withdrawal rows: detail line (FX / notes), badge labels */
+.wd-detail        { color: var(--t3); }
+.wd-badge.platform { color: var(--t3); }
+.wd-badge.model-b  { color: var(--t3); }
+
+/* fin-table: cell-level metadata sub-lines */
+.fin-table .meta { color: var(--t3); }
+
+/* Card-level meta (partner cards, dashboard cards) */
+.card-meta { color: var(--t3); }
+
+/* ─ C. Section chrome clarity ───────────────────────────────────── */
+/* Section meta (subtitle beneath section header) */
+.section-meta { color: var(--t3); }
+
+/* Partner payout table: column headers, split %, YOU badge */
+.dpt-col          { color: var(--t3); }
+.dpt-cell.split-col { color: var(--t3); }
+.dpt-you-badge    { color: var(--t3); }
+
+/* Revenue statement: section strip headers, dim labels/amounts, % */
+.rev-stmt-hdr    { color: var(--t3); }
+.rev-stmt-label.dim { color: var(--t3); }
+.rev-stmt-amt.dim   { color: var(--t3); }
+.rev-stmt-pct       { color: var(--t3); }
+
+/* Partner share block: label and meta beneath value */
+.my-share-label { color: var(--t3); }
+.my-share-meta  { color: var(--t3); }
+
+/* Sidebar: agency/account sub-label */
+.sidebar-agency-meta { color: var(--t3); }
+
+/* Stat bar labels (withdrawal history strip) */
+.stat-lbl { color: var(--t3); }
+
+/* Summary rail labels */
+.srl-label { color: var(--t3); }
+
+/* Table headers */
+.fin-table thead th { color: var(--t3); }
+
+/* ─ D. Financial figure polish ──────────────────────────────────── */
+/* Summary rail values: bump f13 → f14 for KPI prominence */
+.srl-value { font-size: var(--f14); letter-spacing: -.03em; }
+
+/* Recent transaction amounts on dashboard: slight weight bump */
+.rtx-amount { font-weight: 700; }
+
+/* fin-table numeric column: tighter tracking for figures */
+.fin-table .num { letter-spacing: -.03em; }
+
+/* Section titles: f10 → f11 for better uppercase scanability */
+.section-title      { font-size: var(--f11); }
+.nav-section-label  { font-size: var(--f10); color: var(--t3); }
+
+/* ══ end 51 ════════════════════════════════════════════════════════ */
+
+/* ══ 52. COMPOSITION & SPATIAL RHYTHM ══════════════════════════════
+   Goal: calm, intentional, premium — Apple/Mercury composition.
+
+   Principles:
+   · Align all horizontal edges to a 24px grid baseline
+   · Give financial data more vertical breathing room
+   · Constrain horizontal stretch on wide screens
+   · Normalize asymmetric padding to symmetric where there's no reason
+   · CTAs need enough padding to feel considered, not afterthought
+
+   Note: desktop-only changes are scoped to (min-width: 961px) so
+   the mobile breakpoints earlier in the file are not overridden.
+   ══════════════════════════════════════════════════════════════════ */
+
+/* ─ A. Topbar + tab padding: desktop only (mobile handled above) ─── */
+@media (min-width: 961px) {
+  /* Topbar: align horizontal padding with section header grid.       */
+  /* Section headers use 24px. Topbar was 32px. Now the page title    */
+  /* optically aligns with the section titles and DPT column below it.*/
+  .topbar { padding: 0 var(--s6); }
+
+  /* Tab content: increase top padding from 20px to 24px to match the */
+  /* 24px horizontal grid. Creates consistent inset rhythm.           */
+  #tab-revenue,
+  #tab-expenses,
+  #tab-withdrawals {
+    padding: var(--s6) var(--s6) var(--s10);
+  }
+
+  /* Revenue + Expenses: more generous card padding on desktop.       */
+  /* Cards on these tabs hold large content and benefit from room.    */
+  #tab-revenue .card,
+  #tab-expenses .card {
+    padding: var(--s5) var(--s6);   /* 16px 20px → 20px 24px */
+  }
+
+  /* The .card .sec-row uses negative margins to flush to card edges. */
+  /* Match to updated card padding above.                             */
+  #tab-revenue .card .sec-row,
+  #tab-expenses .card .sec-row {
+    margin: calc(-1 * var(--s5)) calc(-1 * var(--s6)) var(--s5);
+    padding: 0 var(--s6);
+  }
+
+  /* Revenue statement: update edge-pull margins to match card padding */
+  #tab-revenue .card .rev-stmt {
+    margin: var(--s3) calc(-1 * var(--s6)) calc(-1 * var(--s5));
+  }
+}
+
+/* ─ B. KPI strip: symmetric internal padding + more label–value gap ─ */
+/* Asymmetric 14px/13px had no compositional reason. 16px symmetric   */
+/* reads more deliberately. Gap 4px → 6px gives the label–value pair  */
+/* room to breathe and read as separate levels of hierarchy.           */
+.fin-kpi { padding: 16px 22px; gap: 6px; }
+
+/* ─ C. KPI strip: more ground clearance before partner table ──────── */
+/* The KPI strip is the primary element. After it, content needs to   */
+/* feel like it begins a new chapter — not immediately cramped.        */
+.fin-summary { margin-bottom: var(--s7); }   /* 24px → 32px */
+
+/* ─ D. Partner balance table: wider horizontal breathing ──────────── */
+/* Columns are grid-defined — padding doesn't break alignment.        */
+/* 16px → 20px brings the table into the 24px composition system.     */
+.pbt-header { padding: 9px 20px; }
+.pbt-row    { padding: 14px 20px; }
+
+/* ─ E. Dashboard right rail: CTA and section breathing ─────────────── */
+/* The CTA at bottom of right rail was 12px/16px — too compressed     */
+/* for a primary action. Give it intentional vertical weight.          */
+.dash-rail-cta { padding: 16px 20px; }
+
+/* Rail sections: slightly more vertical breathing between elements.   */
+.dash-rail-section { padding: 18px var(--s6); }
+
+/* ─ F. Empty states: reduce vertical void, add horizontal breathing ─ */
+/* 52px top creates an overly blank ceiling. 44px is still generous   */
+/* but doesn't read as a dead visual zone.                             */
+.empty-state { padding: 44px 32px 40px; }
+
+/* ─ G. Form panel body: slightly more generous ──────────────────────  */
+/* 20px is functional. 22px gives form fields more compositional        */
+/* weight and prevents the form from looking cramped inside its panel.  */
+.form-panel-body { padding: 22px; }
+
+/* ─ H. Sidebar quick stats: symmetric vertical padding ─────────────   */
+/* 10px top / 8px bottom was asymmetric for no reason.                  */
+.sidebar-quick-stats { padding: 10px 18px; }
+
+/* ─ I. Wide-screen horizontal constraint ────────────────────────────
+   On screens ≥ 1380px, data-entry tabs can stretch uncomfortably —
+   transaction rows fill 1100px+ and feel horizontally bloated.
+   Cap content at a comfortable reading width and center the column.
+   Dashboard stays edge-to-edge — its sections own their own width.    */
+@media (min-width: 1380px) {
+  #tab-revenue,
+  #tab-expenses,
+  #tab-withdrawals {
+    max-width: 1020px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .settings-body {
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+/* ══ end 52 ════════════════════════════════════════════════════════ */
+
+/* ══ 53. OVERVIEW PAGE REFINEMENT ══════════════════════════════════
+   Goal: calm executive financial workspace. Balanced two-column
+   layout. No dead voids. Insights rail given room to breathe.
+   ══════════════════════════════════════════════════════════════════ */
+
+/* ─ A. Column proportions: ledger narrower, insights wider ─────────
+   65/35 → 57/43. The insights rail now has meaningful room for the
+   split visualization and monthly chart.                            */
+.dash-activity {
+  grid-template-columns: 57fr 43fr;
+  min-height: 0;          /* let content set the height naturally   */
+  align-items: start;     /* columns size to their own content      */
+}
+
+/* ─ B. Transaction Ledger: size to content, no empty void ──────────
+   flex:1 caused the table-wrap to stretch to parent height, creating
+   a large empty black void below a handful of tx rows.             */
+.dash-activity-main .fin-table-wrap {
+  flex: 0 0 auto;         /* shrink-wrap to content rows            */
+}
+
+/* ─ C. Right rail: Revenue by Month section fills available height ─
+   With align-items:start, the rail sizes to content. Flex:1 on the
+   chart section ensures it expands to fill remaining rail height.   */
+.dash-activity-rail {
+  min-height: 0;
+}
+.dash-rail-section:has(#chartContainer) {
+  flex: 1;
+  min-height: 220px;      /* chart always has meaningful height     */
+  display: flex;
+  flex-direction: column;
+}
+.dash-rail-section:has(#chartContainer) .chart-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 0;       /* remove bottom margin in flex context   */
+}
+.dash-rail-section:has(#chartContainer) .chart-wrap > div {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.dash-rail-section:has(#chartContainer) .chart-wrap svg {
+  flex: 1;
+  width: 100%;
+  height: 100%;           /* SVG fills the flex container           */
+}
+
+/* ─ D. Split bar: more visible — 4px was barely perceptible ───────  */
+.split-bar {
+  height: 6px;
+  border-radius: var(--r3);
+}
+
+/* ─ E. Split section: more vertical breathing around the bar ───────  */
+.dash-rail-section:has(#splitBar) {
+  padding: 20px var(--s6) 18px;
+}
+
+/* ─ F. Split labels: wider gap between label and percentage ─────────  */
+.split-labels {
+  gap: 12px;
+  margin-bottom: 10px !important;
+}
+
+/* ─ G. Split hint: quieter but present ─────────────────────────────  */
+.split-hint { font-size: var(--f11); color: var(--t4); min-height: 14px; }
+
+/* ─ H. Chart legend: tighter, more refined ─────────────────────────  */
+.chart-legend { gap: var(--s3); margin-bottom: 10px; }
+.legend-item { font-size: var(--f11); gap: 6px; }
+.legend-dot { width: 6px; height: 6px; border-radius: 2px; }
+
+/* ─ I. Revenue by Month section header: mirror left section header ──  */
+.dash-activity-rail .section-header:nth-child(3) {
+  background: var(--surface-2);
+  border-top: 1px solid var(--line-1);
+}
+
+/* ─ J. Right rail border: full-height divider on start-aligned grid ─
+   align-items:start removes the stretch that made the border span
+   the full section height. Restore with a pseudo-element.          */
+.dash-activity-main {
+  border-right: none;     /* remove old border approach             */
+  position: relative;
+}
+.dash-activity-main::after {
+  content: '';
+  position: absolute;
+  top: 0; right: 0; bottom: 0;
+  width: 1px;
+  background: var(--line-1);
+  pointer-events: none;
+}
+
+/* ─ K. CTA: only show when rail has real content ───────────────────  */
+.dash-rail-cta {
+  border-top: 1px solid var(--line-1);
+  margin-top: 0;          /* already pushed down by flex structure  */
+}
+
+/* ─ L. Section border: dash-activity should have a bottom border ───  */
+.dash-activity.page-section {
+  border-bottom: 1px solid var(--line-2);
+}
+
+/* ─ M. Model Performance section: when visible, needs border above ─  */
+#modelProfitSection {
+  border-top: none;       /* already a page-section sibling         */
+}
+
+/* ─ N. Mobile: disable desktop-only pseudo border, reset column ────  */
+@media (max-width: 860px) {
+  .dash-activity {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+    min-height: 0;
+  }
+  .dash-activity-main::after {
+    display: none;        /* no pseudo-border in stacked layout     */
+  }
+  .dash-activity-main .fin-table-wrap {
+    flex: 1;              /* restore stretch on mobile              */
+  }
+  .dash-rail-section:has(#chartContainer) {
+    min-height: 180px;
+  }
+}
+
+/* ══ end 53 ════════════════════════════════════════════════════════ */
+
+/* ══ 54. SETTINGS PAGE REFINEMENT ══════════════════════════════════
+   Transform Settings from generic admin panel into premium modern
+   configuration workspace. Improve: visual organization, spacing
+   rhythm, hierarchy, clarity. Preserve: all functionality.
+   ════════════════════════════════════════════════════════════════ */
+
+/* ─ A. Section rhythm: tighter, premium flow */
+.settings-section { margin-bottom: 36px; }
+
+/* ─ B. Section header: remove admin border, lift subtitle */
+.settings-section-header {
+  border-bottom: none;
+  padding-bottom: 0;
+  margin-bottom: var(--s4);   /* 16px — tighter anchor before first card */
+}
+.settings-section-title {
+  font-size: var(--f14);
+  letter-spacing: -.02em;
+}
+.settings-section-subtitle {
+  color: var(--t3);            /* was --t4: barely visible */
+  font-size: var(--f12);
+}
+
+/* ─ C. Card padding within settings — consistent 20px */
+#tab-settings .settings-section > .card { padding: var(--s5); }
+
+/* ─ D. Setting-row description — lift from near-invisible --t4 */
+#tab-settings .setting-desc { color: var(--t3); }
+
+/* ─ E. Inline divider → class */
+.settings-divider {
+  height: 1px;
+  background: var(--line-1);
+  margin: 18px 0;
+}
+
+/* ─ F. Settings hint (replaces inline paragraph styles) */
+.settings-hint {
+  font-size: var(--f12);
+  color: var(--t3);
+  line-height: 1.65;
+  margin: 0 0 14px;
+}
+
+/* ─ G. Settings action buttons row */
+.settings-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* ─ H. Settings status line spacing */
+.settings-status { margin-top: 10px; min-height: 16px; }
+
+/* ─ I. Currency pills — composed button group */
+.currency-pills {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+/* Size all buttons uniformly regardless of active class (JS swaps btn/btn-primary) */
+.currency-pills button {
+  font-size: var(--f12);
+  padding: 6px 16px;
+  min-width: 74px;
+}
+/* Display currency: JS toggles .act class */
+.currency-pills .btn.act {
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.currency-pills + .settings-hint { margin-bottom: 0; }
+
+/* ─ J. Setting meta (right-side small descriptor text) */
+.setting-meta { font-size: var(--f12); color: var(--t3); }
+
+/* ─ K. Setting value (right-side financial display) */
+.setting-value {
+  font-size: var(--f14);
+  font-weight: 700;
+  letter-spacing: -.025em;
+  font-family: 'Outfit', sans-serif;
+  color: var(--t1);
+}
+
+/* ─ L. Toggle row layout */
+.toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0;
+}
+.toggle-label {
+  font-size: var(--f13);
+  font-weight: 500;
+  color: var(--t1);
+}
+.toggle-desc {
+  font-size: var(--f12);
+  color: var(--t3);
+  margin-top: 2px;
+  line-height: 1.5;
+}
+
+/* ─ M. Toggle switch base structure */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 44px; height: 24px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.toggle-switch input {
+  opacity: 0; width: 0; height: 0; position: absolute;
+}
+.toggle-track {
+  position: absolute; inset: 0;
+  border-radius: 12px;
+  transition: background .2s;
+}
+.toggle-thumb {
+  position: absolute;
+  left: 3px; top: 3px;
+  width: 18px; height: 18px;
+  background: #fff;
+  border-radius: 50%;
+  transition: left .2s;
+}
+
+/* ─ N. Link buttons (no text-decoration) */
+.s-link-btn { text-decoration: none !important; }
+
+/* ─ O. Split edit actions row */
+.split-edit-actions { margin-top: 14px; display: flex; gap: 8px; }
+
+/* ─ P. Legal separator row (replaces inline border-top) */
+.setting-row.sep {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line-1);
+}
+
+/* ─ Q. Settings body top padding */
+.settings-body { padding-top: var(--s6); }  /* 24px */
+
+/* ─ R. Agency status line */
+.agency-status { margin-top: 8px; min-height: 16px; }
+
+/* ─ S. Platform add row: align Add button to input */
+.pl-add-row .field { margin-bottom: 0; }
+.pl-add-row .btn { align-self: flex-end; }
+
+/* ─ Mobile adjustments */
+@media (max-width: 600px) {
+  .settings-section { margin-bottom: 28px; }
+  .currency-pills .btn { min-width: 64px; }
+}
+
+/* ══ end 54 ════════════════════════════════════════════════════════ */
+
+/* ══ 55. EMPTY & INACTIVE STATE REFINEMENT ═════════════════════════
+   Make empty states feel intentional and production-grade.
+   Restraint over explanation. Operational over onboarding.
+   ════════════════════════════════════════════════════════════════ */
+
+/* ─ A. Full empty state: remove icon, reduce visual weight */
+.empty-state-icon { display: none; }   /* icons read as onboarding; type is enough */
+.empty-state { padding: 36px 24px 30px; }
+.empty-state-title {
+  font-size: var(--f13);
+  font-weight: 500;          /* was 600 — reduce urgency */
+  color: var(--t3);          /* was t2 — quieter, more operational */
+  margin-bottom: 4px;
+}
+.empty-state-sub {
+  font-size: var(--f12);
+  color: var(--t3);          /* was t4: lifted for legibility */
+  max-width: 260px;
+  margin-bottom: 16px;
+  line-height: 1.6;
+}
+.empty-state-action {
+  font-size: var(--f11);
+  font-weight: 500;
+  color: var(--t3);
+  border-color: var(--line-1);
+  padding: 5px 12px;
+}
+.empty-state-action:hover {
+  color: var(--t2);
+  border-color: var(--line-2);
+  background: transparent;
+}
+
+/* ─ B. Inline row empty state */
+.empty-state-row {
+  color: var(--t3);          /* was t4 */
+  font-size: var(--f12);
+  padding: 14px 0 10px;
+  letter-spacing: -.005em;
+}
+.empty-state-row::before { opacity: .3; }
+
+/* ─ C. Small inline empty state (cards, settings) */
+.empty-state-sm {
+  color: var(--t3);          /* was t4 */
+  font-size: var(--f12);
+  padding: 14px 0;
+}
+
+/* ─ D. Loading indicator: calm, less prominent */
+.loading-indicator {
+  color: var(--t3);          /* was t4 */
+  font-size: var(--f12);
+  padding: 14px 0;
+}
+
+/* ─ E. Split bar no-data / hint labels */
+.split-no-data {
+  font-size: var(--f11);
+  color: var(--t4);
+  letter-spacing: -.01em;
+}
+
+/* ══ end 55 ════════════════════════════════════════════════════════ */
+
 </style>
 </head>
 <body>
@@ -4171,11 +4830,11 @@ button { font-family: var(--sans); }
     <!-- Financial summary -->
     <div class="sidebar-quick-stats" id="sidebarQuickStats">
       <div class="sqs-item">
-        <span class="sqs-label">MTD Revenue</span>
+        <span class="sqs-label">This month</span>
         <span class="sqs-val" id="sidebarThisMonth">—</span>
       </div>
       <div class="sqs-item">
-        <span class="sqs-label">Paid out</span>
+        <span class="sqs-label">Withdrawn</span>
         <span class="sqs-val" id="sidebarTotalWithdrawn">—</span>
       </div>
     </div>
@@ -4302,7 +4961,7 @@ button { font-family: var(--sans); }
             </div>
             <div class="section-actions">
               <div id="subBannerDash"></div>
-              <button class="btn btn-ghost" style="font-size:var(--f11)" onclick="showTab('withdrawals',document.querySelector('[data-tab=withdrawals]'))">Record withdrawal →</button>
+              <button class="btn btn-ghost" onclick="showTab('withdrawals',document.querySelector('[data-tab=withdrawals]'))">Record withdrawal →</button>
             </div>
           </div>
           <div class="dash-payout-table" id="partnerBalanceWrap">
@@ -4343,7 +5002,7 @@ button { font-family: var(--sans); }
           <div class="dash-activity-main">
             <div class="section-header">
               <span class="section-title">Transaction Ledger</span>
-              <button class="btn btn-ghost" style="font-size:var(--f11)" onclick="showTab('revenue',document.querySelector('[data-tab=revenue]'))">All transactions →</button>
+              <button class="btn btn-ghost" onclick="showTab('revenue',document.querySelector('[data-tab=revenue]'))">All transactions →</button>
             </div>
             <div class="fin-table-wrap" id="recentTxList">
               <div id="recentTxSkeleton">
@@ -4363,17 +5022,16 @@ button { font-family: var(--sans); }
               <span class="section-title">Revenue Split</span>
             </div>
             <div class="dash-rail-section">
-              <div id="rebalanceHint" style="display:none;font-size:var(--f12);color:var(--t2);margin-bottom:10px;line-height:1.5"></div>
-              <div class="split-labels" id="splitLabels" style="margin-bottom:8px;display:flex;flex-wrap:wrap;gap:4px"></div>
-              <div class="split-bar" id="splitBar" style="margin:0 0 6px"></div>
+              <div class="split-labels" id="splitLabels"></div>
+              <div class="split-bar" id="splitBar"></div>
               <div class="split-hint" id="splitHint"></div>
             </div>
             <div class="section-header">
               <span class="section-title">Revenue by Month</span>
-              <span id="revLoadStatus" style="font-size:var(--f10);color:var(--t4)"></span>
+              <span id="revLoadStatus" class="section-meta"></span>
             </div>
             <div class="dash-rail-section">
-              <div class="chart-legend" id="chartLegend" style="margin-bottom:8px"></div>
+              <div class="chart-legend" id="chartLegend"></div>
               <div class="chart-wrap"><div id="chartContainer"></div></div>
             </div>
             <div class="dash-rail-cta">
@@ -4433,10 +5091,10 @@ button { font-family: var(--sans); }
           <div class="sec-row">
             <div class="sec-label">Monthly Revenue</div>
             <div style="display:flex;gap:8px;align-items:center">
-              <button class="btn" style="font-size:12px;padding:6px 14px" onclick="refreshRevenue()">↻ Refresh</button>
-              <button class="btn" id="selectModeBtn" style="font-size:12px;padding:6px 14px;display:none" onclick="toggleSelectMode()">Select</button>
-              <button class="btn" style="font-size:12px;padding:6px 14px" onclick="toggleAddTxForm()">+ Add manually</button>
-              <button class="btn" onclick="exportTransactionsCSV()" style="font-size:12px;padding:6px 12px">↓ Export CSV</button>
+              <button class="btn" onclick="refreshRevenue()">Refresh</button>
+              <button class="btn" id="selectModeBtn" style="display:none" onclick="toggleSelectMode()">Select</button>
+              <button class="btn" onclick="exportTransactionsCSV()">Export CSV</button>
+              <button class="btn-primary" onclick="toggleAddTxForm()">Add manually</button>
             </div>
           </div>
           <div class="mtab-row" id="mTabs"></div>
@@ -4503,8 +5161,8 @@ button { font-family: var(--sans); }
           <div class="sec-row" style="margin-bottom:14px">
             <div class="sec-label" style="margin:0">Expense History</div>
             <div style="display:flex;gap:8px;align-items:center">
-              <span id="expTotalLabel" style="font-size:13px;font-weight:600;color:var(--red-text)"></span>
-              <button class="btn" style="font-size:12px;padding:6px 14px" onclick="toggleAddExpenseForm()">+ Add expense</button>
+              <span id="expTotalLabel" style="font-size:13px;font-weight:600;color:var(--neg-txt)"></span>
+              <button class="btn-primary" onclick="toggleAddExpenseForm()">Add expense</button>
             </div>
           </div>
           <div class="mtab-row" id="expMTabs"></div>
@@ -4519,8 +5177,8 @@ button { font-family: var(--sans); }
           <div class="sec-row" style="margin-bottom:0">
             <div class="sec-label" style="margin:0">Withdrawals</div>
             <div style="display:flex;gap:8px;align-items:center">
-              <button class="btn" onclick="exportWithdrawalsCSV()" style="font-size:12px;padding:6px 12px">↓ Export CSV</button>
-              <button class="btn" style="font-size:12px;padding:6px 14px" onclick="toggleAddWithdrawalForm()">+ Record withdrawal</button>
+              <button class="btn" onclick="exportWithdrawalsCSV()">Export CSV</button>
+              <button class="btn-primary" onclick="toggleAddWithdrawalForm()">Record withdrawal</button>
             </div>
           </div>
         </div>
@@ -4548,16 +5206,6 @@ button { font-family: var(--sans); }
               <div class="field">
                 <label>Date</label>
                 <input type="date" id="nDate">
-              </div>
-            </div>
-            <!-- Smart suggestion -->
-            <div id="smartSuggestRow" style="display:none">
-              <div class="suggest-banner">
-                <div class="suggest-banner-copy">
-                  <div class="suggest-banner-label">Suggested withdrawal</div>
-                  <div class="suggest-banner-text" id="smartSuggestText">—</div>
-                </div>
-                <button class="btn" onclick="applySmartSuggestion()" style="flex-shrink:0;white-space:nowrap">Use suggestion</button>
               </div>
             </div>
             <!-- Zone 2: FX rate -->
@@ -4644,10 +5292,10 @@ button { font-family: var(--sans); }
             <div class="sec-label">Revenue splits per model</div>
             <div id="modelSplitList"></div>
             <div class="split-total-row">
-              <span style="color:var(--text3)">Total</span>
+              <span class="setting-meta">Total</span>
               <span id="splitTotalLabel" class="split-total-ok">100%</span>
             </div>
-            <div style="margin-top:14px;display:flex;gap:8px" id="splitEditActions" style="display:none">
+            <div class="split-edit-actions" id="splitEditActions" style="display:none">
               <button class="btn" style="flex:1" onclick="cancelEditSplits()">Cancel</button>
               <button class="btn btn-primary" style="flex:1" id="saveSplitsBtn" onclick="saveModelSplits()">Save splits</button>
             </div>
@@ -4670,7 +5318,7 @@ button { font-family: var(--sans); }
               <input id="agencyNameInput" placeholder="My Agency" maxlength="60">
             </div>
             <button class="btn btn-primary" onclick="saveAgencyName()" id="saveAgencyBtn">Save changes</button>
-            <div id="agencyNameStatus" class="status-line" style="margin-top:8px;min-height:16px"></div>
+            <div id="agencyNameStatus" class="status-line agency-status"></div>
           </div>
         </div>
 
@@ -4686,13 +5334,13 @@ button { font-family: var(--sans); }
           <div class="card">
             <div class="sec-label">Fanvue Account</div>
             <div id="fanvueStatusBlock"></div>
-            <div style="height:1px;background:var(--border);margin:16px 0"></div>
-            <p style="font-size:13px;color:var(--text2);margin-bottom:12px">Pull full transaction history from Fanvue.</p>
-            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-              <button class="btn" onclick="refreshRevenue()">↻ Refresh data</button>
+            <div class="settings-divider"></div>
+            <p class="settings-hint">Pull full transaction history from Fanvue.</p>
+            <div class="settings-actions">
+              <button class="btn" onclick="refreshRevenue()">Refresh data</button>
               <button class="btn" id="syncBtn" onclick="syncFullHistory()">Sync full history</button>
             </div>
-            <div id="syncStatus" class="status-line" style="margin-top:10px;min-height:16px"></div>
+            <div id="syncStatus" class="status-line settings-status"></div>
           </div>
         </div>
 
@@ -4705,23 +5353,23 @@ button { font-family: var(--sans); }
               <div class="settings-section-subtitle">Display currency and platform customization</div>
             </div>
           </div>
-          <div class="card" style="margin-bottom:2px">
+          <div class="card">
             <div class="sec-label">Withdrawal currency</div>
-            <p style="font-size:12px;color:var(--text3);margin-bottom:14px;line-height:1.6">Currency your withdrawals are received in. Used for approximate calculations.</p>
-            <div style="display:flex;gap:8px" id="wdCurrencyBtns">
+            <p class="settings-hint">Currency your withdrawals are received in. Used for approximate calculations.</p>
+            <div class="currency-pills" id="wdCurrencyBtns">
               <button class="btn" onclick="setWdCurrency('EUR')">EUR €</button>
               <button class="btn" onclick="setWdCurrency('GBP')">GBP £</button>
               <button class="btn" onclick="setWdCurrency('USD')">USD $</button>
             </div>
           </div>
-          <div class="card" style="margin-bottom:2px">
+          <div class="card">
             <div class="sec-label">Display currency</div>
-            <div style="display:flex;gap:8px;margin-bottom:10px">
+            <div class="currency-pills">
               <button id="curBtnUSD" class="btn" onclick="setDisplayCurrency('USD')">USD $</button>
               <button id="curBtnEUR" class="btn" onclick="setDisplayCurrency('EUR')">EUR €</button>
               <button id="curBtnGBP" class="btn" onclick="setDisplayCurrency('GBP')">GBP £</button>
             </div>
-            <p style="font-size:12px;color:var(--text3)">Exchange rates update automatically via Wise API.</p>
+            <p class="settings-hint" style="margin-bottom:0">Exchange rates update automatically via Wise API.</p>
           </div>
           <div class="card">
             <div class="sec-row">
@@ -4736,17 +5384,16 @@ button { font-family: var(--sans); }
             </div>
           </div>
           <div class="card" id="digestCard" style="display:none">
-            <div class="sec-label">EMAIL NOTIFICATIONS</div>
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 0">
+            <div class="sec-label">Email Notifications</div>
+            <div class="toggle-row">
               <div>
-                <div style="font-size:14px;color:var(--text);font-weight:500">Daily digest</div>
-                <div style="font-size:12px;color:var(--text3);margin-top:2px">Morning summary of yesterday's earnings</div>
+                <div class="toggle-label">Daily digest</div>
+                <div class="toggle-desc">Morning summary of yesterday's earnings</div>
               </div>
-              <label style="position:relative;display:inline-block;width:44px;height:24px;cursor:pointer">
-                <input type="checkbox" id="digestToggle" onchange="saveDigestPreference(this.checked)"
-                  style="opacity:0;width:0;height:0;position:absolute">
-                <span id="digestToggleTrack" style="position:absolute;inset:0;background:var(--border2);border-radius:12px;transition:.2s"></span>
-                <span id="digestToggleThumb" style="position:absolute;left:3px;top:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:.2s"></span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="digestToggle" onchange="saveDigestPreference(this.checked)">
+                <span id="digestToggleTrack" class="toggle-track" style="background:var(--border2)"></span>
+                <span id="digestToggleThumb" class="toggle-thumb"></span>
               </label>
             </div>
           </div>
@@ -4768,28 +5415,28 @@ button { font-family: var(--sans); }
                 <div class="setting-label">Payout Manager</div>
                 <div class="setting-desc">Financial OS for Fanvue agencies</div>
               </div>
-              <div style="font-size:12px;color:var(--text3)">v1.0</div>
+              <div class="setting-meta">v1.0</div>
             </div>
             <div class="setting-row">
               <div class="setting-info">
                 <div class="setting-label">Real-time sync</div>
                 <div class="setting-desc">Earnings sync via Fanvue webhooks + 15-min polling fallback</div>
               </div>
-              <div id="syncStatusText" style="font-size:12px;color:var(--text3)">—</div>
+              <div id="syncStatusText" class="setting-meta">—</div>
             </div>
             <div class="setting-row">
               <div class="setting-info">
                 <div class="setting-label">Exchange rate (USD → EUR)</div>
                 <div class="setting-desc">Wise mid-market rate, updated at app load</div>
               </div>
-              <div style="font-size:14px;font-weight:700;font-family:'Outfit',sans-serif" id="wiseRateAbout">—</div>
+              <div class="setting-value" id="wiseRateAbout">—</div>
             </div>
             <div class="setting-row" id="wiseGbpRow" style="display:none">
               <div class="setting-info">
                 <div class="setting-label">Exchange rate (USD → GBP)</div>
                 <div class="setting-desc">Wise mid-market rate</div>
               </div>
-              <div style="font-size:14px;font-weight:700;font-family:'Outfit',sans-serif" id="wiseGbpAbout">—</div>
+              <div class="setting-value" id="wiseGbpAbout">—</div>
             </div>
           </div>
           <div class="card">
@@ -4799,39 +5446,39 @@ button { font-family: var(--sans); }
                 <div class="setting-label">Report a bug or request a feature</div>
                 <div class="setting-desc">We respond within 24 hours</div>
               </div>
-              <a href="mailto:support@payoutmanager.app" class="btn-primary" style="text-decoration:none">Contact support →</a>
+              <a href="mailto:support@payoutmanager.app" class="btn btn-primary s-link-btn">Contact support →</a>
             </div>
             <div class="setting-row">
               <div class="setting-info">
                 <div class="setting-label">Documentation</div>
                 <div class="setting-desc">How to set up splits, connect models, and record withdrawals</div>
               </div>
-              <a href="mailto:support@payoutmanager.app" class="btn" style="text-decoration:none">Email us ↗</a>
+              <a href="mailto:support@payoutmanager.app" class="btn s-link-btn">Email us ↗</a>
             </div>
           </div>
           <div class="card">
             <div class="sec-label">Legal</div>
             <div class="setting-row">
               <div class="setting-info"><div class="setting-label">Privacy Policy</div></div>
-              <a href="/privacy" target="_blank" class="btn" style="text-decoration:none;font-size:12px">View ↗</a>
+              <a href="/privacy" target="_blank" class="btn s-link-btn">View ↗</a>
             </div>
             <div class="setting-row">
               <div class="setting-info"><div class="setting-label">Terms of Service</div></div>
-              <a href="/terms" target="_blank" class="btn" style="text-decoration:none;font-size:12px">View ↗</a>
+              <a href="/terms" target="_blank" class="btn s-link-btn">View ↗</a>
             </div>
             <div class="setting-row">
               <div class="setting-info">
                 <div class="setting-label">Delete my data</div>
                 <div class="setting-desc">Permanently delete your account and all associated data (GDPR)</div>
               </div>
-              <button class="btn btn-danger" onclick="requestDataDeletion()" style="font-size:12px">Delete account</button>
+              <button class="btn btn-danger" onclick="requestDataDeletion()">Delete account</button>
             </div>
-            <div class="setting-row" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+            <div class="setting-row sep">
               <div class="setting-info">
                 <div class="setting-label" style="color:var(--red-text)">Reset withdrawal history</div>
                 <div class="setting-desc">Permanently deletes all withdrawal records. Cannot be undone.</div>
               </div>
-              <button class="btn btn-danger" onclick="resetAll()" style="font-size:12px">Reset</button>
+              <button class="btn btn-danger" onclick="resetAll()">Reset</button>
             </div>
           </div>
         </div>
@@ -5332,9 +5979,9 @@ function renderModelSplitSection(){
   var pendingPartners=PARTNERS.filter(function(p){return p.status==='pending';});
   if(!activePartners.length){
     if(pendingPartners.length){
-      listEl.innerHTML='<div style="font-size:12px;color:var(--yellow);padding:8px 0">⏳ '+pendingPartners.length+' invite(s) pending. Splits will unlock after partners join.</div>';
+      listEl.innerHTML='<div class="empty-state-sm" style="text-align:left;padding:8px 0;color:var(--yellow)">'+pendingPartners.length+' invite(s) pending acceptance.</div>';
     } else {
-      listEl.innerHTML='<div style="font-size:12px;color:var(--text3);padding:8px 0">No partners yet. Invite partners in the Team section above.</div>';
+      listEl.innerHTML='<div class="empty-state-sm" style="text-align:left;padding:8px 0">No partners configured.</div>';
     }
     var actions=g('splitEditActions');if(actions)actions.style.display='none';
     sec.querySelectorAll('.split-edit-btn').forEach(function(b){b.remove();});
@@ -5513,14 +6160,14 @@ function renderPartnerCards(){
   if(!container)return;
   if(!PARTNERS||!PARTNERS.length){
     container.innerHTML='<div class="dpt-row" style="grid-template-columns:1fr;padding:16px 20px">'
-      +mkEmptyRow('No partners yet — invite your first partner in <a href="#" onclick="showTab(\'settings\',document.querySelector(\'[data-tab=settings]\'));scrollToSection(\'partnersCard\',null);return false" style="color:var(--t2)">Settings → Team</a>')
+      +mkEmptyRow('No partners — <a href="#" onclick="showTab(\'settings\',document.querySelector(\'[data-tab=settings]\'));scrollToSection(\'partnersCard\',null);return false" style="color:var(--t2)">configure in Settings</a>')
       +'</div>';
     return;
   }
   var activePartners=PARTNERS.filter(function(p){return p.status==='active';});
   if(!activePartners.length){
     container.innerHTML='<div class="dpt-row" style="grid-template-columns:1fr;padding:16px 20px">'
-      +mkEmptyRow('No active partners — <a href="#" onclick="showTab(\'settings\',document.querySelector(\'[data-tab=settings]\'));scrollToSection(\'partnersCard\',null);return false" style="color:var(--t2)">manage in Settings → Team</a>')
+      +mkEmptyRow('No active partners')
       +'</div>';
     return;
   }
@@ -5742,11 +6389,11 @@ var _splitEditing={};
 async function loadPartnersList(){
   var el=g('partnersList');if(!el)return;
   var res=await db.from('partners').select('id,name,split_pct,status,invited_email,user_id').in('status',['active','pending']).order('created_at',{ascending:true});
-  if(res.error||!res.data){el.innerHTML='<div class="empty-state-sm">No partners yet.</div>';return;}
+  if(res.error||!res.data){el.innerHTML='<div class="empty-state-sm">No partners.</div>';return;}
   var rows=res.data;
   _partnersSplitTotal=0;
   rows.forEach(function(p){if(p.status==='active')_partnersSplitTotal+=(p.split_pct||0);});
-  if(!rows.length){el.innerHTML='<div class="empty-state-sm">No partners yet — use the form below to send your first invite.</div>';updateSplitRemaining();return;}
+  if(!rows.length){el.innerHTML='<div class="empty-state-sm">No partners added yet.</div>';updateSplitRemaining();return;}
   var isAdmin=currentRole==='admin';
   var h=rows.map(function(p,i){
     var active=p.status==='active';
@@ -5851,7 +6498,7 @@ function renderInviteModelRows(){
   var el=g('inviteModelSplits');
   if(!el)return;
   if(!ALL_MODELS.length){
-    el.innerHTML='<div style="font-size:13px;color:var(--text3)">No models yet. Add a model first.</div>';
+    el.innerHTML='<div class="empty-state-sm" style="text-align:left;padding:8px 0">No models configured.</div>';
     return;
   }
   el.innerHTML=ALL_MODELS.map(function(m){
@@ -6720,7 +7367,7 @@ async function loadRevenueData(){
     if(statusEl)statusEl.textContent='';
     renderAll();return;
   }
-  if(statusEl)statusEl.innerHTML=mkLoadingIndicator('Fetching revenue data');
+  if(statusEl)statusEl.innerHTML=mkLoadingIndicator('Syncing');
 
   var txQuery=db.from('transactions')
     .select('id,amount_usd,platform,date,source,model_id,description')
@@ -7239,7 +7886,7 @@ function renderExpenses(){
 
   var totalLabel=g('expTotalLabel');
   if(!filtered.length){
-    el.innerHTML=mkEmptyRow('No expenses recorded in '+(m?m.name:'this period'));
+    el.innerHTML=mkEmptyRow('No expenses in '+(m?m.name:'this period'));
     if(totalLabel)totalLabel.textContent='';
     return;
   }
@@ -7393,7 +8040,6 @@ function toggleAddWithdrawalForm(){
   if(!visible){
     form.scrollIntoView({behavior:'smooth',block:'nearest'});
     setTimeout(function(){var f=g('wModel');if(f)f.focus();},200);
-    computeSmartSuggestion();
   }
 }
 function setMonth(i){
@@ -7404,60 +8050,6 @@ function setMonth(i){
 }
 
 /* ---- Render: Dashboard ---- */
-function renderRebalanceHint(){
-  var el=g('rebalanceHint');
-  if(!el||currentRole!=='admin')return;
-  var activePartners=PARTNERS.filter(function(p){return p.status==='active';});
-  if(activePartners.length<2){el.style.display='none';return;}
-  var remaining=activePartners.map(function(p){
-    return{name:p.name,rem:partnerRemaining(p.id)};
-  }).filter(function(r){return r.rem>0;});
-  if(!remaining.length){el.style.display='none';return;}
-  remaining.sort(function(a,b){return b.rem-a.rem;});
-  var top=remaining[0];
-  if(remaining.length>=2&&(top.rem-remaining[remaining.length-1].rem)>50){
-    el.style.display='block';
-    el.innerHTML='💡 <strong>'+escHtml(top.name)+'</strong> has the most uncollected: '
-      +fc(top.rem)+' — consider the next withdrawal in their favor.';
-  }else{
-    el.style.display='none';
-  }
-}
-
-function computeSmartSuggestion(){
-  var row=g('smartSuggestRow');
-  var txt=g('smartSuggestText');
-  if(!row||!txt)return;
-  var activePartners=PARTNERS.filter(function(p){return p.status==='active';});
-  if(activePartners.length<2){row.style.display='none';return;}
-  var remaining=activePartners.map(function(p){
-    return{id:p.id,name:p.name,rem:partnerRemaining(p.id)};
-  });
-  var maxRem=Math.max.apply(null,remaining.map(function(r){return r.rem;}));
-  var minRem=Math.min.apply(null,remaining.map(function(r){return r.rem;}));
-  if(maxRem<=0){row.style.display='none';return;}
-  var suggestedUSD=minRem>0?minRem:maxRem;
-  var suggestedEUR=r2(suggestedUSD*(FX_RATES.EUR||WISE_RATE||0.84));
-  var parts=remaining
-    .filter(function(r){return r.rem>0;})
-    .map(function(r){return escHtml(r.name)+': '+fc(r.rem)+' remaining';});
-  txt.innerHTML=parts.join(' &nbsp;·&nbsp; ')
-    +'<br><span style="color:var(--indigo-l);font-weight:600">Suggested: '+fc(suggestedUSD)+' ≈ '+fe(suggestedEUR)+'</span>';
-  row.style.display='block';
-  row._suggestedUSD=suggestedUSD;
-  row._suggestedEUR=suggestedEUR;
-}
-
-function applySmartSuggestion(){
-  var row=g('smartSuggestRow');
-  if(!row||!row._suggestedUSD)return;
-  var usdInput=g('nUSD');
-  if(usdInput){
-    usdInput.value=row._suggestedUSD.toFixed(2);
-    usdInput.dispatchEvent(new Event('input'));
-  }
-}
-
 function onWithdrawalUSDChange(usdVal){
   var usd=parseFloat(usdVal)||0;
   if(!usd)return;
@@ -7479,7 +8071,7 @@ function renderModelProfitSection(){
   if(currentRole!=='admin'||!ALL_MODELS.length){sec.style.display='none';return;}
   sec.style.display='block';
   if(!S.months.length){
-    tbl.innerHTML='<div style="padding:16px 22px;font-size:13px;color:var(--text3)">No revenue data yet.</div>';
+    tbl.innerHTML='<div class="empty-state-sm" style="padding:12px 0;text-align:left">No data for this period.</div>';
     return;
   }
   var modelStats={};
@@ -7617,21 +8209,17 @@ function renderBal(){
       splitBarEl.innerHTML=activePartners.map(function(p,i){
         return '<div class="split-bar-seg '+PARTNER_COLORS[i%PARTNER_COLORS.length]+'" style="flex:'+eqFrac+';min-width:4px"></div>';
       }).join('');
-      if(splitLabelsEl)splitLabelsEl.innerHTML='<span style="font-size:10px;color:var(--t4)">No withdrawals recorded yet</span>';
+      if(splitLabelsEl)splitLabelsEl.innerHTML='<span class="split-no-data">No withdrawals recorded</span>';
     }
   }
   var hint=g('splitHint');
-  if(hint)hint.innerHTML='<span style="color:var(--t4);font-size:10px">Based on recorded withdrawals</span>';
+  if(hint)hint.innerHTML='<span class="split-no-data">Based on recorded withdrawals</span>';
 
   /* Sidebar quick stats */
   var sb1=g('sidebarThisMonth'),sb2=g('sidebarTotalWithdrawn');
   if(sb1)sb1.textContent=fc(curRev);
   if(sb2)sb2.textContent=fc(totalW);
   renderModelProfitSection();
-  renderRebalanceHint();
-  if(g('addWithdrawalForm')&&g('addWithdrawalForm').style.display!=='none'){
-    computeSmartSuggestion();
-  }
 }
 
 /* ---- Render: Recent transactions (dashboard) ---- */
@@ -7643,7 +8231,7 @@ function renderRecentTx(){
     return b.date<a.date?-1:b.date>a.date?1:0;
   }).slice(0,10);
   if(!txs.length){
-    el.innerHTML=mkEmpty(ES_ICON.ledger,'No transactions recorded','Connect Fanvue to sync earnings automatically, or add entries manually on the Revenue tab.','Go to Revenue →',"showTab('revenue',document.querySelector('[data-tab=revenue]'))");
+    el.innerHTML=mkEmpty(null,'No transactions','Sync Fanvue or add entries manually via the Revenue tab.','Revenue →',"showTab('revenue',document.querySelector('[data-tab=revenue]'))");
     return;
   }
   var rows=txs.map(function(tx){
@@ -7694,22 +8282,24 @@ function renderChartLegend(){
 function renderChart(){
   var container=g('chartContainer');if(!container)return;
   var months=S.months;
-  if(!months.length){container.innerHTML=mkEmptyRow('No data recorded yet');return;}
+  if(!months.length){container.innerHTML=mkEmptyRow('No data');return;}
   var W=Math.max(300,container.clientWidth||600);
-  var H=160,PL=44,PR=8,PT=14,PB=28;
+  /* H: use container's rendered height when available, else 210px default */
+  var H=Math.max(200,container.clientHeight||210);
+  var PL=50,PR=10,PT=16,PB=30;
   var cW=W-PL-PR,cH=H-PT-PB,n=months.length;
-  var barW=Math.max(12,Math.min(44,Math.floor(cW/n*0.55)));
+  var barW=Math.max(12,Math.min(36,Math.floor(cW/n*0.52)));
   var gap=(cW-barW*n)/(n+1);
   var maxVal=Math.max.apply(null,months.map(function(m){return mTot(m);}));
   if(maxVal<=0)maxVal=1;
-  var isDark=document.documentElement.getAttribute('data-theme')==='dark';
-  var gridColor=isDark?'rgba(255,255,255,0.04)':'rgba(0,0,0,0.06)';
-  var textColor=isDark?'#4B5470':'#a0a0ae';
+  var isDark=true; /* always dark — design system is dark-only */
+  var gridColor='rgba(255,255,255,0.05)';
+  var textColor='#68687A'; /* matches --t3 token */
   var sv=['<svg width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg">'];
   for(var gi=0;gi<=4;gi++){
     var gy=PT+cH-(gi/4)*cH;
     sv.push('<line x1="'+PL+'" y1="'+gy.toFixed(1)+'" x2="'+(W-PR)+'" y2="'+gy.toFixed(1)+'" stroke="'+gridColor+'" stroke-width="1"/>');
-    sv.push('<text x="'+(PL-5)+'" y="'+(gy+4).toFixed(1)+'" text-anchor="end" fill="'+textColor+'" font-size="9" font-family="system-ui,sans-serif">$'+Math.round(maxVal/4*gi)+'</text>');
+    sv.push('<text x="'+(PL-7)+'" y="'+(gy+4).toFixed(1)+'" text-anchor="end" fill="'+textColor+'" font-size="10" font-family="system-ui,sans-serif">$'+Math.round(maxVal/4*gi)+'</text>');
   }
   months.forEach(function(m,i){
     var x=PL+gap+i*(barW+gap);
@@ -7730,10 +8320,10 @@ function renderChart(){
       yOff+=sh;
     });
     var lx=(x+barW/2).toFixed(1);
-    sv.push('<text x="'+lx+'" y="'+(H-8)+'" text-anchor="middle" fill="'+textColor+'" font-size="10" font-family="system-ui,sans-serif">'+m.name.split(' ')[0].slice(0,3)+'</text>');
+    sv.push('<text x="'+lx+'" y="'+(H-9)+'" text-anchor="middle" fill="'+textColor+'" font-size="11" font-family="system-ui,sans-serif">'+m.name.split(' ')[0].slice(0,3)+'</text>');
     if(tot>0){
       var totalH=(tot/maxVal)*cH;
-      sv.push('<text x="'+lx+'" y="'+(base-totalH-5).toFixed(1)+'" text-anchor="middle" fill="'+textColor+'" font-size="9" font-family="system-ui,sans-serif">$'+Math.round(tot)+'</text>');
+      sv.push('<text x="'+lx+'" y="'+(base-totalH-6).toFixed(1)+'" text-anchor="middle" fill="'+textColor+'" font-size="10" font-family="system-ui,sans-serif">$'+Math.round(tot)+'</text>');
     }
   });
   sv.push('</svg>');
@@ -7748,7 +8338,7 @@ function renderMonths(){
       +'<div class="skeleton sk-line sk-tab sk-fade-2" style="width:52px"></div>'
       +'<div class="skeleton sk-line sk-tab sk-fade-3" style="width:52px"></div>'
       +'</div>';
-    g('mView').innerHTML=mkLoadingIndicator('Loading revenue data')+mkSkeletonTxRows(4);
+    g('mView').innerHTML=mkLoadingIndicator('Loading')+mkSkeletonTxRows(4);
     return;
   }
 
@@ -7870,7 +8460,7 @@ function renderMonths(){
 
   if(!monthTxs.length){
     html+='<div class="divider"></div>'
-      +mkEmptyRow('No transactions in '+m.name+' — add manually or wait for Fanvue to sync');
+      +mkEmptyRow('No transactions in '+m.name);
   }else{
     var isAdmin=currentRole==='admin';
 
@@ -7928,7 +8518,7 @@ function renderMonths(){
     html+='</div>';
 
     if(!filtered.length){
-      html+=mkEmptyRow('No transactions match the selected filter');
+      html+=mkEmptyRow('No results for this filter');
     }
 
     html+='<div class="tx-list-wrap">';
@@ -8023,7 +8613,7 @@ function renderMonths(){
 function renderList(){
   var el=g('wList');
   if(!S.ws.length){
-    el.innerHTML=mkEmpty(ES_ICON.dollar,'No withdrawals recorded','Log a payout above each time funds are transferred. Track pending requests and confirmed receipts separately.','Record withdrawal →',"toggleAddWithdrawalForm()");
+    el.innerHTML=mkEmpty(null,'No withdrawals recorded','Record each payout as it occurs.','Add entry →',"toggleAddWithdrawalForm()");
     return;
   }
   var pend=S.ws.filter(function(w){return w.st==='pend';});
@@ -8221,7 +8811,7 @@ function downloadCSV(rows,filename){
 function renderAll(){
   renderBal();renderChartLegend();renderMonths();renderList();
   renderPlatformSettings();renderPlatformSelect();renderExpenses();renderRecentTx();
-  renderModelProfitSection();renderRebalanceHint();updateSidebarStats();
+  renderModelProfitSection();updateSidebarStats();
 }
 
 /* ---- Numeric input filter ---- */
@@ -8359,7 +8949,7 @@ async function init(){
 async function syncFullHistory(){
   var btn=g('syncBtn'),st=g('syncStatus');
   if(!ACTIVE_MODEL_ID){
-    st.innerHTML='<span style="color:var(--text3)">No Fanvue account connected</span>';
+    st.innerHTML='<span class="setting-meta">No account connected</span>';
     return;
   }
   btn.disabled=true;

@@ -5188,6 +5188,9 @@ html { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
 .neg-color  { color: var(--neg-txt); }
 .pos-color  { color: var(--pos-txt); }
 
+/* expAddBtn всегда справа — clearStatus() сбрасывает flex:1 на статусе */
+#expAddBtn { margin-left: auto; }
+
 /* Full-width Revenue by Month chart section */
 .dash-chart-section {
   border-top: 1px solid var(--line-1);
@@ -8416,6 +8419,7 @@ async function addExpense(){
 
   var expModelId=(g('expModel')&&g('expModel').value)||null;
   var res=await db.from('expenses').insert({
+    agency_id:_agencyId,
     partner_id:partnerId,amount_usd:r2(amt),date:date,description:desc,
     model_id:expModelId||null
   });
@@ -8475,7 +8479,7 @@ function renderExpenses(){
   var sel=g('expPartner');
   if(sel&&!sel.options.length)renderPartnerSelect();
 
-  /* Toggle global empty state vs history card */
+  /* Show empty state or history card depending on data */
   var emptyEl=g('expensesEmptyState');
   var histCard=g('expensesHistCard');
   var noExpenses=!S.exps||S.exps.length===0;
@@ -8484,6 +8488,7 @@ function renderExpenses(){
 
   var el=g('expList');if(!el)return;
   if(noExpenses)return;
+
 
   // Render month tabs
   var expTabsEl=g('expMTabs');

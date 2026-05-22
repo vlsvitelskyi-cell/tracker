@@ -4895,11 +4895,13 @@ html { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
   border-right: 1px solid var(--line-1);
 }
 .dash-activity-rail {
-  width: 320px;
+  width: 340px;
   flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
   position: sticky;
-  top: calc(48px + 91px);
-  max-height: calc(100vh - 48px - 91px);
+  top: 48px;
+  height: calc(100vh - 48px - 89px);
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: var(--line-2) transparent;
@@ -4910,6 +4912,26 @@ html { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
 }
 .dash-rail-section:last-child { border-bottom: none; }
 .dash-rail-cta { display: none; }
+
+/* Rail chart block — flex-grow fills remaining rail height */
+.rail-block--chart {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: var(--s5) var(--s6);
+  border-top: 1px solid var(--line-1);
+}
+.rail-block--chart .dash-chart-body {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+}
+.rail-block--chart #chartContainer,
+.rail-block--chart canvas {
+  width: 100%;
+  height: 100%;
+}
 
 /* Page sections inside dashboard */
 .page-section { border-bottom: 1px solid var(--line-1); }
@@ -5563,34 +5585,35 @@ html { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
             </div>
           </div>
 
-          <!-- Right rail: Revenue Split only -->
+          <!-- Right rail: Revenue Split + Revenue By Month -->
           <div class="dash-activity-rail">
-            <div class="section-header">
-              <span class="section-title">Revenue Split</span>
+            <!-- Revenue Split -->
+            <div class="rail-block rail-block--split">
+              <div class="section-header">
+                <span class="section-title">Revenue Split</span>
+              </div>
+              <div class="dash-rail-section">
+                <div class="split-labels" id="splitLabels"></div>
+                <div class="split-bar" id="splitBar"></div>
+                <div class="split-hint" id="splitHint"></div>
+              </div>
             </div>
-            <div class="dash-rail-section">
-              <div class="split-labels" id="splitLabels"></div>
-              <div class="split-bar" id="splitBar"></div>
-              <div class="split-hint" id="splitHint"></div>
+            <!-- Revenue By Month chart -->
+            <div class="rail-block rail-block--chart">
+              <div class="dash-chart-header">
+                <span class="dash-chart-title">Revenue by Month</span>
+                <div style="display:flex;align-items:center;gap:var(--s4)">
+                  <div class="chart-legend" id="chartLegend"></div>
+                  <span id="revLoadStatus" class="section-meta"></span>
+                </div>
+              </div>
+              <div class="dash-chart-body">
+                <div id="chartContainer"></div>
+              </div>
             </div>
-            <div class="dash-rail-cta"></div>
           </div>
 
         </div><!-- end dash-activity -->
-
-        <!-- Revenue by Month — full-width chart section -->
-        <div class="dash-chart-section" id="revenueChartSection">
-          <div class="dash-chart-header">
-            <span class="dash-chart-title">Revenue by Month</span>
-            <div style="display:flex;align-items:center;gap:var(--s4)">
-              <div class="chart-legend" id="chartLegend"></div>
-              <span id="revLoadStatus" class="section-meta"></span>
-            </div>
-          </div>
-          <div class="dash-chart-body">
-            <div id="chartContainer"></div>
-          </div>
-        </div>
 
         <!-- Model profitability — admin only -->
         <div id="modelProfitSection" style="display:none">

@@ -4994,6 +4994,8 @@ html { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
   font-weight: 600;
   letter-spacing: .03em;
   text-transform: uppercase;
+  flex-shrink: 0;         /* не сжимается внутри flex-строк */
+  white-space: nowrap;
 }
 .platform-pill--fanvue   { background: var(--fanvue-bg);   color: var(--fanvue); }
 .platform-pill--paypal   { background: var(--paypal-bg);   color: var(--paypal); }
@@ -5192,82 +5194,66 @@ html { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
 #expAddBtn { margin-left: auto; }
 
 /* ═══════════════════════════════════════════════════════════════
-   ROW DESIGN CONSISTENCY — единый visual language на всех вкладках
+   ЕДИНЫЙ ROW DESIGN — platform-pill на всех вкладках
    ═══════════════════════════════════════════════════════════════ */
 
-/* ── 1. Dashboard Ledger: platform-pill → dot + text (как в Revenue) ── */
-#recentTxList .platform-pill {
-  position: relative;
-  background: transparent !important;
-  padding: 0 0 0 18px !important;
-  height: auto !important;
-  font-size: var(--f13) !important;
-  font-weight: 600 !important;
-  color: var(--t1) !important;
-  text-transform: none;
-  letter-spacing: 0;
-  border-radius: 0;
-  flex-shrink: 0;
-}
-#recentTxList .platform-pill::before {
-  content: '';
-  position: absolute;
-  left: 0; top: 50%; transform: translateY(-50%);
-  width: 8px; height: 8px; border-radius: 50%;
-  background: var(--t3);
-}
-#recentTxList .platform-pill--fanvue::before   { background: var(--fanvue); }
-#recentTxList .platform-pill--paypal::before   { background: var(--paypal); }
-#recentTxList .platform-pill--telegram::before { background: var(--telegram); }
-#recentTxList .platform-pill--other::before    { background: var(--t3); }
-
-/* Dashboard ledger row: match Revenue row height */
+/* ── 1. Dashboard: pill в tx-row — высота строки + date-sep ── */
 #recentTxList .tx-row {
   height: 44px !important;
   padding: 0 20px !important;
 }
-/* Date separator: subtle background, tighter */
 #recentTxList .tx-date-sep {
   padding: 3px 20px;
   background: var(--surface-2);
 }
 
-/* ── 2. Expense items: левый цветной бордер (как border-left у tx-item) ── */
-.exp-item {
-  border-left: 2px solid var(--line-2);
-  padding-left: calc(var(--s5) - 2px) !important;
-}
-.exp-item:has(.exp-who.p0) { border-left-color: var(--p0); }
-.exp-item:has(.exp-who.p1) { border-left-color: var(--p1); }
-.exp-item:has(.exp-who.p2) { border-left-color: var(--p2); }
-.exp-item:has(.exp-who.p3) { border-left-color: var(--p3); }
-.exp-item:has(.exp-who.p4) { border-left-color: var(--p4); }
-
-/* ── 3. Partner badge внутри строки расходов ── */
-.exp-partner-badge {
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: .04em;
+/* ── 2. Revenue + Dashboard: inline note/description справа от пилюли ── */
+.tx-note-inline {
+  font-size: var(--f11);
   color: var(--t4);
   white-space: nowrap;
-  flex-shrink: 0;
-  padding: 1px 5px;
-  border: 1px solid var(--line-1);
-  border-radius: var(--r1);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
+  font-style: italic;
 }
 
-/* ── 4. Выравнивание колонок: date + amount фиксированная ширина ── */
-.exp-date { min-width: 54px; text-align: right; }
-.exp-amt  { min-width: 80px; text-align: right; padding-right: 4px; }
+/* ── 3. Expense items: grid + левый цветной бордер по категории ── */
+.exp-item {
+  border-left: 2px solid var(--line-2);
+  column-gap: 12px !important;
+}
+.exp-item:has(.exp-cat-pill--marketing) { border-left-color: var(--p0); }
+.exp-item:has(.exp-cat-pill--software)  { border-left-color: var(--p2); }
+.exp-item:has(.exp-cat-pill--equipment) { border-left-color: var(--warn-txt); }
+.exp-item:has(.exp-cat-pill--other)     { border-left-color: var(--t3); }
 
-/* ── 5. Скрыть кнопку "Add expense" в histCard когда форма открыта ── */
+/* ── 4. Category pills for expenses (extends .platform-pill base) ── */
+.exp-cat-pill--marketing { background: rgba(96,165,250,.14); color: var(--p0); }
+.exp-cat-pill--software  { background: rgba(167,139,250,.14); color: var(--p2); }
+.exp-cat-pill--equipment { background: var(--warn-bg); color: var(--warn-txt); }
+.exp-cat-pill--other     { background: var(--surface-3); color: var(--t3); }
+
+/* ── 5. Expense row elements ── */
+.exp-partner-name {
+  font-size: var(--f13);
+  font-weight: 600;
+  color: var(--t1);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.exp-date { min-width: 54px; text-align: right; }
+.exp-amt  { min-width: 80px; text-align: right; }
+
+/* ── 6. Скрыть "Add expense" toggle в histCard когда форма открыта ── */
 #expensesCard[style*="block"] ~ #expensesHistCard .sec-row .btn-primary {
   display: none !important;
 }
 
-/* ── 6. Кнопка закрытия формы расходов ── */
+/* ── 7. Кнопка ✕ закрытия формы ── */
 .form-panel-close {
-  font-size: var(--f13);
+  font-size: var(--f14);
   color: var(--t4);
   background: none;
   border: none;
@@ -5278,26 +5264,15 @@ html { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
   transition: color var(--fast), background var(--fast);
   flex-shrink: 0;
 }
-.form-panel-close:hover {
-  color: var(--t2);
-  background: var(--surface-3);
-}
+.form-panel-close:hover { color: var(--t2); background: var(--surface-3); }
 
-/* ── 7. Кнопки: глобальный audit — одинаковая высота для btn и btn-primary ── */
-/* btn уже 32px через .btn-primary, btn остаётся через line-height */
-.btn {
-  height: 32px; /* явная высота как у btn-primary */
-}
+/* ── 8. Кнопки: явная высота ── */
+.btn       { height: 32px; }
 .btn-edit,
-.btn-del {
-  height: 26px; /* маленькие inline-кнопки — меньше основных */
-}
+.btn-del   { height: 26px; }
 
-/* ── 8. Empty-state кнопка: авто-ширина, не растягивается ── */
-.empty-page-state .btn-primary {
-  width: auto;
-  padding: 0 20px;
-}
+/* ── 9. Empty-state primary button ── */
+.empty-page-state .btn-primary { width: auto; padding: 0 20px; }
 
 /* Full-width Revenue by Month chart section */
 .dash-chart-section {
@@ -5834,7 +5809,6 @@ html { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
               <div class="field">
                 <label>Category</label>
                 <select id="expCat">
-                  <option value="">— None —</option>
                   <option value="Marketing">Marketing</option>
                   <option value="Software">Software</option>
                   <option value="Equipment">Equipment</option>
@@ -8655,19 +8629,21 @@ function renderExpenses(){
         +'</div>';
     }
     var parsed=parseExpDesc(exp.description);
-    var catBadge=parsed.cat?'<span class="exp-cat-badge">'+parsed.cat+'</span>':'';
     var mObj=exp.model_id?ALL_MODELS.find(function(m){return m.id===exp.model_id;}):{name:'Agency'};
     var modelBadge=(!ACTIVE_MODEL_ID&&ALL_MODELS.length>1)
       ?'<span style="font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;border:1px solid var(--line-1);color:var(--t4)">'+(mObj?escHtml(mObj.name):'Agency')+'</span>'
       :'';
-    var partnerBadge='<span class="exp-partner-badge">'+escHtml(p.name)+'</span>';
-    var nameHtml=parsed.text
-      ?'<span class="exp-item-name">'+escHtml(parsed.text)+'</span>'+partnerBadge
-      :'<span class="exp-item-name">'+escHtml(p.name)+'</span>';
+    /* Category pill — like platform-pill on Dashboard/Revenue */
+    var catLabel=parsed.cat||'Other';
+    var catPill='<span class="platform-pill exp-cat-pill exp-cat-pill--'+catLabel.toLowerCase()+'">'+escHtml(catLabel)+'</span>';
+    /* Partner name (primary) + optional inline description (smaller) */
+    var descInline=parsed.text?'<span class="tx-note-inline">'+escHtml(parsed.text)+'</span>':'';
     return '<div class="exp-item">'
-      +'<div class="exp-left">'
-        +'<div class="exp-who '+cls+'"></div>'
-        +'<div class="exp-item-body">'+nameHtml+catBadge+modelBadge+'</div>'
+      +catPill
+      +'<div class="exp-item-body">'
+        +'<span class="exp-partner-name">'+escHtml(p.name)+'</span>'
+        +descInline
+        +modelBadge
       +'</div>'
       +'<span class="exp-date">'+fdate(exp.date)+'</span>'
       +'<span class="exp-amt">−'+fu(exp.amount)+'</span>'
@@ -8983,12 +8959,12 @@ function renderRecentTx(){
         var mObj=ALL_MODELS.find(function(m){return m.id===tx.model_id;});
         if(mObj)modelTag='<span class="badge" style="margin-left:5px;background:var(--accent-muted);color:var(--t2)">'+escHtml(mObj.name)+'</span>';
       }
-      var noteText=tx.note?'<div class="meta" style="font-size:var(--f11);color:var(--t3);margin-top:2px">'+escHtml(tx.note)+'</div>':'';
+      var noteText=tx.note?'<span class="tx-note-inline">'+escHtml(tx.note)+'</span>':'';
       var plCls=pl.toLowerCase();
-      html+='<div class="tx-row" style="display:flex;align-items:center;gap:12px;padding:10px 20px;border-bottom:1px solid var(--line-1)">'
+      html+='<div class="tx-row" style="display:flex;align-items:center;gap:12px;height:44px;padding:0 20px;border-bottom:1px solid var(--line-1)">'
         +'<span class="platform-pill platform-pill--'+plCls+'">'+escHtml(pl)+'</span>'
-        +'<div style="flex:1;min-width:0">'+autoTag+modelTag+noteText+'</div>'
-        +'<span class="mono '+(pos?'amt-pos':'amt-neg')+'" style="font-size:var(--f13);font-weight:600">'+(pos?'+':'−')+fu(tx.amount)+'</span>'
+        +'<div style="flex:1;min-width:0;display:flex;align-items:center;gap:6px;overflow:hidden">'+autoTag+modelTag+noteText+'</div>'
+        +'<span class="mono '+(pos?'amt-pos':'amt-neg')+'" style="font-size:var(--f13);font-weight:600;flex-shrink:0">'+(pos?'+':'−')+fu(tx.amount)+'</span>'
       +'</div>';
     });
   });
@@ -9293,15 +9269,15 @@ function renderMonths(){
         }
         html+='<div class="tx-item" style="border-left-color:'+plColor+'">'
           +'<div class="tx-row">'
-          /* col 1: platform identity */
+          /* col 1: platform pill + inline description */
           +'<div class="tx-left">'
             +(isAdmin?'<input type="checkbox" class="tx-check"'+(isSelected?' checked':'')
               +' onchange="toggleTxSelect(\''+tx.id+'\',this.checked)" onclick="event.stopPropagation()">':'')
-            +'<div class="tx-platform-icon" style="background:'+plColor+'"></div>'
-            +'<span class="tx-plname">'+escHtml(plLabel)+'</span>'
+            +'<span class="platform-pill platform-pill--'+plLabel.toLowerCase()+'">'+escHtml(plLabel)+'</span>'
+            +(tx.description?'<span class="tx-note-inline">'+escHtml(tx.description)+'</span>':'')
             +(tx.source==='scraper'?'<span class="tx-source">auto</span>':'')
           +'</div>'
-          /* col 2: date — right-aligned, always aligned across rows */
+          /* col 2: date — fixed column, always aligned */
           +'<span class="tx-date">'+fdate(tx.date)+'</span>'
           /* col 3: amount + actions */
           +'<div class="tx-right">'
@@ -9321,7 +9297,6 @@ function renderMonths(){
               :'')
           +'</div>'
           +'</div>'
-          +(tx.description?'<div class="tx-desc">'+escHtml(tx.description)+'</div>':'')
           +'</div>';
       }
     });

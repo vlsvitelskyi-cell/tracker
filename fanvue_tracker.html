@@ -710,199 +710,233 @@ button { font-family: var(--sans); }
 /* Unified system — 4 roles, consistent sizing, green CTA.     */
 
 /* Primary — зелёная CTA кнопка (36px) */
+/* ══════════════════════════════════════════════
+   BUTTON SYSTEM  —  3 tiers, consistent heights
+   Primary 36px · Secondary 34px · Ghost 32px
+   Micro (del/edit) 26px for inline row actions
+   ══════════════════════════════════════════════ */
+
+/* ── Shared base reset ── */
+.btn-primary, .btn.btn-primary,
+.btn,
+.btn-ghost, .btn.btn-ghost,
+.btn-danger, .btn.btn-danger,
+.btn-save, .btn-cancel,
+.btn-del, .btn-edit, .btn-ghost-sm,
+.btn-outline, .btn-connect, .btn-blue,
+.btn-disconnect {
+  font-family: var(--sans);
+  user-select: none;
+  line-height: 1;
+  letter-spacing: -.01em;
+  cursor: pointer;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* ── Primary — one clear CTA per section ── */
 .btn-primary,
 .btn.btn-primary {
   height: 36px;
   padding: 0 18px;
+  gap: 7px;
   background: var(--cta);
-  color: #FFFFFF;
-  border: none;
+  color: #fff;
+  border: 1px solid transparent;
   border-radius: var(--r3);
   font-size: var(--f13);
   font-weight: 600;
-  letter-spacing: -.01em;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  white-space: nowrap;
-  transition: background 120ms ease, box-shadow 120ms ease, transform 80ms ease;
-  box-shadow: 0 1px 0 rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.08);
-  flex-shrink: 0;
-  font-family: var(--sans);
-  user-select: none;
-  line-height: 1;
+  transition: background 150ms ease, box-shadow 150ms ease, transform 80ms ease;
 }
 .btn-primary:hover,
 .btn.btn-primary:hover {
   background: var(--cta-dark);
-  box-shadow: 0 0 0 3px var(--cta-glow), 0 1px 0 rgba(0,0,0,.25);
-  opacity: 1;
-  color: #FFFFFF;
-  border: none;
+  box-shadow: 0 0 0 3px var(--cta-glow);
 }
 .btn-primary:active,
 .btn.btn-primary:active { transform: scale(.975); }
+.btn-primary:focus-visible,
+.btn.btn-primary:focus-visible { outline: 2px solid var(--cta); outline-offset: 3px; }
 .btn-primary:disabled,
-.btn.btn-primary:disabled { opacity: .38; cursor: not-allowed; pointer-events: none; }
+.btn.btn-primary:disabled { opacity: .35; cursor: not-allowed; pointer-events: none; }
 .btn-primary[data-loading="true"],
 .btn.btn-primary[data-loading="true"] { opacity: .6; cursor: wait; }
 
-/* Secondary — нейтральная кнопка с рамкой (34px) */
+/* ── Secondary — neutral action, most common ── */
 .btn {
   height: 34px;
-  padding: 0 16px;
-  background: transparent;
+  padding: 0 14px;
+  gap: 6px;
+  background: rgba(255,255,255,.05);
   color: var(--t2);
   border: 1px solid var(--line-2);
   border-radius: var(--r3);
   font-size: var(--f13);
   font-weight: 500;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  white-space: nowrap;
-  transition: color 120ms ease, border-color 120ms ease, background 120ms ease, transform 80ms ease;
-  flex-shrink: 0;
-  font-family: var(--sans);
-  user-select: none;
-  letter-spacing: -.01em;
-  line-height: 1;
+  transition: color 150ms ease, border-color 150ms ease, background 150ms ease, transform 80ms ease;
 }
-.btn:hover { color: var(--t1); border-color: var(--line-3); background: var(--accent-muted); }
-.btn:active:not(:disabled) { transform: scale(.983); background: rgba(255,255,255,.05); }
+.btn:hover {
+  color: var(--t1);
+  border-color: var(--line-3);
+  background: rgba(255,255,255,.09);
+}
+.btn:active:not(:disabled) { transform: scale(.983); }
+.btn:focus-visible { outline: 2px solid var(--cta); outline-offset: 3px; }
 .btn:disabled { opacity: .3; cursor: not-allowed; pointer-events: none; }
-.btn.act { color: var(--t1); border-color: var(--line-3); background: var(--surface-2); font-weight: 600; }
+.btn.act {
+  color: var(--t1);
+  border-color: var(--line-3);
+  background: rgba(255,255,255,.09);
+  font-weight: 600;
+}
 
-/* Ghost — невидимая кнопка без рамки (30px) */
+/* ── Ghost — contextual / nav-adjacent actions ── */
 .btn-ghost,
 .btn.btn-ghost {
-  height: 30px;
+  height: 32px;
   padding: 0 10px;
+  gap: 5px;
   background: transparent;
   color: var(--t3);
   border: none;
   border-radius: var(--r2);
   font-size: var(--f12);
   font-weight: 500;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  white-space: nowrap;
-  transition: color 120ms ease, background 120ms ease, transform 80ms ease;
-  font-family: var(--sans);
-  letter-spacing: -.01em;
-  line-height: 1;
+  transition: color 150ms ease, background 150ms ease, transform 80ms ease;
 }
 .btn-ghost:hover,
-.btn.btn-ghost:hover { color: var(--t2); background: var(--accent-muted); }
+.btn.btn-ghost:hover {
+  color: var(--t1);
+  background: rgba(255,255,255,.07);
+}
 .btn-ghost:active,
 .btn.btn-ghost:active { transform: scale(.967); }
+.btn-ghost:focus-visible,
+.btn.btn-ghost:focus-visible { outline: 2px solid var(--cta); outline-offset: 3px; }
 
-/* Danger — красная кнопка (34px) */
+/* ── Danger — destructive, only in danger zones ── */
 .btn-danger,
-.btn.btn-danger {
+.btn.btn-danger,
+.btn-disconnect {
   height: 34px;
   padding: 0 16px;
-  background: var(--neg-bg);
+  gap: 6px;
+  background: rgba(239,68,68,.08);
   color: var(--neg-txt);
-  border: 1px solid rgba(239,68,68,.20);
+  border: 1px solid rgba(239,68,68,.22);
   border-radius: var(--r3);
   font-size: var(--f13);
   font-weight: 500;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  white-space: nowrap;
-  transition: background 120ms ease, border-color 120ms ease, transform 80ms ease;
-  font-family: var(--sans);
-  letter-spacing: -.01em;
-  line-height: 1;
+  transition: background 150ms ease, border-color 150ms ease, transform 80ms ease;
 }
 .btn-danger:hover,
-.btn.btn-danger:hover { background: rgba(239,68,68,.16); border-color: rgba(239,68,68,.35); color: var(--neg-txt); }
-.btn-danger:active,
-.btn.btn-danger:active { transform: scale(.96); }
-
-/* Save / Cancel — form action buttons */
-.btn-save {
-  display: inline-flex; align-items: center; gap: var(--s1);
-  padding: 7px 14px; border-radius: var(--r3);
-  background: var(--cta); color: #FFFFFF; border: none;
-  font-size: var(--f13); font-weight: 600; cursor: pointer;
-  font-family: var(--sans); white-space: nowrap;
-  transition: background 120ms ease, transform 80ms ease;
+.btn.btn-danger:hover,
+.btn-disconnect:hover {
+  background: rgba(239,68,68,.15);
+  border-color: rgba(239,68,68,.38);
+  color: var(--neg-txt);
 }
-.btn-save:hover { background: var(--cta-dark); }
+.btn-danger:active,
+.btn.btn-danger:active,
+.btn-disconnect:active { transform: scale(.96); }
+.btn-danger:focus-visible,
+.btn.btn-danger:focus-visible,
+.btn-disconnect:focus-visible { outline: 2px solid rgba(239,68,68,.6); outline-offset: 3px; }
+
+/* ── Save / Cancel — form confirm pair ── */
+.btn-save {
+  height: 36px;
+  padding: 0 16px;
+  gap: 6px;
+  background: var(--cta);
+  color: #fff;
+  border: none;
+  border-radius: var(--r3);
+  font-size: var(--f13);
+  font-weight: 600;
+  transition: background 150ms ease, box-shadow 150ms ease, transform 80ms ease;
+}
+.btn-save:hover { background: var(--cta-dark); box-shadow: 0 0 0 3px var(--cta-glow); }
 .btn-save:active { transform: scale(.977); }
+.btn-save:focus-visible { outline: 2px solid var(--cta); outline-offset: 3px; }
 
 .btn-cancel {
-  display: inline-flex; align-items: center;
-  padding: 7px 12px; border-radius: var(--r3);
-  background: transparent; border: 1px solid var(--line-2);
-  color: var(--t2); font-size: var(--f13); cursor: pointer;
-  font-family: var(--sans); transition: color 120ms ease, background 120ms ease, border-color 120ms ease, transform 80ms ease;
+  height: 34px;
+  padding: 0 14px;
+  background: rgba(255,255,255,.05);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r3);
+  color: var(--t2);
+  font-size: var(--f13);
+  font-weight: 500;
+  transition: color 150ms ease, background 150ms ease, border-color 150ms ease, transform 80ms ease;
 }
-.btn-cancel:hover { background: var(--surface-2); border-color: var(--line-3); }
+.btn-cancel:hover { background: rgba(255,255,255,.09); border-color: var(--line-3); color: var(--t1); }
 .btn-cancel:active { transform: scale(.967); }
+.btn-cancel:focus-visible { outline: 2px solid var(--cta); outline-offset: 3px; }
 
-/* Delete — small row-level destructive */
+/* ── Micro — inline row-level actions (26px) ── */
 .btn-del {
-  display: inline-flex; align-items: center;
-  font-size: var(--f11); padding: 3px 8px;
-  background: var(--neg-bg); border: 1px solid rgba(239,68,68,.15);
-  border-radius: var(--r2); cursor: pointer; color: var(--neg-txt);
-  font-family: var(--sans); transition: background 120ms ease, transform 80ms ease;
+  height: 26px;
+  padding: 0 10px;
+  background: rgba(239,68,68,.08);
+  border: 1px solid rgba(239,68,68,.18);
+  border-radius: var(--r2);
+  color: var(--neg-txt);
+  font-size: var(--f11);
+  font-weight: 500;
+  transition: background 150ms ease, transform 80ms ease;
 }
-.btn-del:hover { background: rgba(239,68,68,.14); }
+.btn-del:hover { background: rgba(239,68,68,.15); border-color: rgba(239,68,68,.32); }
 .btn-del:active { transform: scale(.96); }
 
-/* Inline edit toggle */
 .btn-edit {
-  font-size: var(--f11); padding: 3px 8px;
-  background: transparent; border: 1px solid var(--line-2);
-  border-radius: var(--r2); cursor: pointer; color: var(--t3);
-  font-family: var(--sans); transition: color 120ms ease, background 120ms ease, border-color 120ms ease, transform 80ms ease;
+  height: 26px;
+  padding: 0 10px;
+  background: transparent;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r2);
+  color: var(--t3);
+  font-size: var(--f11);
+  font-weight: 500;
+  transition: color 150ms ease, background 150ms ease, border-color 150ms ease, transform 80ms ease;
 }
-.btn-edit:hover { background: var(--surface-2); color: var(--t2); border-color: var(--line-3); }
+.btn-edit:hover { background: rgba(255,255,255,.07); color: var(--t2); border-color: var(--line-3); }
 .btn-edit:active { transform: scale(.96); }
 
-/* Ghost small — text-only subtle actions */
+/* ── Ghost-sm — subtle text action ── */
 .btn-ghost-sm {
-  font-size: var(--f12); color: var(--t3); background: none; border: none;
-  cursor: pointer; font-family: var(--sans); transition: color 120ms ease;
-  padding: 3px 0;
+  padding: 4px 6px;
+  background: none;
+  border: none;
+  border-radius: var(--r2);
+  color: var(--t3);
+  font-size: var(--f12);
+  transition: color 150ms ease, background 150ms ease;
 }
-.btn-ghost-sm:hover { color: var(--t2); }
+.btn-ghost-sm:hover { color: var(--t2); background: rgba(255,255,255,.06); }
 
-/* Legacy aliases — kept for JS render compat */
+/* ── Legacy aliases → Primary ── */
 .btn-outline, .btn-connect, .btn-blue {
-  display: inline-flex; align-items: center; gap: var(--s1);
-  background: var(--cta); color: #FFFFFF; border: none;
-  padding: 0 var(--s5); height: 36px; border-radius: var(--r3);
-  font-size: var(--f13); font-weight: 600; cursor: pointer;
-  font-family: var(--sans); transition: background 120ms ease, transform 80ms ease;
-  white-space: nowrap;
+  height: 36px;
+  padding: 0 18px;
+  gap: 6px;
+  background: var(--cta);
+  color: #fff;
+  border: 1px solid transparent;
+  border-radius: var(--r3);
+  font-size: var(--f13);
+  font-weight: 600;
+  transition: background 150ms ease, box-shadow 150ms ease, transform 80ms ease;
 }
-.btn-outline:hover,.btn-connect:hover,.btn-blue:hover { background: var(--cta-dark); }
+.btn-outline:hover,.btn-connect:hover,.btn-blue:hover {
+  background: var(--cta-dark);
+  box-shadow: 0 0 0 3px var(--cta-glow);
+}
 .btn-outline:active,.btn-connect:active,.btn-blue:active { transform: scale(.977); }
-.btn-outline:disabled,.btn-connect:disabled,.btn-blue:disabled { opacity: .3; cursor: not-allowed; pointer-events: none; }
-
-/* Disconnect */
-.btn-disconnect {
-  display: inline-flex; align-items: center;
-  background: var(--neg-bg); color: var(--neg-txt);
-  border: 1px solid rgba(239,68,68,.20);
-  padding: 0 16px; height: 34px; border-radius: var(--r3);
-  font-size: var(--f13); font-weight: 500;
-  cursor: pointer; font-family: var(--sans);
-  transition: background 120ms ease, border-color 120ms ease, transform 80ms ease;
-}
-.btn-disconnect:hover { background: rgba(239,68,68,.16); border-color: rgba(239,68,68,.35); }
-.btn-disconnect:active { transform: scale(.96); }
+.btn-outline:disabled,.btn-connect:disabled,.btn-blue:disabled { opacity: .35; cursor: not-allowed; pointer-events: none; }
 
 /* ── 12. FORM SYSTEM ────────────────────────────────────────── */
 /* Tight, functional. Inputs are tools, not decorations. */
@@ -1401,15 +1435,6 @@ button { font-family: var(--sans); }
 }
 .tx-item:last-child { border-bottom: none; }
 .tx-item.editing { background: var(--surface-2); }
-.tx-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 16px;
-  transition: background var(--fast);
-}
-.tx-row:hover { background: rgba(255,255,255,.025); }
-.tx-row:hover .tx-actions { opacity: 1; pointer-events: auto; }
 .tx-left { display: flex; align-items: center; gap: 10px; }
 .tx-platform-icon {
   width: 28px; height: 28px;
@@ -2547,12 +2572,6 @@ button { font-family: var(--sans); }
 
 /* —— Transaction rows (Revenue tab) ————————————————————————— */
 /* Replaced letter-icon with 8px dot; improved amount hierarchy  */
-.tx-row {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 0 var(--s5); height: 44px; transition: background var(--fast);
-}
-.tx-row:hover { background: rgba(255,255,255,.02); }
-.tx-row:hover .tx-actions { opacity: 1; pointer-events: auto; }
 .tx-left { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; }
 .tx-platform-icon {
   width: 8px; height: 8px; border-radius: 50%;
@@ -2784,21 +2803,6 @@ button { font-family: var(--sans); }
 }
 .tx-item:last-child  { border-bottom: none; }
 .tx-item.editing     { background: var(--surface-2); border-left-color: transparent; }
-.tx-row {
-  display: grid;
-  grid-template-columns: 1fr 84px auto;
-  align-items: center;
-  padding: 0 20px;
-  height: 44px;
-  gap: 0 8px;
-  transition: background var(--fast);
-}
-.tx-item.editing .tx-row {
-  display: flex; align-items: center; gap: 10px;
-  height: auto; min-height: 40px; padding: 8px 16px;
-}
-.tx-row:hover { background: rgba(255,255,255,.035); }
-.tx-row:hover .tx-actions { opacity: 1; pointer-events: auto; }
 .tx-left {
   display: flex; align-items: center; gap: 10px; min-width: 0; overflow: hidden;
 }
@@ -3032,12 +3036,7 @@ button { font-family: var(--sans); }
   .dash-two-col { grid-template-columns: 1fr; }
   .dash-activity-rail { display: none; } /* hide split bar rail on mobile */
 
-  /* Transaction rows: 2-col (identity | amount), no date column */
-  .tx-row {
-    grid-template-columns: 1fr auto;
-    height: 52px;
-    padding: 0 16px;
-  }
+  /* Transaction rows: compact on mobile */
   .tx-date { display: none; }
   .tx-right { gap: 6px; }
   .tx-actions { display: none; } /* hide edit/delete actions on mobile */
@@ -3109,8 +3108,6 @@ button { font-family: var(--sans); }
   .srl-val   { font-size: var(--f15); }
   .srl-label { font-size: 9px; }
 
-  /* Transaction rows: compact */
-  .tx-row { height: 48px; padding: 0 14px; }
   .tx-plname { font-size: var(--f12); }
   .tx-amt    { font-size: var(--f13); letter-spacing: -.02em; }
 
@@ -3883,7 +3880,6 @@ button { font-family: var(--sans); }
 .dpt-row   { transition: background 100ms ease; }
 .wd-row    { transition: background 100ms ease; }
 .exp-item  { transition: background 100ms ease; }
-.tx-row    { transition: background 100ms ease, border-left-color 140ms ease; }
 .fin-table tbody tr { transition: background 100ms ease; }
 .rev-stmt-row       { transition: background 100ms ease; }
 .setting-row        { transition: background 100ms ease; }
@@ -5174,14 +5170,12 @@ html { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
    ЕДИНЫЙ ROW DESIGN — platform-pill на всех вкладках
    ═══════════════════════════════════════════════════════════════ */
 
-/* ── 1. Dashboard: pill в tx-row — высота строки + date-sep ── */
-#recentTxList .tx-row {
-  height: 44px !important;
-  padding: 0 20px !important;
-}
+/* ── 1. Dashboard: date-sep — no sticky, prevents rows floating above separator ── */
 #recentTxList .tx-date-sep {
   padding: 3px 20px;
   background: var(--surface-2);
+  position: static;
+  z-index: auto;
 }
 
 /* ── 2. Revenue + Dashboard: inline note/description справа от пилюли ── */
@@ -5281,27 +5275,7 @@ html { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
 
 /* ══ STAGE 3: Grid column alignment ══════════════════════════════════ */
 
-/* ── Part A: Transaction rows — 4 direct children, strict grid ── */
-.tx-row {
-  display: grid !important;
-  grid-template-columns: 96px minmax(0,240px) 72px 96px !important;
-  align-items: center !important;
-  padding: 9px 20px !important;
-  height: auto !important;
-  min-height: 40px !important;
-  gap: 0 !important;
-  transition: background 100ms ease !important;
-  border-bottom: 1px solid var(--line-1);
-}
-/* Revenue tab: description column grows freely to fill available space */
-#mView .tx-row {
-  grid-template-columns: 96px 1fr 72px 96px !important;
-}
-.tx-row:hover { background: rgba(255,255,255,.03) !important; }
-.tx-row:hover .tx-actions { opacity: 1; pointer-events: auto; }
-.tx-row:last-child { border-bottom: none; }
-/* Editing state: revert to flex so the edit form renders naturally */
-.tx-item.editing .tx-row { display: flex !important; flex-wrap: wrap; gap: 8px; }
+/* ── Part A: tx-pill-wrap, tx-spacer, tx-date, tx-amount ── */
 
 /* col 1: pill wrapper — flex row, contains optional checkbox + pill */
 .tx-pill-wrap {
@@ -5530,6 +5504,328 @@ html { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
 .model-perf-hdr > *:first-child { text-align: left; }
 
 /* ══ END STAGE 3 ══════════════════════════════════════════════════ */
+
+/* ===== PARTNER CARDS GRID ===== */
+
+.partner-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px;
+  padding: 16px 20px 20px;
+}
+.partner-cards-grid.count-1 {
+  grid-template-columns: 1fr;
+  max-width: 420px;
+}
+.partner-cards-grid.count-4,
+.partner-cards-grid.count-5 {
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.partner-card {
+  background: var(--surface-2);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r4);
+  padding: 22px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 150ms ease, transform 150ms ease, box-shadow 150ms ease;
+}
+.partner-card:hover {
+  border-color: var(--line-3);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,.35);
+}
+.partner-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--pc-color, var(--cta));
+  border-radius: var(--r4) var(--r4) 0 0;
+}
+
+.partner-card-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.partner-avatar {
+  width: 34px; height: 34px;
+  border-radius: 8px;
+  background: var(--pc-bg, var(--cta-bg));
+  color: var(--pc-color, var(--cta));
+  font-size: 12px; font-weight: 700;
+  letter-spacing: .03em;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  text-transform: uppercase;
+}
+.partner-card-info { flex: 1; min-width: 0; }
+.partner-card-name {
+  font-size: var(--f14); font-weight: 600; color: var(--t1);
+  letter-spacing: -.01em;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.partner-card-role { font-size: var(--f11); color: var(--t3); margin-top: 1px; }
+.partner-split-badge {
+  flex-shrink: 0;
+  height: 22px; padding: 0 10px; border-radius: 11px;
+  font-size: 11px; font-weight: 700;
+  background: var(--pc-bg, var(--cta-bg));
+  color: var(--pc-color, var(--cta));
+  border: 1px solid var(--pc-border, var(--cta-border));
+  display: inline-flex; align-items: center; white-space: nowrap;
+}
+
+.partner-card-total-label {
+  font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .09em;
+  color: var(--t3); margin-bottom: 3px;
+}
+.partner-card-total {
+  font-family: var(--mono);
+  font-size: 28px; font-weight: 800;
+  letter-spacing: -.04em;
+  color: var(--t1); line-height: 1; margin-bottom: 18px;
+}
+.partner-cards-grid.count-4 .partner-card-total,
+.partner-cards-grid.count-5 .partner-card-total { font-size: 22px; }
+
+.partner-card-stats {
+  display: grid; grid-template-columns: 1fr 1fr;
+  border-radius: var(--r3); overflow: hidden;
+  border: 1px solid var(--line-1);
+  gap: 1px; background: var(--line-1);
+}
+.partner-stat-cell { background: var(--surface-3); padding: 11px 14px; }
+.partner-stat-label { font-size: 10px; color: var(--t3); margin-bottom: 3px; white-space: nowrap; }
+.partner-stat-value {
+  font-family: var(--mono); font-size: var(--f13); font-weight: 600;
+  letter-spacing: -.02em; color: var(--t2); white-space: nowrap;
+}
+.partner-stat-value.outstanding { color: var(--pos-txt); }
+
+.partner-cards-total {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 20px;
+  border-top: 1px solid var(--line-2);
+  background: var(--surface);
+}
+.partner-cards-total-label {
+  font-size: var(--f11); font-weight: 700;
+  text-transform: uppercase; letter-spacing: .07em; color: var(--t3);
+}
+.partner-cards-total-value {
+  font-family: var(--mono); font-size: var(--f16); font-weight: 700;
+  letter-spacing: -.03em; color: var(--pos-txt);
+}
+
+.partner-card-solo-hint {
+  margin-top: 14px; padding-top: 14px;
+  border-top: 1px solid var(--line-1);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.partner-card-solo-text { font-size: var(--f12); color: var(--t3); }
+
+/* ===== SETTINGS TABS ===== */
+.settings-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--line-2);
+  padding: 0 24px;
+  background: var(--surface);
+  position: sticky;
+  top: 48px;
+  z-index: 5;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.settings-tabs::-webkit-scrollbar { display: none; }
+.settings-tab {
+  height: 44px;
+  padding: 0 18px;
+  font-size: var(--f13);
+  font-weight: 500;
+  color: var(--t3);
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  white-space: nowrap;
+  transition: color 150ms ease, border-color 150ms ease;
+  flex-shrink: 0;
+}
+.settings-tab:hover { color: var(--t2); }
+.settings-tab.act { color: var(--t1); font-weight: 600; border-bottom-color: var(--cta); }
+.settings-tab-content { display: none; }
+.settings-tab-content.act { display: block; }
+
+/* ===== SETTINGS BODY COMPONENTS ===== */
+.settings-section-heading {
+  font-size: var(--f11);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .09em;
+  color: var(--t3);
+  margin-bottom: 16px;
+}
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 0;
+}
+.settings-row-info { flex: 1; min-width: 0; }
+.settings-row-title { font-size: var(--f13); font-weight: 500; color: var(--t1); margin-bottom: 2px; }
+.settings-row-desc  { font-size: var(--f12); color: var(--t3); line-height: 1.45; }
+.settings-card {
+  background: var(--surface-2);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r4);
+  padding: 16px 20px;
+  margin-bottom: 10px;
+}
+.settings-input {
+  width: 100%;
+  height: 38px;
+  background: var(--surface-2);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r3);
+  color: var(--t1);
+  font-size: var(--f13);
+  padding: 0 14px;
+  transition: border-color 150ms ease;
+  font-family: inherit;
+}
+.settings-input:focus {
+  outline: none;
+  border-color: var(--cta-border);
+  box-shadow: 0 0 0 3px var(--cta-bg);
+}
+.settings-input-sm {
+  width: 90px; height: 34px;
+  background: var(--surface-2);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r3);
+  color: var(--t1);
+  font-size: var(--f13);
+  font-family: var(--mono);
+  padding: 0 12px;
+  text-align: right;
+  transition: border-color 150ms ease;
+}
+.settings-input-sm:focus { outline: none; border-color: var(--cta-border); }
+
+/* ===== ROLE SELECTOR ===== */
+.invite-role-group { margin-bottom: 16px; }
+.role-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.role-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r3);
+  cursor: pointer;
+  transition: border-color 150ms ease, background 150ms ease;
+  position: relative;
+}
+.role-option:has(input:checked) {
+  border-color: var(--cta-border);
+  background: var(--cta-bg);
+}
+.role-option input[type="radio"] { display: none; }
+.role-option-body { flex: 1; }
+.role-option-title { font-size: var(--f13); font-weight: 600; color: var(--t1); margin-bottom: 3px; }
+.role-option-desc { font-size: var(--f12); color: var(--t3); line-height: 1.4; }
+.role-option-check {
+  font-size: 12px; color: var(--cta);
+  opacity: 0; transition: opacity 120ms ease;
+  flex-shrink: 0; margin-top: 1px;
+}
+.role-option:has(input:checked) .role-option-check { opacity: 1; }
+
+/* ===== CHART TOOLTIP ===== */
+.chart-tooltip {
+  position: absolute;
+  z-index: 20;
+  pointer-events: none;
+  /* Override .dash-chart-body > div { width/height: 100% } */
+  width: auto !important;
+  height: auto !important;
+  max-width: 220px;
+  background: var(--surface-2);
+  border: 1px solid var(--line-3);
+  border-radius: var(--r4);
+  padding: 12px 14px;
+  box-shadow: 0 12px 36px rgba(0,0,0,.65), 0 0 0 1px rgba(255,255,255,.04);
+  animation: ct-fade-in 120ms ease;
+}
+@keyframes ct-fade-in { from { opacity:0; transform:translateY(3px); } to { opacity:1; transform:translateY(0); } }
+.ct-title {
+  font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .08em;
+  color: var(--t3);
+  margin-bottom: 10px;
+}
+.ct-row {
+  display: grid;
+  grid-template-columns: 7px 1fr auto;
+  align-items: center;
+  gap: 0 8px;
+  margin-bottom: 6px;
+}
+.ct-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.ct-label { font-size: 12px; color: var(--t2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ct-val { font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--t1); text-align: right; white-space: nowrap; letter-spacing: -.02em; }
+.ct-footer {
+  display: flex; justify-content: space-between; align-items: center;
+  padding-top: 8px; margin-top: 2px;
+  border-top: 1px solid var(--line-2);
+  font-size: 12px; font-weight: 700; color: var(--t1);
+}
+.ct-footer span:last-child { font-family: var(--mono); letter-spacing: -.02em; }
+
+/* ===== SPLIT PARTNER LIST ===== */
+.split-list { margin-top: 14px; display: flex; flex-direction: column; }
+.split-list-row {
+  display: grid;
+  grid-template-columns: 8px 1fr 36px 1fr 1fr;
+  align-items: center;
+  gap: 0 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line-1);
+  font-size: var(--f12);
+}
+.split-list-row:last-child { border-bottom: none; }
+.split-list-dot { width: 6px; height: 6px; border-radius: 50%; }
+.split-list-name { color: var(--t2); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.split-list-pct { font-size: var(--f11); font-weight: 700; color: var(--t3); text-align: center; }
+.split-list-earned { font-family: var(--mono); font-size: var(--f12); color: var(--t2); text-align: right; letter-spacing: -.02em; white-space: nowrap; }
+.split-list-outstanding { font-family: var(--mono); font-size: var(--f12); font-weight: 600; color: var(--pos-txt); text-align: right; letter-spacing: -.02em; white-space: nowrap; }
+
+/* ── tx-row: единственное итоговое правило ── */
+.tx-row {
+  display: grid !important;
+  grid-template-columns: 90px 1fr 68px 88px;
+  align-items: center;
+  padding: 9px 20px;
+  border-bottom: 1px solid var(--line-1);
+  min-height: 40px;
+  transition: background 100ms ease;
+}
+.tx-row:hover { background: rgba(255,255,255,.04); }
+.tx-row > *:first-child { justify-self: start; }
+.tx-row > *:nth-child(3) { text-align: right; font-size: 12px; color: var(--t3); white-space: nowrap; }
+.tx-row > *:last-child { text-align: right; font-family: var(--mono); font-size: 13px; font-weight: 600; white-space: nowrap; }
 
 </style>
 </head>
@@ -5851,33 +6147,44 @@ html { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
               <button class="btn btn-ghost" onclick="showTab('withdrawals',document.querySelector('[data-tab=withdrawals]'))">Record withdrawal →</button>
             </div>
           </div>
-          <div class="dash-payout-table" id="partnerBalanceWrap">
-            <div class="dpt-head">
-              <div class="dpt-col">Partner</div>
-              <div class="dpt-col num">Split</div>
-              <div class="dpt-col num">Revenue Share</div>
-              <div class="dpt-col num">Withdrawn (EUR)</div>
-              <div class="dpt-col num due-col">Outstanding</div>
-            </div>
-            <div id="partnerRow">
-              <div class="sk-dpt-row">
-                <div class="sk-dpt-cell" style="gap:10px"><div class="skeleton sk-line sk-xs sk-thin" style="border-radius:50%"></div><div class="skeleton sk-line sk-lg"></div></div>
-                <div class="sk-dpt-cell right"><div class="skeleton sk-line sk-xs"></div></div>
-                <div class="sk-dpt-cell right"><div class="skeleton sk-line sk-sm"></div></div>
-                <div class="sk-dpt-cell right"><div class="skeleton sk-line sk-sm"></div></div>
-                <div class="sk-dpt-cell right"><div class="skeleton sk-line sk-md sk-num"></div></div>
+          <div id="partnerBalanceWrap">
+            <div class="partner-cards-grid" id="partnerCardsGrid">
+              <div class="partner-card" style="--pc-color:var(--cta);--pc-bg:var(--cta-bg);--pc-border:var(--cta-border)">
+                <div class="partner-card-head">
+                  <div class="skeleton sk-line" style="width:34px;height:34px;border-radius:8px;flex-shrink:0"></div>
+                  <div class="partner-card-info">
+                    <div class="skeleton sk-line sk-lg" style="margin-bottom:5px"></div>
+                    <div class="skeleton sk-line sk-sm"></div>
+                  </div>
+                  <div class="skeleton sk-line" style="width:60px;height:22px;border-radius:11px"></div>
+                </div>
+                <div class="skeleton sk-line" style="width:80px;height:12px;margin-bottom:6px"></div>
+                <div class="skeleton sk-line sk-num" style="width:120px;height:28px;margin-bottom:14px"></div>
+                <div class="partner-card-stats">
+                  <div class="partner-stat-cell"><div class="skeleton sk-line sk-sm" style="margin-bottom:5px"></div><div class="skeleton sk-line sk-md sk-num"></div></div>
+                  <div class="partner-stat-cell"><div class="skeleton sk-line sk-sm" style="margin-bottom:5px"></div><div class="skeleton sk-line sk-md sk-num"></div></div>
+                </div>
               </div>
-              <div class="sk-dpt-row sk-fade-2">
-                <div class="sk-dpt-cell" style="gap:10px"><div class="skeleton sk-line sk-xs sk-thin" style="border-radius:50%"></div><div class="skeleton sk-line sk-md"></div></div>
-                <div class="sk-dpt-cell right"><div class="skeleton sk-line sk-xs"></div></div>
-                <div class="sk-dpt-cell right"><div class="skeleton sk-line sk-sm"></div></div>
-                <div class="sk-dpt-cell right"><div class="skeleton sk-line sk-sm"></div></div>
-                <div class="sk-dpt-cell right"><div class="skeleton sk-line sk-md sk-num"></div></div>
+              <div class="partner-card sk-fade-2" style="--pc-color:var(--t4);--pc-bg:var(--surface-3);--pc-border:var(--line-2)">
+                <div class="partner-card-head">
+                  <div class="skeleton sk-line" style="width:34px;height:34px;border-radius:8px;flex-shrink:0"></div>
+                  <div class="partner-card-info">
+                    <div class="skeleton sk-line sk-md" style="margin-bottom:5px"></div>
+                    <div class="skeleton sk-line sk-sm"></div>
+                  </div>
+                  <div class="skeleton sk-line" style="width:60px;height:22px;border-radius:11px"></div>
+                </div>
+                <div class="skeleton sk-line" style="width:80px;height:12px;margin-bottom:6px"></div>
+                <div class="skeleton sk-line sk-num" style="width:100px;height:28px;margin-bottom:14px"></div>
+                <div class="partner-card-stats">
+                  <div class="partner-stat-cell"><div class="skeleton sk-line sk-sm" style="margin-bottom:5px"></div><div class="skeleton sk-line sk-md sk-num"></div></div>
+                  <div class="partner-stat-cell"><div class="skeleton sk-line sk-sm" style="margin-bottom:5px"></div><div class="skeleton sk-line sk-md sk-num"></div></div>
+                </div>
               </div>
             </div>
-            <div class="dpt-footer" id="dashPayoutFooter">
-              <div class="dpt-footer-label">Total Outstanding</div>
-              <div class="dpt-footer-total settled">—</div>
+            <div class="partner-cards-total" id="dashPayoutFooter">
+              <div class="partner-cards-total-label">Total Outstanding</div>
+              <div class="partner-cards-total-value">—</div>
             </div>
           </div>
         </div>
@@ -5914,6 +6221,7 @@ html { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
                 <div class="split-labels" id="splitLabels"></div>
                 <div class="split-bar" id="splitBar"></div>
                 <div class="split-hint" id="splitHint"></div>
+                <div class="split-list" id="splitPartnerList"></div>
               </div>
             </div>
             <!-- Revenue By Month chart -->
@@ -5927,6 +6235,7 @@ html { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
               </div>
               <div class="dash-chart-body">
                 <div id="chartContainer"></div>
+                <div id="chartTooltip" class="chart-tooltip" style="display:none"></div>
               </div>
             </div>
           </div>
@@ -6144,15 +6453,17 @@ html { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
         <div id="subBannerSettings"></div>
 
         <!-- Settings sub-nav -->
-        <div class="settings-subnav" id="settingsSubnav">
-          <a href="#sTeam" class="ssnav-item act" onclick="scrollToSection('sTeam',this);return false;">Team</a>
-          <a href="#sIntegrations" class="ssnav-item" onclick="scrollToSection('sIntegrations',this);return false;">Integrations</a>
-          <a href="#sAgency" class="ssnav-item" onclick="scrollToSection('sAgency',this);return false;">Agency</a>
-          <a href="#sPreferences" class="ssnav-item" onclick="scrollToSection('sPreferences',this);return false;">Preferences</a>
-          <a href="#sAbout" class="ssnav-item" onclick="scrollToSection('sAbout',this);return false;">About</a>
+        <div class="settings-tabs" id="settingsTabs">
+          <button class="settings-tab act" data-stab="team" onclick="switchSettingsTab('team')">Team</button>
+          <button class="settings-tab" data-stab="integration" onclick="switchSettingsTab('integration')">Integration</button>
+          <button class="settings-tab" data-stab="preferences" onclick="switchSettingsTab('preferences')">Preferences</button>
+          <button class="settings-tab" data-stab="about" onclick="switchSettingsTab('about')">About</button>
         </div>
 
         <div class="settings-body">
+
+        <!-- ── TAB: TEAM ── -->
+        <div id="settings-team" class="settings-tab-content act">
         <!-- SECTION: TEAM -->
         <div class="settings-section" id="partnersCard" style="display:none"><div id="sTeam"></div>
           <div class="settings-section-header">
@@ -6186,6 +6497,27 @@ html { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
                 <label>Revenue Split %</label>
                 <input type="number" id="inviteSplitPct" min="1" max="100" value="50" placeholder="50">
                 <div class="sub-hint">Partner's % cut of model revenue.</div>
+              </div>
+              <div class="invite-role-group">
+                <div class="settings-row-title" style="margin-bottom:10px">Role</div>
+                <div class="role-options">
+                  <label class="role-option">
+                    <input type="radio" name="inviteRole" value="partner" checked>
+                    <div class="role-option-body">
+                      <div class="role-option-title">Partner</div>
+                      <div class="role-option-desc">Can view their own splits and withdrawal history only</div>
+                    </div>
+                    <div class="role-option-check">✓</div>
+                  </label>
+                  <label class="role-option">
+                    <input type="radio" name="inviteRole" value="admin">
+                    <div class="role-option-body">
+                      <div class="role-option-title">Admin</div>
+                      <div class="role-option-desc">Full access — same rights as account owner</div>
+                    </div>
+                    <div class="role-option-check">✓</div>
+                  </label>
+                </div>
               </div>
               <div class="form-actions">
                 <div id="inviteStatus" class="form-status"></div>
@@ -6228,6 +6560,10 @@ html { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
           </div>
         </div>
 
+        </div><!-- end settings-team tab -->
+
+        <!-- ── TAB: INTEGRATION ── -->
+        <div id="settings-integration" class="settings-tab-content">
         <!-- SECTION: INTEGRATIONS -->
         <div class="settings-section" id="sIntegrations">
           <div class="settings-section-header">
@@ -6249,7 +6585,10 @@ html { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
             <div id="syncStatus" class="status-line settings-status"></div>
           </div>
         </div>
+        </div><!-- end settings-integration tab -->
 
+        <!-- ── TAB: PREFERENCES ── -->
+        <div id="settings-preferences" class="settings-tab-content">
         <!-- SECTION: PREFERENCES -->
         <div class="settings-section" id="sPreferences">
           <div class="settings-section-header">
@@ -6302,6 +6641,61 @@ html { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
                 <span id="digestToggleThumb" class="toggle-thumb"></span>
               </label>
             </div>
+          </div>
+        </div>
+
+        <!-- SECTION: TAX TRACKING -->
+        <div class="settings-section" id="taxSection">
+          <div class="settings-section-heading">TAX TRACKING</div>
+          <div class="settings-card">
+            <div class="settings-row">
+              <div class="settings-row-info">
+                <div class="settings-row-title">Enable tax tracking</div>
+                <div class="settings-row-desc">Adds a tax estimate column to your revenue reports. Set your local income tax rate to see how much to set aside each month.</div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="taxTrackingToggle" onchange="handleTaxToggle(this.checked)">
+                <span id="taxToggleTrack" class="toggle-track" style="background:var(--border2)"></span>
+                <span id="taxToggleThumb" class="toggle-thumb"></span>
+              </label>
+            </div>
+            <div id="taxRateRow" style="display:none">
+              <div class="settings-row" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--line-1)">
+                <div class="settings-row-info">
+                  <div class="settings-row-title">Tax rate (%)</div>
+                  <div class="settings-row-desc">Approximate rate. For estimation only — consult a tax professional for accuracy.</div>
+                </div>
+                <input type="number" class="settings-input-sm" id="taxRateInput"
+                       min="0" max="60" step="0.5" placeholder="20"
+                       onchange="saveTaxRate(this.value)">
+              </div>
+              <div class="settings-row">
+                <div class="settings-row-info">
+                  <div class="settings-row-title">Tax paid to date</div>
+                  <div class="settings-row-desc">Record tax payments you've already made. Tracked in Withdrawals history.</div>
+                </div>
+                <button class="btn" onclick="showRecordTaxPaymentModal()">Record payment</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        </div><!-- end settings-preferences tab -->
+
+        <!-- ── TAB: ABOUT ── -->
+        <div id="settings-about" class="settings-tab-content">
+
+        <!-- SECTION: WORKSPACE -->
+        <div class="settings-section">
+          <div class="settings-section-heading">WORKSPACE</div>
+          <div class="settings-card">
+            <div class="settings-row-title" style="margin-bottom:10px">Workspace name</div>
+            <div style="display:flex;gap:10px;align-items:center">
+              <input type="text" class="settings-input" id="workspaceName"
+                     placeholder="e.g. Cyber Pimps" style="max-width:300px">
+              <button class="btn btn-primary" onclick="saveWorkspaceName()">Save</button>
+            </div>
+            <div id="workspaceNameStatus" class="status-line" style="margin-top:8px"></div>
           </div>
         </div>
 
@@ -6388,6 +6782,8 @@ html { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
             </div>
           </div>
         </div>
+        </div><!-- end settings-about tab -->
+
         </div><!-- end settings-body -->
 
       </div><!-- end tab-settings -->
@@ -6961,7 +7357,14 @@ async function saveModelSplits(){
 /* ---- Partners ---- */
 var PARTNERS=[];
 var PARTNER_SPLITS={};
-var PARTNER_COLORS=['blue','green','purple','amber','pink'];
+var PARTNER_COLORS=[
+  {color:'#8B5CF6',bg:'rgba(139,92,246,.12)',border:'rgba(139,92,246,.25)'},
+  {color:'#10B981',bg:'rgba(16,185,129,.10)',border:'rgba(16,185,129,.22)'},
+  {color:'#3B82F6',bg:'rgba(59,130,246,.12)',border:'rgba(59,130,246,.25)'},
+  {color:'#F59E0B',bg:'rgba(245,158,11,.12)',border:'rgba(245,158,11,.25)'},
+  {color:'#EC4899',bg:'rgba(236,72,153,.12)',border:'rgba(236,72,153,.25)'},
+];
+var PARTNER_COLOR_KEYS=['blue','green','purple','amber','pink'];
 function P0(){return PARTNERS[0]||{id:'',name:'Partner 1'};}
 function P1(){return PARTNERS[1]||{id:'',name:'Partner 2'};}
 
@@ -7017,58 +7420,94 @@ async function loadPartnerSplits(){
 }
 
 function renderPartnerCards(){
-  var container=g('partnerRow');
-  if(!container)return;
+  var grid=g('partnerCardsGrid');
+  if(!grid)return;
+
+  /* No partners at all */
   if(!PARTNERS||!PARTNERS.length){
-    container.innerHTML='<div class="dpt-row" style="grid-template-columns:1fr;padding:16px 20px">'
-      +mkEmptyRow('No partners — <a href="#" onclick="showTab(\'settings\',document.querySelector(\'[data-tab=settings]\'));scrollToSection(\'partnersCard\',null);return false" style="color:var(--t2)">configure in Settings</a>')
-      +'</div>';
+    grid.className='partner-cards-grid count-1';
+    grid.innerHTML='<div class="partner-card" style="--pc-color:var(--cta);--pc-bg:var(--cta-bg);--pc-border:var(--cta-border)">'
+      +'<div class="partner-card-head">'
+        +'<div class="partner-avatar">—</div>'
+        +'<div class="partner-card-info">'
+          +'<div class="partner-card-name">No partners yet</div>'
+          +'<div class="partner-card-role">Solo mode</div>'
+        +'</div>'
+      +'</div>'
+      +'<div class="partner-card-solo-hint">'
+        +'<span class="partner-card-solo-text">Add a partner to track splits</span>'
+        +'<button class="btn-ghost" onclick="showTab(\'settings\',document.querySelector(\'[data-tab=settings]\'));scrollToSection(\'partnersCard\',null)">Invite partner →</button>'
+      +'</div>'
+    +'</div>';
+    var footer=g('dashPayoutFooter');
+    if(footer){footer.querySelector('.partner-cards-total-value').textContent='—';}
     return;
   }
+
   var activePartners=PARTNERS.filter(function(p){return p.status==='active';});
   if(!activePartners.length){
-    container.innerHTML='<div class="dpt-row" style="grid-template-columns:1fr;padding:16px 20px">'
-      +mkEmptyRow('No active partners')
-      +'</div>';
+    grid.className='partner-cards-grid count-1';
+    grid.innerHTML='<div class="partner-card" style="--pc-color:var(--t3);--pc-bg:var(--surface-3);--pc-border:var(--line-2)">'
+      +'<div class="partner-card-solo-hint">'
+        +'<span class="partner-card-solo-text">No active partners</span>'
+      +'</div>'
+    +'</div>';
     return;
   }
+
   var totalOutstanding=0;
+  var n=Math.min(activePartners.length,5);
+  grid.className='partner-cards-grid count-'+n;
+
   var html=activePartners.map(function(p,i){
-    var ci=i%5;
+    var pc=PARTNER_COLORS[i%PARTNER_COLORS.length];
     var isMe=currentUser&&p.user_id===currentUser.id;
+    var initials=(p.name||'U').split(' ').map(function(w){return w[0]||'';}).join('').slice(0,2).toUpperCase()||'?';
     var share=totalPartnerShare(p.id);
     var wEUR=totalPartnerWithdrawnEUR(p.id);
     var rem=Math.max(0,partnerRemaining(p.id));
     var splitPct=getCurrentSplit(ACTIVE_MODEL_ID,p.id);
-    var hasDue=rem>0.01;
     totalOutstanding+=rem;
-    return '<div class="dpt-row">'
-      +'<div class="dpt-name">'
-        +'<div class="pbt-dot p'+ci+'"></div>'
-        +'<span class="dpt-name-text">'+escHtml(p.name)+'</span>'
-        +(isMe?'<span class="dpt-you-badge">You</span>':'')
+    return '<div class="partner-card" style="--pc-color:'+pc.color+';--pc-bg:'+pc.bg+';--pc-border:'+pc.border+'">'
+      +'<div class="partner-card-head">'
+        +'<div class="partner-avatar">'+initials+'</div>'
+        +'<div class="partner-card-info">'
+          +'<div class="partner-card-name">'+escHtml(p.name)+(isMe?' <span style="font-size:10px;color:var(--t3);font-weight:400">you</span>':'')+'</div>'
+          +'<div class="partner-card-role">'+(isMe&&currentRole==='admin'?'Admin':'Partner')+'</div>'
+        +'</div>'
+        +'<div class="partner-split-badge">'+(splitPct||0)+'% split</div>'
       +'</div>'
-      +'<div class="dpt-cell split-col">'+(splitPct?splitPct+'%':'—')+'</div>'
-      +'<div class="dpt-cell">'+fc(share)+'</div>'
-      +'<div class="dpt-cell">€'+r2(wEUR).toFixed(2)+'</div>'
-      +'<div class="dpt-cell '+(hasDue?'due-val':'due-val due-zero')+'">'
-        +(hasDue
-          ?'<span>'+fc(rem)+'</span><span class="dpt-due-tag">DUE</span>'
-          :'<span style="font-size:var(--f12);color:var(--t4);font-weight:400;font-family:inherit">Settled</span>')
+      +'<div class="partner-card-total-label">REVENUE SHARE</div>'
+      +'<div class="partner-card-total">'+fc(share)+'</div>'
+      +'<div class="partner-card-stats">'
+        +'<div class="partner-stat-cell">'
+          +'<div class="partner-stat-label">Withdrawn</div>'
+          +'<div class="partner-stat-value">€'+r2(wEUR).toFixed(2)+'</div>'
+        +'</div>'
+        +'<div class="partner-stat-cell">'
+          +'<div class="partner-stat-label">Remaining</div>'
+          +'<div class="partner-stat-value outstanding">'+fc(rem)+'</div>'
+        +'</div>'
       +'</div>'
     +'</div>';
   }).join('');
-  container.innerHTML=html;
-  /* Update payout footer with total outstanding */
+
+  grid.innerHTML=html;
+
+  /* Update footer */
   var footer=g('dashPayoutFooter');
   if(footer){
     var hasAny=totalOutstanding>0.01;
-    footer.innerHTML='<div class="dpt-footer-label">Total Outstanding</div>'
-      +'<div class="dpt-footer-total'+(hasAny?'':' settled')+'">'+(hasAny?fc(totalOutstanding):'Fully settled')+'</div>';
+    var valEl=footer.querySelector('.partner-cards-total-value');
+    if(valEl){
+      valEl.textContent=hasAny?fc(totalOutstanding):'Fully settled';
+      valEl.style.color=hasAny?'var(--pos-txt)':'var(--t3)';
+    }
   }
-  /* Count-up on revenue share cells (index 1 of 4 per row: split, share, eur, due) */
-  container.querySelectorAll('.dpt-cell').forEach(function(el,i){
-    if(i%4===1)animateCountUp(el,el.textContent,700);
+
+  /* Count-up animation on total earned values */
+  grid.querySelectorAll('.partner-card-total').forEach(function(el){
+    animateCountUp(el,el.textContent,700);
   });
 }
 
@@ -7167,6 +7606,7 @@ async function loadAgencySettings(){
     _agencyName=agData.data.name||'';
     var inp=g('agencyNameInput');
     if(inp)inp.value=_agencyName;
+    var wn=g('workspaceName');if(wn&&!wn.value)wn.value=_agencyName;
     var logoSub=g('sidebarLogoSub');
     if(logoSub&&_agencyName)logoSub.textContent=_agencyName;
     _agencyTrialEndsAt=agData.data.trial_ends_at||null;
@@ -7422,12 +7862,14 @@ async function invitePartner(){
     setStatus(st,'err','Set split % > 0.');return;
   }
   setBtnLoading(btn,true);
+  var roleEl=document.querySelector('input[name="inviteRole"]:checked');
+  var inviteRole=roleEl?roleEl.value:'partner';
   var sessionRes=await db.auth.getSession();
   var jwt=sessionRes.data&&sessionRes.data.session&&sessionRes.data.session.access_token;
   var res=await fetch(EDGE_URL+'/invite-partner',{
     method:'POST',
     headers:{'Content-Type':'application/json','Authorization':'Bearer '+jwt},
-    body:JSON.stringify({email:email,name:name,models:models})
+    body:JSON.stringify({email:email,name:name,models:models,role:inviteRole})
   });
   var data=await res.json();
   if(!res.ok||data.error){
@@ -8901,6 +9343,68 @@ function scrollToSection(id,el){
   if(el)el.classList.add('act');
 }
 
+/* ---- Settings tab switching (Stage 5) ---- */
+function switchSettingsTab(tabName){
+  document.querySelectorAll('.settings-tab-content').forEach(function(el){
+    el.classList.remove('act');
+  });
+  document.querySelectorAll('.settings-tab').forEach(function(el){
+    el.classList.remove('act');
+  });
+  var content=g('settings-'+tabName);
+  if(content)content.classList.add('act');
+  var btn=document.querySelector('[data-stab="'+tabName+'"]');
+  if(btn)btn.classList.add('act');
+  if(tabName==='preferences')loadTaxSettings();
+  if(tabName==='about'){
+    var wn=g('workspaceName');
+    if(wn&&!wn.value&&typeof _agencyName!=='undefined'&&_agencyName)wn.value=_agencyName;
+  }
+}
+
+/* ---- Tax tracking (Stage 5) ---- */
+function handleTaxToggle(enabled){
+  var row=g('taxRateRow');
+  if(row)row.style.display=enabled?'block':'none';
+  var track=g('taxToggleTrack'),thumb=g('taxToggleThumb');
+  if(track)track.style.background=enabled?'var(--text)':'var(--border2)';
+  if(thumb)thumb.style.transform=enabled?'translateX(20px)':'translateX(0)';
+  localStorage.setItem('taxTrackingEnabled',enabled?'1':'0');
+}
+
+function saveTaxRate(value){
+  var rate=parseFloat(value);
+  if(isNaN(rate)||rate<0||rate>60)return;
+  localStorage.setItem('taxRate',String(rate));
+}
+
+function loadTaxSettings(){
+  var enabled=localStorage.getItem('taxTrackingEnabled')==='1';
+  var toggle=g('taxTrackingToggle');
+  if(toggle)toggle.checked=enabled;
+  handleTaxToggle(enabled);
+  var rate=localStorage.getItem('taxRate');
+  var rateInput=g('taxRateInput');
+  if(rateInput&&rate)rateInput.value=rate;
+}
+
+function showRecordTaxPaymentModal(){
+  showToast('Tax payment recording coming soon','info');
+}
+
+/* ---- Workspace name (Stage 5) ---- */
+async function saveWorkspaceName(){
+  if(currentRole!=='admin'){showToast('Admin only','error');return;}
+  var wn=g('workspaceName');
+  var name=(wn?wn.value:'').trim();
+  var st=g('workspaceNameStatus');
+  if(!name){if(st)setStatus(st,'err','Enter a workspace name.');return;}
+  /* Mirror to agencyNameInput so saveAgencyName() reads it */
+  var legacy=g('agencyNameInput');if(legacy)legacy.value=name;
+  await saveAgencyName();
+  if(st)setStatus(st,'ok','Saved');
+}
+
 /* ---- Collapsible forms (Stage 3) ---- */
 function toggleAddTxForm(){
   var form=g('addTxForm');if(!form)return;
@@ -9026,12 +9530,12 @@ function renderBal(){
   /* Welcome state if no models at all */
   if(!ACTIVE_MODEL_ID&&ALL_MODELS.length===0){
     var dw=g('dashWelcome');if(dw)dw.style.display='block';
-    var pw=g('partnerBalanceWrap');if(pw)pw.parentElement&&(pw.parentElement.style.display='none');
+    var dps=g('dashPartnerSection');if(dps)dps.style.display='none';
     g('dashStats').innerHTML='';
     return;
   }
   var dw=g('dashWelcome');if(dw)dw.style.display='none';
-  var pw=g('partnerBalanceWrap');if(pw)pw.parentElement&&(pw.parentElement.style.display='');
+  var dps=g('dashPartnerSection');if(dps)dps.style.display='';
 
   /* All-models aggregate view */
   if(!ACTIVE_MODEL_ID&&ALL_MODELS.length>=1){
@@ -9065,23 +9569,25 @@ function renderBal(){
       activePartners.forEach(function(p,i){
         var wEUR=totalPartnerWithdrawnEUR(p.id);
         var frac=wEUR/totalEURwithdrawn;
-        var colorClass=PARTNER_COLORS[i%PARTNER_COLORS.length];
-        barHtml+='<div class="split-bar-seg '+colorClass+'" style="flex:'+frac.toFixed(3)+';min-width:4px"></div>';
-        var colorVar=['var(--p0)','var(--p1)','var(--p2)','var(--p3)','var(--p4)'][i%5]||'var(--t2)';
-        labHtml+='<span style="font-size:10px;font-weight:700;color:'+colorVar+';letter-spacing:.01em">'+escHtml(p.name)+'<span style="opacity:.6;margin-left:3px">'+(frac*100).toFixed(0)+'%</span></span>';
+        var pc=PARTNER_COLORS[i%PARTNER_COLORS.length];
+        barHtml+='<div class="split-bar-seg" style="background:'+pc.color+';flex:'+frac.toFixed(3)+';min-width:4px"></div>';
+        labHtml+='<span style="font-size:10px;font-weight:700;color:'+pc.color+';letter-spacing:.01em">'+escHtml(p.name)+'<span style="opacity:.6;margin-left:3px">'+(frac*100).toFixed(0)+'%</span></span>';
       });
       splitBarEl.innerHTML=barHtml;
       if(splitLabelsEl)splitLabelsEl.innerHTML=labHtml;
     }else{
       var eqFrac=(1/Math.max(activePartners.length,1)).toFixed(3);
       splitBarEl.innerHTML=activePartners.map(function(p,i){
-        return '<div class="split-bar-seg '+PARTNER_COLORS[i%PARTNER_COLORS.length]+'" style="flex:'+eqFrac+';min-width:4px"></div>';
+        var pc=PARTNER_COLORS[i%PARTNER_COLORS.length];
+        return '<div class="split-bar-seg" style="background:'+pc.color+';flex:'+eqFrac+';min-width:4px"></div>';
       }).join('');
       if(splitLabelsEl)splitLabelsEl.innerHTML='<span class="split-no-data">No withdrawals recorded</span>';
     }
   }
   var hint=g('splitHint');
   if(hint)hint.innerHTML='<span class="split-no-data">Based on recorded withdrawals</span>';
+
+  renderSplitList();
 
   /* Sidebar quick stats */
   var sb1=g('sidebarThisMonth'),sb2=g('sidebarTotalWithdrawn');
@@ -9189,13 +9695,130 @@ function renderChart(){
     });
     var lx=(x+barW/2).toFixed(1);
     sv.push('<text x="'+lx+'" y="'+(H-9)+'" text-anchor="middle" fill="'+textColor+'" font-size="11" font-family="system-ui,sans-serif">'+m.name.split(' ')[0].slice(0,3)+'</text>');
-    if(tot>0){
-      var totalH=(tot/maxVal)*cH;
-      sv.push('<text x="'+lx+'" y="'+(base-totalH-6).toFixed(1)+'" text-anchor="middle" fill="'+textColor+'" font-size="10" font-family="system-ui,sans-serif">$'+Math.round(tot)+'</text>');
-    }
   });
   sv.push('</svg>');
   container.innerHTML=sv.join('');
+
+  /* ── Tooltip: store per-column hit geometry, attach handler once ── */
+  _chartMonths=months;
+  var base=PT+cH;
+  _chartGeom={
+    barW:barW, base:base,
+    cols:months.map(function(m,i){
+      var cx=PL+gap+i*(barW+gap);
+      var tot=mTot(m);
+      var barTopY=tot>0?base-(tot/maxVal)*cH:base;
+      return{x:cx,barTopY:barTopY};
+    })
+  };
+  if(!_chartListenerAttached){
+    _chartListenerAttached=true;
+    container.addEventListener('pointermove',onChartPointerMove);
+    container.addEventListener('pointerleave',hideChartTooltip);
+  }
+}
+
+/* ---- Chart tooltip helpers ---- */
+var _chartMonths=[];
+var _chartGeom={};
+var _chartListenerAttached=false;
+
+function onChartPointerMove(e){
+  var container=g('chartContainer');
+  if(!container||!_chartMonths.length||!_chartGeom.cols)return;
+  var svgEl=container.querySelector('svg');
+  if(!svgEl){hideChartTooltip();return;}
+  var rect=svgEl.getBoundingClientRect();
+  var relX=e.clientX-rect.left;
+  var relY=e.clientY-rect.top;
+  var gm=_chartGeom,idx=-1;
+  for(var mi=0;mi<gm.cols.length;mi++){
+    var col=gm.cols[mi];
+    /* Strict X: only within the bar rect itself */
+    if(relX<col.x||relX>col.x+gm.barW)continue;
+    /* Strict Y: only within the rendered bar height */
+    if(relY<col.barTopY||relY>gm.base)continue;
+    idx=mi;break;
+  }
+  if(idx===-1){hideChartTooltip();return;}
+  showChartTooltip(idx);
+}
+
+function showChartTooltip(idx){
+  var tt=g('chartTooltip');
+  var container=g('chartContainer');
+  if(!tt||!container)return;
+  var m=_chartMonths[idx];
+  if(!m){tt.style.display='none';return;}
+
+  /* Build rows — skip platforms with zero revenue */
+  var rowsHtml=S.platforms.map(function(plat,pi){
+    var val=(m.revenues||{})[plat]||0;
+    if(val<=0)return'';
+    var color=platformColorForName(plat)||PLATFORM_COLORS[pi%PLATFORM_COLORS.length];
+    var fmt='$'+val.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+    return '<div class="ct-row">'
+      +'<div class="ct-dot" style="background:'+color+'"></div>'
+      +'<span class="ct-label">'+escHtml(plat)+'</span>'
+      +'<span class="ct-val">'+fmt+'</span>'
+      +'</div>';
+  }).join('');
+
+  var total=S.platforms.reduce(function(s,p){return s+((m.revenues||{})[p]||0);},0);
+  var totalFmt='$'+total.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+  tt.innerHTML=
+    '<div class="ct-title">'+escHtml(m.name)+'</div>'
+    +rowsHtml
+    +'<div class="ct-footer"><span>Total</span><span>'+totalFmt+'</span></div>';
+
+  /* Anchor tooltip to bar column — positioned to the side, not under cursor */
+  tt.style.visibility='hidden';
+  tt.style.display='block';
+
+  var col=_chartGeom.cols[idx];
+  var barMidY=(col.barTopY+_chartGeom.base)/2;
+  var cW=container.clientWidth;
+  var cH=container.clientHeight;
+
+  requestAnimationFrame(function(){
+    var ttW=tt.offsetWidth||185;
+    var ttH=tt.offsetHeight||90;
+    var ttX,ttY;
+    var rightX=col.x+_chartGeom.barW+10;
+    var leftX=col.x-ttW-10;
+    ttX=(rightX+ttW<=cW-4)?rightX:Math.max(4,leftX);
+    ttY=Math.max(4,Math.min(barMidY-ttH/2,cH-ttH-4));
+    tt.style.left=ttX+'px';
+    tt.style.top=ttY+'px';
+    tt.style.visibility='';
+  });
+}
+
+function hideChartTooltip(){
+  var tt=g('chartTooltip');
+  if(tt)tt.style.display='none';
+}
+
+/* ---- Render: Split partner list ---- */
+function renderSplitList(){
+  var list=g('splitPartnerList');
+  if(!list)return;
+  var activePartners=PARTNERS.filter(function(p){return p.status==='active';});
+  if(!activePartners.length){list.innerHTML='';return;}
+  list.innerHTML=activePartners.map(function(p,i){
+    var pc=PARTNER_COLORS[i%PARTNER_COLORS.length];
+    var splitPct=getCurrentSplit(ACTIVE_MODEL_ID,p.id)||0;
+    var earned=totalPartnerShare(p.id);
+    var outstanding=Math.max(0,partnerRemaining(p.id));
+    return '<div class="split-list-row">'
+      +'<div class="split-list-dot" style="background:'+pc.color+'"></div>'
+      +'<div class="split-list-name">'+escHtml(p.name)+'</div>'
+      +'<div class="split-list-pct">'+splitPct+'%</div>'
+      +'<div class="split-list-earned">'+fc(earned)+'</div>'
+      +'<div class="split-list-outstanding">'+(outstanding>0.01?fc(outstanding)+' left':'✓')+'</div>'
+    +'</div>';
+  }).join('');
 }
 
 /* ---- Render: Monthly revenue ---- */
@@ -9407,6 +10030,7 @@ function renderMonths(){
           +'<div class="tx-row">'
           +'<span class="tx-pl '+plCls+'" style="background:'+plColor+'18;color:'+plColor+'">'+plLabel+'</span>'
           +'<span style="font-size:11px;color:var(--blue-text);font-weight:600">Editing</span>'
+          +'<span></span><span></span>'
           +'</div>'
           +'<div class="tx-edit-row">'
           +'<div class="field"><label>Amount (USD)</label>'
@@ -9535,7 +10159,7 @@ function renderList(){
           +'<p class="sec-label" style="margin-bottom:.625rem">Split</p>'
           +'<div class="g2" style="margin-bottom:.875rem">'
           +PARTNERS.filter(function(p){return p.status==='active';}).map(function(p,i){
-            var colorClass=PARTNER_COLORS[i%PARTNER_COLORS.length];
+            var colorClass=PARTNER_COLOR_KEYS[i%PARTNER_COLOR_KEYS.length];
             return '<div class="field"><label style="color:var(--'+colorClass+'-text)">'+escHtml(p.name)+' (EUR)</label>'
               +'<input class="num" id="sp_'+w.id+'_'+p.id+'" placeholder="0.00" oninput="onWithdrawalSplitInput(\''+w.id+'\')" data-partner="'+p.id+'"></div>';
           }).join('')

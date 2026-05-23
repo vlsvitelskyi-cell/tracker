@@ -54,8 +54,9 @@
   --cta-dark:   #059669;
   --cta-hover:  #0EA572;
   --cta-text:   #FFFFFF;
-  --cta-bg:     rgba(16,185,129,.10);
-  --cta-border: rgba(16,185,129,.25);
+  --cta-glow:   rgba(16,185,129,.30);
+  --cta-bg:     rgba(16,185,129,.09);
+  --cta-border: rgba(16,185,129,.22);
 
   /* ACCENT — white for neutral/secondary actions */
   --accent:       #FFFFFF;
@@ -85,15 +86,15 @@
   --mono: 'Outfit', 'Roboto Mono', monospace;
 
   /* TYPE SCALE */
-  --f10: 10px; --f11: 11px; --f12: 12px; --f13: 13px; --f14: 14px;
-  --f15: 15px; --f16: 16px; --f18: 18px; --f22: 22px; --f28: 28px; --f32: 32px;
+  --f10: 11px; --f11: 12px; --f12: 13px; --f13: 14px; --f14: 15px;
+  --f15: 15px; --f16: 17px; --f18: 18px; --f22: 22px; --f28: 28px; --f32: 32px;
 
   /* SPACING (4px grid) */
-  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:20px;
-  --s6:24px; --s7:32px; --s8:40px; --s9:48px; --s10:64px;
+  --s1:4px; --s2:8px; --s3:14px; --s4:18px; --s5:22px;
+  --s6:28px; --s7:32px; --s8:40px; --s9:48px; --s10:64px;
 
   /* RADIUS */
-  --r1:3px; --r2:4px; --r3:6px; --r4:8px; --r5:12px;
+  --r1:3px; --r2:4px; --r3:8px; --r4:10px; --r5:14px;
 
   /* SHADOWS */
   --shadow-float:   0 4px 24px rgba(0,0,0,.70), 0 1px 0 rgba(255,255,255,.04);
@@ -282,11 +283,39 @@ button { font-family: var(--sans); }
 }
 .tab-btn.act::before { display: none; }
 
-/* ── Model context ── */
-.sidebar-model-section {
+/* ── Model identity block — static, bottom of sidebar ── */
+.sidebar-model-block {
+  padding: 14px 16px;
   border-top: 1px solid var(--line-1);
-  padding: 6px 0 4px;
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
 }
+.sidebar-model-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--cta);
+  flex-shrink: 0;
+  box-shadow: 0 0 6px var(--cta-glow);
+}
+.sidebar-model-name {
+  font-size: var(--f13);
+  font-weight: 600;
+  color: var(--t1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sidebar-model-label {
+  font-size: var(--f11);
+  color: var(--t3);
+  margin-top: 1px;
+}
+/* model-chip, nav-section-label kept for any legacy references */
+.model-chip { display: none; }
 .nav-section-label {
   font-size: 9px;
   font-weight: 700;
@@ -295,49 +324,6 @@ button { font-family: var(--sans); }
   color: var(--t4);
   padding: 4px 18px 2px;
 }
-.model-bar { display: none; }
-.model-chip {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  width: 100%;
-  padding: 5px 18px;
-  border: none;
-  border-left: 2px solid transparent;
-  background: transparent;
-  color: var(--t4);
-  font-size: var(--f12);
-  font-weight: 400;
-  cursor: pointer;
-  transition: color var(--fast);
-  font-family: var(--sans);
-  text-align: left;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.model-chip:hover { color: var(--t2); }
-.model-chip.act {
-  color: var(--t2);
-  font-weight: 600;
-  border-left-color: var(--pos);
-}
-.mc-dot {
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: var(--t4);
-  flex-shrink: 0;
-}
-.mc-dot.connected { background: var(--pos); }
-.model-chip-add {
-  color: var(--t4);
-  font-size: var(--f12);
-  border: none;
-  background: transparent;
-  font-style: normal;
-}
-.model-chip-add:hover { color: var(--t2); border: none; background: transparent; }
 
 /* ── Financial summary — the two numbers that matter ── */
 .sidebar-quick-stats {
@@ -721,153 +707,202 @@ button { font-family: var(--sans); }
 .page-section { margin-bottom: var(--s6); }
 
 /* ── 11. BUTTON SYSTEM ──────────────────────────────────────── */
-/* Flat, minimal. Primary = white. Everything else = ghost or outline. */
+/* Unified system — 4 roles, consistent sizing, green CTA.     */
 
-/* Primary — white background, dark text. Used for ONE action per view. */
-.btn-primary {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--s1);
-  padding: 7px 14px;
+/* Primary — зелёная CTA кнопка (36px) */
+.btn-primary,
+.btn.btn-primary {
+  height: 36px;
+  padding: 0 18px;
+  background: var(--cta);
+  color: #FFFFFF;
   border: none;
-  border-radius: var(--r2);
-  background: var(--accent);
-  color: #08080A;
+  border-radius: var(--r3);
   font-size: var(--f13);
   font-weight: 600;
-  font-family: var(--sans);
-  cursor: pointer;
-  white-space: nowrap;
-  user-select: none;
   letter-spacing: -.01em;
-  transition: opacity var(--fast);
-  line-height: 1;
-}
-.btn-primary:hover { opacity: .88; }
-.btn-primary:active { opacity: .76; }
-.btn-primary:disabled { opacity: .3; cursor: not-allowed; pointer-events: none; }
-
-/* Default — outline ghost. Secondary actions. */
-.btn {
+  cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: var(--s1);
-  padding: 6px 12px;
-  border-radius: var(--r2);
+  gap: 7px;
+  white-space: nowrap;
+  transition: background 120ms ease, box-shadow 120ms ease, transform 80ms ease;
+  box-shadow: 0 1px 0 rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.08);
+  flex-shrink: 0;
+  font-family: var(--sans);
+  user-select: none;
+  line-height: 1;
+}
+.btn-primary:hover,
+.btn.btn-primary:hover {
+  background: var(--cta-dark);
+  box-shadow: 0 0 0 3px var(--cta-glow), 0 1px 0 rgba(0,0,0,.25);
+  opacity: 1;
+  color: #FFFFFF;
+  border: none;
+}
+.btn-primary:active,
+.btn.btn-primary:active { transform: scale(.975); }
+.btn-primary:disabled,
+.btn.btn-primary:disabled { opacity: .38; cursor: not-allowed; pointer-events: none; }
+.btn-primary[data-loading="true"],
+.btn.btn-primary[data-loading="true"] { opacity: .6; cursor: wait; }
+
+/* Secondary — нейтральная кнопка с рамкой (34px) */
+.btn {
+  height: 34px;
+  padding: 0 16px;
   background: transparent;
   color: var(--t2);
   border: 1px solid var(--line-2);
-  font-size: var(--f12);
+  border-radius: var(--r3);
+  font-size: var(--f13);
   font-weight: 500;
   cursor: pointer;
-  font-family: var(--sans);
-  transition: color var(--fast), border-color var(--fast), background var(--fast);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   white-space: nowrap;
+  transition: color 120ms ease, border-color 120ms ease, background 120ms ease, transform 80ms ease;
+  flex-shrink: 0;
+  font-family: var(--sans);
   user-select: none;
   letter-spacing: -.01em;
   line-height: 1;
 }
-.btn:hover { color: var(--t1); border-color: var(--line-3); background: var(--surface-2); }
-.btn:active { opacity: .75; }
+.btn:hover { color: var(--t1); border-color: var(--line-3); background: var(--accent-muted); }
+.btn:active:not(:disabled) { transform: scale(.983); background: rgba(255,255,255,.05); }
 .btn:disabled { opacity: .3; cursor: not-allowed; pointer-events: none; }
 .btn.act { color: var(--t1); border-color: var(--line-3); background: var(--surface-2); font-weight: 600; }
 
-/* Ghost — no border. Tertiary actions. */
-.btn-ghost {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--s1);
-  padding: 6px 10px;
-  border-radius: var(--r2);
+/* Ghost — невидимая кнопка без рамки (30px) */
+.btn-ghost,
+.btn.btn-ghost {
+  height: 30px;
+  padding: 0 10px;
   background: transparent;
-  border: 1px solid transparent;
   color: var(--t3);
+  border: none;
+  border-radius: var(--r2);
   font-size: var(--f12);
   font-weight: 500;
   cursor: pointer;
-  font-family: var(--sans);
-  transition: color var(--fast), background var(--fast);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   white-space: nowrap;
+  transition: color 120ms ease, background 120ms ease, transform 80ms ease;
+  font-family: var(--sans);
   letter-spacing: -.01em;
   line-height: 1;
 }
-.btn-ghost:hover { color: var(--t2); background: var(--surface-2); }
+.btn-ghost:hover,
+.btn.btn-ghost:hover { color: var(--t2); background: var(--accent-muted); }
+.btn-ghost:active,
+.btn.btn-ghost:active { transform: scale(.967); }
 
-/* Danger — used for destructive actions */
-.btn-danger {
+/* Danger — красная кнопка (34px) */
+.btn-danger,
+.btn.btn-danger {
+  height: 34px;
+  padding: 0 16px;
   background: var(--neg-bg);
   color: var(--neg-txt);
-  border-color: rgba(239,68,68,.18);
+  border: 1px solid rgba(239,68,68,.20);
+  border-radius: var(--r3);
+  font-size: var(--f13);
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  transition: background 120ms ease, border-color 120ms ease, transform 80ms ease;
+  font-family: var(--sans);
+  letter-spacing: -.01em;
+  line-height: 1;
 }
-.btn-danger:hover { background: rgba(239,68,68,.14); border-color: rgba(239,68,68,.30); color: var(--neg-txt); }
+.btn-danger:hover,
+.btn.btn-danger:hover { background: rgba(239,68,68,.16); border-color: rgba(239,68,68,.35); color: var(--neg-txt); }
+.btn-danger:active,
+.btn.btn-danger:active { transform: scale(.96); }
 
 /* Save / Cancel — form action buttons */
 .btn-save {
   display: inline-flex; align-items: center; gap: var(--s1);
-  padding: 7px 14px; border-radius: var(--r2);
-  background: var(--accent); color: #08080A; border: none;
+  padding: 7px 14px; border-radius: var(--r3);
+  background: var(--cta); color: #FFFFFF; border: none;
   font-size: var(--f13); font-weight: 600; cursor: pointer;
-  font-family: var(--sans); white-space: nowrap; transition: opacity var(--fast);
+  font-family: var(--sans); white-space: nowrap;
+  transition: background 120ms ease, transform 80ms ease;
 }
-.btn-save:hover { opacity: .85; }
+.btn-save:hover { background: var(--cta-dark); }
+.btn-save:active { transform: scale(.977); }
+
 .btn-cancel {
   display: inline-flex; align-items: center;
-  padding: 7px 12px; border-radius: var(--r2);
+  padding: 7px 12px; border-radius: var(--r3);
   background: transparent; border: 1px solid var(--line-2);
   color: var(--t2); font-size: var(--f13); cursor: pointer;
-  font-family: var(--sans); transition: all var(--fast);
+  font-family: var(--sans); transition: color 120ms ease, background 120ms ease, border-color 120ms ease, transform 80ms ease;
 }
 .btn-cancel:hover { background: var(--surface-2); border-color: var(--line-3); }
+.btn-cancel:active { transform: scale(.967); }
 
 /* Delete — small row-level destructive */
 .btn-del {
   display: inline-flex; align-items: center;
   font-size: var(--f11); padding: 3px 8px;
   background: var(--neg-bg); border: 1px solid rgba(239,68,68,.15);
-  border-radius: var(--r1); cursor: pointer; color: var(--neg-txt);
-  font-family: var(--sans); transition: background var(--fast);
+  border-radius: var(--r2); cursor: pointer; color: var(--neg-txt);
+  font-family: var(--sans); transition: background 120ms ease, transform 80ms ease;
 }
 .btn-del:hover { background: rgba(239,68,68,.14); }
+.btn-del:active { transform: scale(.96); }
 
 /* Inline edit toggle */
 .btn-edit {
   font-size: var(--f11); padding: 3px 8px;
   background: transparent; border: 1px solid var(--line-2);
-  border-radius: var(--r1); cursor: pointer; color: var(--t3);
-  font-family: var(--sans); transition: all var(--fast);
+  border-radius: var(--r2); cursor: pointer; color: var(--t3);
+  font-family: var(--sans); transition: color 120ms ease, background 120ms ease, border-color 120ms ease, transform 80ms ease;
 }
 .btn-edit:hover { background: var(--surface-2); color: var(--t2); border-color: var(--line-3); }
+.btn-edit:active { transform: scale(.96); }
 
 /* Ghost small — text-only subtle actions */
 .btn-ghost-sm {
   font-size: var(--f12); color: var(--t3); background: none; border: none;
-  cursor: pointer; font-family: var(--sans); transition: color var(--fast);
+  cursor: pointer; font-family: var(--sans); transition: color 120ms ease;
   padding: 3px 0;
 }
 .btn-ghost-sm:hover { color: var(--t2); }
 
-/* Outline / Connect — legacy aliases */
+/* Legacy aliases — kept for JS render compat */
 .btn-outline, .btn-connect, .btn-blue {
   display: inline-flex; align-items: center; gap: var(--s1);
-  background: var(--accent); color: #08080A; border: none;
-  padding: 8px var(--s5); border-radius: var(--r2);
+  background: var(--cta); color: #FFFFFF; border: none;
+  padding: 0 var(--s5); height: 36px; border-radius: var(--r3);
   font-size: var(--f13); font-weight: 600; cursor: pointer;
-  font-family: var(--sans); transition: opacity var(--fast);
+  font-family: var(--sans); transition: background 120ms ease, transform 80ms ease;
   white-space: nowrap;
 }
-.btn-outline:hover,.btn-connect:hover,.btn-blue:hover { opacity: .85; }
+.btn-outline:hover,.btn-connect:hover,.btn-blue:hover { background: var(--cta-dark); }
+.btn-outline:active,.btn-connect:active,.btn-blue:active { transform: scale(.977); }
 .btn-outline:disabled,.btn-connect:disabled,.btn-blue:disabled { opacity: .3; cursor: not-allowed; pointer-events: none; }
 
 /* Disconnect */
 .btn-disconnect {
   display: inline-flex; align-items: center;
   background: var(--neg-bg); color: var(--neg-txt);
-  border: 1px solid rgba(239,68,68,.18);
-  padding: 6px 12px; border-radius: var(--r2);
-  font-size: var(--f12); font-weight: 500;
-  cursor: pointer; font-family: var(--sans); transition: all var(--fast);
+  border: 1px solid rgba(239,68,68,.20);
+  padding: 0 16px; height: 34px; border-radius: var(--r3);
+  font-size: var(--f13); font-weight: 500;
+  cursor: pointer; font-family: var(--sans);
+  transition: background 120ms ease, border-color 120ms ease, transform 80ms ease;
 }
-.btn-disconnect:hover { background: rgba(239,68,68,.14); border-color: rgba(239,68,68,.30); }
+.btn-disconnect:hover { background: rgba(239,68,68,.16); border-color: rgba(239,68,68,.35); }
+.btn-disconnect:active { transform: scale(.96); }
 
 /* ── 12. FORM SYSTEM ────────────────────────────────────────── */
 /* Tight, functional. Inputs are tools, not decorations. */
@@ -1101,20 +1136,30 @@ button { font-family: var(--sans); }
   margin-bottom: var(--s3);
 }
 .sort-lbl { font-size: var(--f11); color: var(--t3); font-weight: 600; }
+/* sort-btn: same visual system as .pill (JS generates this class name) */
 .sort-btn {
-  font-size: var(--f11);
+  height: 30px;
+  padding: 0 14px;
+  border-radius: 15px;
+  font-size: var(--f12);
   font-weight: 500;
-  padding: 3px 10px;
-  border-radius: 20px;
   cursor: pointer;
-  font-family: var(--sans);
-  transition: background var(--fast), color var(--fast);
+  border: 1px solid var(--line-2);
   background: transparent;
   color: var(--t3);
-  border: 1px solid var(--line-1);
+  white-space: nowrap;
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+  font-family: var(--sans);
+  display: inline-flex;
+  align-items: center;
 }
-.sort-btn.act { background: var(--surface-2); color: var(--t1); border-color: var(--line-2); font-weight: 600; }
-.sort-btn:hover:not(.act) { background: var(--surface-2); color: var(--t2); }
+.sort-btn.act {
+  background: var(--cta-bg);
+  border-color: var(--cta-border);
+  color: var(--cta);
+  font-weight: 600;
+}
+.sort-btn:hover:not(.act) { color: var(--t2); border-color: var(--line-3); background: var(--accent-muted); }
 
 /* ── 18. PARTNER CARDS (legacy — kept for JS render compat) ─── */
 /* Redesigned to be denser, less decorative. */
@@ -3303,8 +3348,8 @@ button { font-family: var(--sans); }
   margin: auto;
 }
 .btn-primary[data-loading="true"]::after {
-  border-color: rgba(0,0,0,.12);
-  border-top-color: rgba(0,0,0,.55);
+  border-color: rgba(255,255,255,.25);
+  border-top-color: rgba(255,255,255,.85);
 }
 
 /* Status line: semantic message pattern */
@@ -3764,54 +3809,8 @@ button { font-family: var(--sans); }
    ════════════════════════════════════════════════════════════════ */
 
 /* ── 1. Button system: press compression ─────────────────────── */
-/* Each class gets transform added to its existing transition */
-.btn-primary {
-  transition: opacity var(--fast), transform 60ms ease;
-}
-.btn-primary:active:not(:disabled):not([data-loading]) {
-  transform: scale(.977);
-}
-
-.btn {
-  transition: color var(--fast), border-color var(--fast),
-              background var(--fast), transform 60ms ease;
-}
-.btn:active:not(:disabled) {
-  transform: scale(.983);
-}
-
-.btn-ghost,
-.btn-ghost-sm,
-.btn-cancel {
-  transition: color var(--fast), background var(--fast),
-              border-color var(--fast), transform 60ms ease;
-}
-.btn-ghost:active,
-.btn-ghost-sm:active,
-.btn-cancel:active { transform: scale(.967); }
-
-.btn-danger,
-.btn-del,
-.btn-disconnect,
-.btn-edit {
-  transition: color var(--fast), background var(--fast),
-              border-color var(--fast), transform 60ms ease;
-}
-.btn-danger:active,
-.btn-del:active,
-.btn-disconnect:active,
-.btn-edit:active { transform: scale(.96); }
-
-.btn-save,
-.btn-outline,
-.btn-connect,
-.btn-blue {
-  transition: opacity var(--fast), transform 60ms ease;
-}
-.btn-save:active:not([data-loading]),
-.btn-outline:active,
-.btn-connect:active,
-.btn-blue:active { transform: scale(.977); }
+/* Transitions and :active transforms are baked into section 11.  */
+/* Topbar icon buttons: small targets, snappy spring handled below. */
 
 /* Topbar icon buttons: small targets, snappy spring */
 .topbar-icon-btn {
@@ -3954,41 +3953,38 @@ button { font-family: var(--sans); }
    Form labels must not require squinting.
    ══════════════════════════════════════════════════════════════════ */
 
-/* ─ 0. CASCADE FIX: .btn.btn-primary combination ─────────────────
-   .btn-primary (line 734) is declared BEFORE .btn (line 758).
-   Same specificity → .btn wins → white buttons rendered as outline.
-   A two-class selector (0,2,0) overrides both single-class selectors.
-   ────────────────────────────────────────────────────────────────── */
+/* ─ 0. .btn.btn-primary — handled in section 11 via combined selector ─ */
+/* Explicit overrides to prevent .btn outline styles from bleeding in  */
 .btn.btn-primary {
-  background: var(--accent);
-  color: #08080A;
+  background: var(--cta);
+  color: #FFFFFF;
   border: none;
-  font-size: var(--f13);
-  font-weight: 600;
-  padding: 7px 14px;
-  letter-spacing: -.01em;
+  height: 36px;
+  padding: 0 18px;
+  border-radius: var(--r3);
+  box-shadow: 0 1px 0 rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.08);
 }
 .btn.btn-primary:hover {
-  opacity: .88;
-  background: var(--accent);
-  color: #08080A;
+  background: var(--cta-dark);
+  box-shadow: 0 0 0 3px var(--cta-glow), 0 1px 0 rgba(0,0,0,.25);
+  color: #FFFFFF;
   border: none;
+  opacity: 1;
 }
 .btn.btn-primary:active:not(:disabled):not([data-loading]) {
-  transform: scale(.977);
-  opacity: .82;
+  transform: scale(.975);
 }
 .btn.btn-primary:disabled {
-  opacity: .3;
+  opacity: .38;
   cursor: not-allowed;
   pointer-events: none;
-  background: var(--accent);
-  color: #08080A;
+  background: var(--cta);
+  color: #FFFFFF;
   border: none;
 }
 .btn.btn-primary[data-loading="true"]::after {
-  border-color: rgba(0,0,0,.12);
-  border-top-color: rgba(0,0,0,.55);
+  border-color: rgba(255,255,255,.25);
+  border-top-color: rgba(255,255,255,.85);
 }
 
 /* ─ 1. Section labels and column headers: t4 → t3 ─────────────── */
@@ -4037,7 +4033,6 @@ button { font-family: var(--sans); }
 .section-actions .btn-ghost {
   font-size: var(--f12);
   color: var(--t2);
-  padding: 5px 10px;
 }
 .section-actions .btn-ghost:hover { color: var(--t1); }
 
@@ -4730,36 +4725,6 @@ html { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
    All rules override earlier declarations via source order.
    ══════════════════════════════════════════════════════════════════ */
 
-/* ── BUTTONS: CTA green ─────────────────────────────────────────── */
-.btn-primary {
-  height: 32px;
-  padding: 0 14px;
-  background: var(--cta);
-  color: var(--cta-text);
-  border: none;
-  border-radius: var(--r2);
-  font-size: var(--f13);
-  font-weight: 600;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  transition: background var(--fast), transform 60ms ease;
-  white-space: nowrap;
-  line-height: 1;
-  font-family: var(--sans);
-  letter-spacing: -.01em;
-  user-select: none;
-}
-.btn-primary:hover  { background: var(--cta-dark); opacity: 1; }
-.btn-primary:active { transform: scale(.977); opacity: 1; }
-.btn-primary:disabled { opacity: .4; cursor: not-allowed; transform: none; pointer-events: none; }
-.btn-primary[data-loading="true"] { opacity: .6; cursor: wait; }
-.btn.btn-primary { background: var(--cta); color: var(--cta-text); border: none; }
-.btn.btn-primary:hover { background: var(--cta-dark); color: var(--cta-text); border: none; }
-.btn.btn-primary:active:not(:disabled):not([data-loading]) { transform: scale(.977); }
-.btn.btn-primary:disabled { opacity: .4; }
-
 /* Auth button — also green */
 .auth-btn { background: var(--cta) !important; color: var(--cta-text) !important; }
 .auth-btn:hover { background: var(--cta-dark) !important; }
@@ -5119,21 +5084,33 @@ html { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
 
 /* ── FILTER PILLS ───────────────────────────────────────────────── */
 .tx-filter-wrap { display: flex; gap: var(--s2); margin-bottom: var(--s4); flex-wrap: wrap; }
-.tx-filter-pill {
-  height: 28px;
-  padding: 0 12px;
-  border-radius: 14px;
+.tx-filter-pill,
+.pill {
+  height: 30px;
+  padding: 0 14px;
+  border-radius: 15px;
   font-size: var(--f12);
   font-weight: 500;
   cursor: pointer;
   border: 1px solid var(--line-2);
   background: transparent;
   color: var(--t3);
-  transition: all var(--fast);
+  white-space: nowrap;
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
   font-family: var(--sans);
+  display: inline-flex;
+  align-items: center;
 }
-.tx-filter-pill.act { background: var(--cta-bg); border-color: var(--cta-border); color: var(--cta); }
-.tx-filter-pill:hover:not(.act) { color: var(--t2); border-color: var(--line-3); }
+.tx-filter-pill.act,
+.pill.act,
+.pill:focus {
+  background: var(--cta-bg);
+  border-color: var(--cta-border);
+  color: var(--cta);
+  font-weight: 600;
+}
+.tx-filter-pill:hover:not(.act),
+.pill:hover:not(.act) { color: var(--t2); border-color: var(--line-3); background: var(--accent-muted); }
 
 /* ── REVENUE STAT STRIP ─────────────────────────────────────────── */
 .rev-stat-strip {
@@ -5266,12 +5243,7 @@ html { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
 }
 .form-panel-close:hover { color: var(--t2); background: var(--surface-3); }
 
-/* ── 8. Кнопки: явная высота ── */
-.btn       { height: 32px; }
-.btn-edit,
-.btn-del   { height: 26px; }
-
-/* ── 9. Empty-state primary button ── */
+/* ── 8. Empty-state primary button ── */
 .empty-page-state .btn-primary { width: auto; padding: 0 20px; }
 
 /* Full-width Revenue by Month chart section */
@@ -5484,10 +5456,13 @@ html { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
       </div>
     </nav>
 
-    <!-- Model context -->
-    <div class="sidebar-model-section">
-      <div class="nav-section-label">Model</div>
-      <div id="modelSwitcher"></div>
+    <!-- Model identity — static, one model per account -->
+    <div class="sidebar-model-block">
+      <div class="sidebar-model-indicator"></div>
+      <div class="sidebar-model-text">
+        <div class="sidebar-model-name" id="sidebarModelName">Loading…</div>
+        <div class="sidebar-model-label">Synced via Fanvue</div>
+      </div>
     </div>
 
     <!-- Financial summary -->
@@ -5539,12 +5514,6 @@ html { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
     <!-- TOP BAR -->
     <div class="topbar">
       <div class="page-title" id="pageTitle">Overview</div>
-      <!-- Mobile model switcher — only visible on mobile -->
-      <div id="mobileModelPill" class="mob-model-pill" style="display:none" onclick="openMobModelSheet()">
-        <span id="mobileModelDot" class="mob-model-dot-pill"></span>
-        <span id="mobileModelName" class="mob-model-name-pill">—</span>
-        <svg width="10" height="10" class="mob-model-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-      </div>
       <div class="topbar-actions">
         <button class="btn-primary" id="topbarRecordWithdrawal" onclick="showTab('withdrawals',document.querySelector('[data-tab=withdrawals]'))" style="display:none">Record withdrawal</button>
       </div>
@@ -6176,22 +6145,6 @@ html { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
 
     </div><!-- end page-content -->
 
-    <!-- ============ ADD MODEL MODAL ============ -->
-    <div class="w-confirm-modal" id="addModelModal" onclick="if(event.target===this)closeAddModelModal()">
-      <div class="w-confirm-box">
-        <div style="font-size:16px;font-weight:700;margin-bottom:16px">Add model</div>
-        <div class="field">
-          <label>Model name</label>
-          <input id="addModelName" placeholder="e.g. Sophia" maxlength="60">
-        </div>
-        <div id="addModelStatus" style="font-size:12px;min-height:16px;margin-bottom:12px"></div>
-        <div style="display:flex;gap:8px">
-          <button class="btn" style="flex:1" onclick="closeAddModelModal()">Cancel</button>
-          <button class="btn btn-primary" style="flex:1" id="addModelBtn" onclick="createAndConnectModel()">Create</button>
-        </div>
-      </div>
-    </div>
-
   </main><!-- end main-area -->
 </div><!-- end layout -->
 
@@ -6257,14 +6210,6 @@ html { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
     </button>
   </div>
 </nav>
-
-<!-- MOBILE MODEL BOTTOM SHEET -->
-<div id="mobSheetBackdrop" class="mob-sheet-backdrop" onclick="closeMobModelSheet()"></div>
-<div id="mobModelSheet" class="mob-model-sheet">
-  <div class="mob-sheet-handle"></div>
-  <div class="mob-sheet-label">Switch model</div>
-  <div id="mobModelSheetItems"></div>
-</div>
 
 <script>
 /* ---- Supabase ---- */
@@ -6498,45 +6443,21 @@ function getCurrentSplit(modelId,partnerId){
   return splits[partnerId]!=null?splits[partnerId]:50;
 }
 
-/* ---- Model switcher ---- */
+/* ---- Model switcher (UI removed — keeps ACTIVE_MODEL_ID + fills sidebar name) ---- */
 function renderModelSwitcher(){
-  var el=g('modelSwitcher');if(!el)return;
-  if(!ALL_MODELS.length){el.innerHTML='';return;}
-  var html='';
-  var showAllChip=currentRole==='admin'||ALL_MODELS.length>1;
-  if(showAllChip){
-    html+='<div class="model-chip'+(ACTIVE_MODEL_ID===''?' act':'')+'" onclick="selectModel(\'\')">All models</div>';
+  /* Update sidebar model name */
+  var nameEl=g('sidebarModelName');
+  if(nameEl){
+    var mObj=ALL_MODELS.find(function(m){return m.id===ACTIVE_MODEL_ID;});
+    if(!mObj&&ALL_MODELS.length>0)mObj=ALL_MODELS[0];
+    nameEl.textContent=mObj?(mObj.name||'—'):'—';
   }
-  ALL_MODELS.forEach(function(m){
-    var act=ACTIVE_MODEL_ID===m.id?' act':'';
-    var dot='<span class="mc-dot'+(m.connected?' connected':'')+'"></span>';
-    var tipText=m.connected?'Fanvue connected':'Fanvue not connected';
-    var subDot=m.subscription_active===false
-      ?'<span style="width:6px;height:6px;border-radius:50%;background:var(--red);display:inline-block;margin-right:5px;flex-shrink:0;vertical-align:middle"></span>'
-      :'';
-    html+='<div class="model-chip'+act+'" onclick="selectModel(\''+m.id+'\')" title="'+escHtml(m.name)+' — '+tipText+'">'+dot+subDot+escHtml(m.name)+'</div>';
-  });
-  if(currentRole==='admin'){
-    html+='<div class="model-chip model-chip-add" onclick="showAddModelModal()">+ Add model</div>';
-  }
-  el.innerHTML=html;
+  /* sidebarModelsCount no longer shows model count — keep agency context */
   updateMobileModelPill();
 }
 
 function updateMobileModelPill(){
-  var pill=g('mobileModelPill');
-  var nameEl=g('mobileModelName');
-  var dot=g('mobileModelDot');
-  if(!pill)return;
-  if(!ALL_MODELS.length){pill.style.display='none';return;}
-  var pColors=['var(--p0)','var(--p1)','var(--p2)','var(--p3)','var(--p4)'];
-  var active=ALL_MODELS.find(function(m){return m.id===ACTIVE_MODEL_ID;});
-  var label=active?active.name:(ALL_MODELS.length>1?'All models':ALL_MODELS[0].name);
-  if(nameEl)nameEl.textContent=label;
-  if(dot){
-    var idx=active?ALL_MODELS.indexOf(active):-1;
-    dot.style.background=idx>=0?pColors[idx%5]:'var(--t3)';
-  }
+  /* Mobile model pill removed — no-op kept for call-site compat */
 }
 
 function openMobModelSheet(){
@@ -8610,9 +8531,12 @@ function renderExpenses(){
     var pIdx=PARTNERS.findIndex(function(x){return x.id===exp.partner_id;});
     var cls='p'+(pIdx>=0?pIdx%5:0);
     if(isAdmin&&EXP_EDIT[exp.id]){
+      var editParsed=parseExpDesc(exp.description);
+      var editCatLabel=editParsed.cat||'Other';
+      var editCatPill='<span class="platform-pill exp-cat-pill exp-cat-pill--'+editCatLabel.toLowerCase()+'">'+escHtml(editCatLabel)+'</span>';
       return '<div class="exp-item editing-item">'
         +'<div style="display:flex;align-items:center;gap:8px">'
-        +'<div class="exp-who '+cls+'"></div>'
+        +editCatPill
         +'<span style="font-size:var(--f12);color:var(--t2);font-weight:600">'+escHtml(p.name)+'</span>'
         +'<span style="font-size:10px;color:var(--warn-txt);font-weight:700;letter-spacing:.05em;text-transform:uppercase">Editing</span>'
         +'</div>'
@@ -8847,16 +8771,9 @@ function renderBal(){
   var activePs=PARTNERS.filter(function(p){return p.status==='active';});
   var totalOutstanding=r2(activePs.reduce(function(s,p){return s+Math.max(0,partnerRemaining(p.id));},0));
 
-  /* Model label in Partner Payouts section header */
+  /* Model label in Partner Payouts — hidden (single model, no need to label) */
   var ml=g('dashModelLabel');
-  if(ml){
-    if(ACTIVE_MODEL_ID){
-      var mObj=ALL_MODELS.find(function(m){return m.id===ACTIVE_MODEL_ID;});
-      ml.textContent=mObj?mObj.name:'';
-    } else {
-      ml.textContent=ALL_MODELS.length>1?'All Models':(ALL_MODELS.length===1?ALL_MODELS[0].name:'');
-    }
-  }
+  if(ml)ml.textContent='';
 
   /* Welcome state if no models at all */
   if(!ACTIVE_MODEL_ID&&ALL_MODELS.length===0){

@@ -703,6 +703,10 @@ button { font-family: var(--sans); }
   margin-bottom: var(--s4);
 }
 .sec-row .sec-label { margin: 0; }
+/* Section-header buttons always 34px — matches .btn-primary height */
+.sec-row .btn,
+.card .sec-row .btn,
+.topbar-actions .btn { height: 34px; }
 .divider { height: 1px; background: var(--line-1); margin: var(--s4) 0; }
 .page-section { margin-bottom: var(--s6); }
 
@@ -739,15 +743,16 @@ button { font-family: var(--sans); }
 /* ── Primary — one clear CTA per section ── */
 .btn-primary,
 .btn.btn-primary {
-  height: 36px;
-  padding: 0 18px;
-  gap: 7px;
+  height: 34px;
+  padding: 0 16px;
+  gap: 6px;
   background: var(--cta);
   color: #fff;
   border: 1px solid transparent;
-  border-radius: var(--r3);
+  border-radius: 6px;
   font-size: var(--f13);
   font-weight: 600;
+  letter-spacing: -.01em;
   transition: background 150ms ease, box-shadow 150ms ease, transform 80ms ease;
 }
 .btn-primary:hover,
@@ -766,13 +771,13 @@ button { font-family: var(--sans); }
 
 /* ── Secondary — neutral action, most common ── */
 .btn {
-  height: 34px;
+  height: 32px;
   padding: 0 14px;
   gap: 6px;
-  background: rgba(255,255,255,.05);
+  background: transparent;
   color: var(--t2);
   border: 1px solid var(--line-2);
-  border-radius: var(--r3);
+  border-radius: 6px;
   font-size: var(--f13);
   font-weight: 500;
   transition: color 150ms ease, border-color 150ms ease, background 150ms ease, transform 80ms ease;
@@ -780,7 +785,7 @@ button { font-family: var(--sans); }
 .btn:hover {
   color: var(--t1);
   border-color: var(--line-3);
-  background: rgba(255,255,255,.09);
+  background: var(--accent-muted);
 }
 .btn:active:not(:disabled) { transform: scale(.983); }
 .btn:focus-visible { outline: 2px solid var(--cta); outline-offset: 3px; }
@@ -795,13 +800,13 @@ button { font-family: var(--sans); }
 /* ── Ghost — contextual / nav-adjacent actions ── */
 .btn-ghost,
 .btn.btn-ghost {
-  height: 32px;
+  height: 30px;
   padding: 0 10px;
   gap: 5px;
   background: transparent;
   color: var(--t3);
   border: none;
-  border-radius: var(--r2);
+  border-radius: 5px;
   font-size: var(--f12);
   font-weight: 500;
   transition: color 150ms ease, background 150ms ease, transform 80ms ease;
@@ -826,7 +831,7 @@ button { font-family: var(--sans); }
   background: rgba(239,68,68,.08);
   color: var(--neg-txt);
   border: 1px solid rgba(239,68,68,.22);
-  border-radius: var(--r3);
+  border-radius: 6px;
   font-size: var(--f13);
   font-weight: 500;
   transition: background 150ms ease, border-color 150ms ease, transform 80ms ease;
@@ -845,15 +850,15 @@ button { font-family: var(--sans); }
 .btn.btn-danger:focus-visible,
 .btn-disconnect:focus-visible { outline: 2px solid rgba(239,68,68,.6); outline-offset: 3px; }
 
-/* ── Save / Cancel — form confirm pair ── */
+/* ── Save / Cancel — form confirm pair (both 32px for visual match) ── */
 .btn-save {
-  height: 36px;
-  padding: 0 16px;
+  height: 32px;
+  padding: 0 14px;
   gap: 6px;
   background: var(--cta);
   color: #fff;
   border: none;
-  border-radius: var(--r3);
+  border-radius: 6px;
   font-size: var(--f13);
   font-weight: 600;
   transition: background 150ms ease, box-shadow 150ms ease, transform 80ms ease;
@@ -863,19 +868,24 @@ button { font-family: var(--sans); }
 .btn-save:focus-visible { outline: 2px solid var(--cta); outline-offset: 3px; }
 
 .btn-cancel {
-  height: 34px;
+  height: 32px;
   padding: 0 14px;
-  background: rgba(255,255,255,.05);
+  background: transparent;
   border: 1px solid var(--line-2);
-  border-radius: var(--r3);
+  border-radius: 6px;
   color: var(--t2);
   font-size: var(--f13);
   font-weight: 500;
   transition: color 150ms ease, background 150ms ease, border-color 150ms ease, transform 80ms ease;
 }
-.btn-cancel:hover { background: rgba(255,255,255,.09); border-color: var(--line-3); color: var(--t1); }
+.btn-cancel:hover { background: var(--accent-muted); border-color: var(--line-3); color: var(--t1); }
 .btn-cancel:active { transform: scale(.967); }
 .btn-cancel:focus-visible { outline: 2px solid var(--cta); outline-offset: 3px; }
+
+/* ── Form-pair override: Save=btn-primary inside form-actions → 32px ── */
+.form-actions .btn-primary,
+.split-edit-actions .btn-primary,
+.w-confirm-actions .btn-primary { height: 32px; padding: 0 14px; }
 
 /* ── Micro — inline row-level actions (26px) ── */
 .btn-del {
@@ -883,7 +893,7 @@ button { font-family: var(--sans); }
   padding: 0 10px;
   background: rgba(239,68,68,.08);
   border: 1px solid rgba(239,68,68,.18);
-  border-radius: var(--r2);
+  border-radius: 4px;
   color: var(--neg-txt);
   font-size: var(--f11);
   font-weight: 500;
@@ -896,8 +906,8 @@ button { font-family: var(--sans); }
   height: 26px;
   padding: 0 10px;
   background: transparent;
-  border: 1px solid var(--line-2);
-  border-radius: var(--r2);
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: 4px;
   color: var(--t3);
   font-size: var(--f11);
   font-weight: 500;
@@ -920,13 +930,13 @@ button { font-family: var(--sans); }
 
 /* ── Legacy aliases → Primary ── */
 .btn-outline, .btn-connect, .btn-blue {
-  height: 36px;
-  padding: 0 18px;
+  height: 34px;
+  padding: 0 16px;
   gap: 6px;
   background: var(--cta);
   color: #fff;
   border: 1px solid transparent;
-  border-radius: var(--r3);
+  border-radius: 6px;
   font-size: var(--f13);
   font-weight: 600;
   transition: background 150ms ease, box-shadow 150ms ease, transform 80ms ease;
@@ -2654,6 +2664,8 @@ button { font-family: var(--sans); }
 }
 .wd-description { font-size: var(--f11); color: var(--t3); margin-top: 4px; font-style: italic; }
 .wd-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; }
+/* Compact ghost buttons inside withdrawal rows */
+.wd-right .btn-ghost { height: auto; font-size: 11px; padding: 4px 10px; }
 .wd-delete-btn {
   background: none; border: none; cursor: pointer; color: var(--t4);
   padding: 4px; border-radius: var(--r1); opacity: 0;
@@ -3691,7 +3703,7 @@ button { font-family: var(--sans); }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 36px;
+  height: 48px;
   padding: 0 20px;
   margin: -16px -20px 16px;  /* counter .card padding */
   border-bottom: 1px solid var(--line-2);
@@ -3949,39 +3961,7 @@ button { font-family: var(--sans); }
    Form labels must not require squinting.
    ══════════════════════════════════════════════════════════════════ */
 
-/* ─ 0. .btn.btn-primary — handled in section 11 via combined selector ─ */
-/* Explicit overrides to prevent .btn outline styles from bleeding in  */
-.btn.btn-primary {
-  background: var(--cta);
-  color: #FFFFFF;
-  border: none;
-  height: 36px;
-  padding: 0 18px;
-  border-radius: var(--r3);
-  box-shadow: 0 1px 0 rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.08);
-}
-.btn.btn-primary:hover {
-  background: var(--cta-dark);
-  box-shadow: 0 0 0 3px var(--cta-glow), 0 1px 0 rgba(0,0,0,.25);
-  color: #FFFFFF;
-  border: none;
-  opacity: 1;
-}
-.btn.btn-primary:active:not(:disabled):not([data-loading]) {
-  transform: scale(.975);
-}
-.btn.btn-primary:disabled {
-  opacity: .38;
-  cursor: not-allowed;
-  pointer-events: none;
-  background: var(--cta);
-  color: #FFFFFF;
-  border: none;
-}
-.btn.btn-primary[data-loading="true"]::after {
-  border-color: rgba(255,255,255,.25);
-  border-top-color: rgba(255,255,255,.85);
-}
+/* ─ 0. .btn.btn-primary — see section 11 BUTTON SYSTEM ─ */
 
 /* ─ 1. Section labels and column headers: t4 → t3 ─────────────── */
 /* 10px uppercase text at t4 (#363640) reads as decorative noise.
@@ -6796,7 +6776,7 @@ html { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
 <!-- BULK ACTION BAR -->
 <div id="bulkBar" class="bulk-bar" style="display:none">
   <span class="bulk-bar-count" id="bulkCount">0 selected</span>
-  <button class="btn" style="color:var(--red-text);border-color:rgba(239,68,68,.2);display:inline-flex;align-items:center;gap:6px" onclick="deleteBulkTx()">
+  <button class="btn-danger" onclick="deleteBulkTx()">
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
       <path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
@@ -7274,7 +7254,7 @@ function renderModelSplitSection(){
     if(currentRole==='admin'){
       sec.querySelectorAll('.split-edit-btn').forEach(function(b){ b.remove(); });
       listEl.insertAdjacentHTML('afterend',
-        '<button class="btn split-edit-btn" style="margin-top:12px;width:100%" onclick="startEditSplits()">Edit splits</button>');
+        '<button class="btn split-edit-btn" style="margin-top:12px" onclick="startEditSplits()">Edit splits</button>');
     }
   }
 }
@@ -8640,7 +8620,7 @@ function renderPlatformSettings(){
     return '<div class="pl-item">'
       +'<span class="pl-name">'+p+'</span>'
       +(S.platforms.length>1
-        ?'<button class="btn-del" style="padding:3px 9px;font-size:12px" onclick="removePlatform('+i+')">&times;</button>'
+        ?'<button class="btn-del" onclick="removePlatform('+i+')">&times;</button>'
         :'<span style="font-size:11px;color:var(--text3)">last</span>')
       +'</div>';
   }).join('');
@@ -8940,8 +8920,8 @@ async function editWdSplits(wId){
         +'</div>';
     }).join('')
     +'<div style="display:flex;gap:8px;margin-top:10px">'
-    +'<button class="btn btn-primary" style="font-size:12px" onclick="saveWdSplits(\''+wId+'\')">Save splits</button>'
-    +'<button class="btn btn-ghost" style="font-size:12px" onclick="cancelWdSplits(\''+wId+'\')">Cancel</button>'
+    +'<button class="btn btn-primary" onclick="saveWdSplits(\''+wId+'\')">Save splits</button>'
+    +'<button class="btn btn-ghost" onclick="cancelWdSplits(\''+wId+'\')">Cancel</button>'
     +'</div>'
     +'</div>';
   var row=document.querySelector('[data-wd-id="'+wId+'"]');
@@ -10147,7 +10127,7 @@ function renderList(){
         +'</div>'
         +'<div class="wd-right">'
           +'<button class="wd-delete-btn" onclick="delW(\''+w.id+'\')" title="Delete">'+DEL_SVG+'</button>'
-          +'<button class="btn" style="font-size:12px;padding:5px 12px" onclick="toggleExp(\''+w.id+'\')">'+(isE?'Cancel':'Money received →')+'</button>'
+          +'<button class="btn" onclick="toggleExp(\''+w.id+'\')">'+(isE?'Cancel':'Money received →')+'</button>'
         +'</div>'
       +'</div>';
       if(isE){
@@ -10166,7 +10146,7 @@ function renderList(){
           +'</div>'
           +'<p class="hint" style="margin-bottom:.75rem">Enter EUR received — split fills automatically. Adjust if needed.</p>'
           +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'
-          +'<button class="btn btn-primary" style="font-size:13px" onclick="confirmW(\''+w.id+'\')">Confirm receipt</button>'
+          +'<button class="btn btn-primary" onclick="confirmW(\''+w.id+'\')">Confirm receipt</button>'
           +'<span style="font-size:11px;color:var(--text3)">— click when funds arrive</span>'
           +'</div>'
           +'</div>';
@@ -10227,8 +10207,8 @@ function renderList(){
         +'</div>'
         +'<div class="wd-right">'
           +'<button class="wd-delete-btn" onclick="delW(\''+w.id+'\')" title="Delete">'+DEL_SVG+'</button>'
-          +'<button class="btn btn-ghost" style="font-size:11px;padding:4px 10px" onclick="editWdSplits(\''+w.id+'\')">Edit splits</button>'
-          +'<button class="btn btn-ghost" style="font-size:11px;padding:4px 10px" onclick="editWdDesc(\''+w.id+'\')">Edit note</button>'
+          +'<button class="btn btn-ghost" onclick="editWdSplits(\''+w.id+'\')">Edit splits</button>'
+          +'<button class="btn btn-ghost" onclick="editWdDesc(\''+w.id+'\')">Edit note</button>'
         +'</div>'
       +'</div>';
     });

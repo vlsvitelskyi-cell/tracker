@@ -9610,7 +9610,7 @@ function renderRecentTx(){
         var mObj=ALL_MODELS.find(function(m){return m.id===tx.model_id;});
         if(mObj)modelTag='<span class="badge" style="margin-left:5px;background:var(--accent-muted);color:var(--t2)">'+escHtml(mObj.name)+'</span>';
       }
-      var noteText=tx.note?'<span class="tx-note-inline">'+escHtml(tx.note)+'</span>':'';
+      var noteText=tx.description?'<span class="tx-note-inline">'+escHtml(tx.description)+'</span>':'';
       var plCls=pl.toLowerCase();
       html+='<div class="tx-row">'
         +'<span class="platform-pill platform-pill--'+plCls+'">'+escHtml(pl)+'</span>'
@@ -10443,6 +10443,9 @@ async function syncFullHistory(){
       var msg=data.message||(data.count!=null?data.count+' transactions synced':'Sync complete');
       setStatus(st,'ok',msg+' · records verified');
       await loadRevenueData();renderAll();
+    }else if(data.error==='reconnect_required'){
+      setStatus(st,'warn','Fanvue session expired — reconnect in Settings → Integrations.');
+      showToast('Reconnect Fanvue in Settings to resume auto-sync','warn');
     }else{
       setStatus(st,'err','Sync error: '+(data.error||res.statusText));
     }

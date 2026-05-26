@@ -2044,6 +2044,17 @@ button { font-family: var(--sans); }
   font-size: var(--f12); color: var(--neg-txt);
   margin-top: var(--s3); min-height: 16px; text-align: center;
 }
+/* ── Password show/hide ─────────────────────────────────── */
+.pwd-wrap { position: relative; display: flex; align-items: center; }
+.pwd-wrap input { width: 100%; padding-right: 36px; }
+.pwd-toggle {
+  position: absolute; right: 10px;
+  background: none; border: none; cursor: pointer;
+  color: var(--t3); padding: 4px;
+  display: flex; align-items: center; line-height: 1;
+  transition: color var(--fast);
+}
+.pwd-toggle:hover { color: var(--t2); }
 
 @media(max-width:700px) {
   .auth-brand { display: none; }
@@ -5835,32 +5846,69 @@ html { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
     <!-- Form side -->
     <div class="auth-form-side">
       <div class="auth-box">
-        <div class="auth-tabs">
-          <button class="auth-tab act" id="tabSignin" onclick="setAuthMode('signin')">Sign in</button>
-          <button class="auth-tab" id="tabSignup" onclick="setAuthMode('signup')">Create account</button>
+        <!-- ── Main sign-in / sign-up panel ── -->
+        <div id="mainAuthContent">
+          <div class="auth-tabs">
+            <button class="auth-tab act" id="tabSignin" onclick="setAuthMode('signin')">Sign in</button>
+            <button class="auth-tab" id="tabSignup" onclick="setAuthMode('signup')">Create account</button>
+          </div>
+          <div class="auth-field">
+            <label>Email</label>
+            <input type="email" id="authEmail" placeholder="you@example.com"
+              onkeydown="if(event.key==='Enter')document.getElementById('authPass').focus()">
+          </div>
+          <div class="auth-field">
+            <label>Password</label>
+            <div class="pwd-wrap">
+              <input type="password" id="authPass" placeholder="••••••••"
+                onkeydown="if(event.key==='Enter'&&authMode==='signin')login();else if(event.key==='Enter')document.getElementById('authPassConfirm').focus()">
+              <button type="button" class="pwd-toggle" onclick="togglePwd('authPass',this)" aria-label="Show password">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="auth-field" id="authConfirmField" style="display:none">
+            <label>Confirm password</label>
+            <div class="pwd-wrap">
+              <input type="password" id="authPassConfirm" placeholder="••••••••"
+                onkeydown="if(event.key==='Enter')signup()">
+              <button type="button" class="pwd-toggle" onclick="togglePwd('authPassConfirm',this)" aria-label="Show password">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+          </div>
+          <button class="auth-btn" id="authBtn" onclick="authMode==='signin'?login():signup()">Sign in</button>
+          <div class="auth-err" id="authErr"></div>
+          <div style="text-align:center;margin-top:12px">
+            <button onclick="forgotPassword()" style="background:none;border:none;color:var(--text3);font-size:12px;cursor:pointer;font-family:inherit">Forgot password?</button>
+          </div>
+          <div id="resendRow" style="display:none;text-align:center;margin-top:8px">
+            <button id="resendBtn" onclick="resendConfirmation()" style="background:none;border:none;color:var(--text2);font-size:12px;cursor:pointer;font-family:inherit">Resend confirmation email</button>
+          </div>
         </div>
-        <div class="auth-field">
-          <label>Email</label>
-          <input type="email" id="authEmail" placeholder="you@example.com"
-            onkeydown="if(event.key==='Enter')document.getElementById('authPass').focus()">
-        </div>
-        <div class="auth-field">
-          <label>Password</label>
-          <input type="password" id="authPass" placeholder="••••••••"
-            onkeydown="if(event.key==='Enter'&&authMode==='signin')login();else if(event.key==='Enter')document.getElementById('authPassConfirm').focus()">
-        </div>
-        <div class="auth-field" id="authConfirmField" style="display:none">
-          <label>Confirm password</label>
-          <input type="password" id="authPassConfirm" placeholder="••••••••"
-            onkeydown="if(event.key==='Enter')signup()">
-        </div>
-        <button class="auth-btn" id="authBtn" onclick="authMode==='signin'?login():signup()">Sign in</button>
-        <div class="auth-err" id="authErr"></div>
-        <div style="text-align:center;margin-top:12px">
-          <button onclick="forgotPassword()" style="background:none;border:none;color:var(--text3);font-size:12px;cursor:pointer;font-family:inherit">Forgot password?</button>
-        </div>
-        <div id="resendRow" style="display:none;text-align:center;margin-top:8px">
-          <button id="resendBtn" onclick="resendConfirmation()" style="background:none;border:none;color:var(--text2);font-size:12px;cursor:pointer;font-family:inherit">Resend confirmation email</button>
+        <!-- ── Reset password panel (shown after clicking link in email) ── -->
+        <div id="resetPanel" style="display:none">
+          <div style="font-size:17px;font-weight:600;color:var(--t1);margin-bottom:20px">Set new password</div>
+          <div class="auth-field">
+            <label class="sr-only">New password</label>
+            <div class="pwd-wrap">
+              <input type="password" id="newPassword" class="auth-input" placeholder="New password (min 6 characters)">
+              <button type="button" class="pwd-toggle" onclick="togglePwd('newPassword',this)" aria-label="Show password">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="auth-field">
+            <label class="sr-only">Confirm password</label>
+            <div class="pwd-wrap">
+              <input type="password" id="newPasswordConfirm" class="auth-input" placeholder="Confirm new password">
+              <button type="button" class="pwd-toggle" onclick="togglePwd('newPasswordConfirm',this)" aria-label="Show password">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+          </div>
+          <div id="resetErr" class="auth-err"></div>
+          <button class="auth-btn" onclick="submitNewPassword()">Set password</button>
         </div>
       </div>
     </div>
@@ -6928,6 +6976,14 @@ var authMode='signin';
 
 function setAuthMode(mode){
   authMode=mode;
+  if(mode==='reset'){
+    g('mainAuthContent').style.display='none';
+    g('resetPanel').style.display='block';
+    if(g('resetErr'))g('resetErr').textContent='';
+    return;
+  }
+  g('mainAuthContent').style.display='block';
+  g('resetPanel').style.display='none';
   g('tabSignin').classList.toggle('act',mode==='signin');
   g('tabSignup').classList.toggle('act',mode==='signup');
   g('authConfirmField').style.display=mode==='signup'?'flex':'none';
@@ -6996,11 +7052,31 @@ async function resendConfirmation(){
   },1000);
 }
 
+async function submitNewPassword(){
+  var pwd=(g('newPassword').value||'').trim();
+  var confirm=(g('newPasswordConfirm').value||'').trim();
+  var err=g('resetErr');
+  err.textContent='';
+  if(pwd.length<6){err.textContent='Password must be at least 6 characters.';return;}
+  if(pwd!==confirm){err.textContent='Passwords do not match.';return;}
+  var btn=event.target;
+  btn.disabled=true;btn.textContent='Saving…';
+  var res=await db.auth.updateUser({password:pwd});
+  if(res.error){
+    err.textContent=res.error.message||'Something went wrong. Try again.';
+    btn.disabled=false;btn.textContent='Set password';
+    return;
+  }
+  showToast('Password updated — please sign in','success');
+  setAuthMode('signin');
+  btn.disabled=false;btn.textContent='Set password';
+}
+
 async function forgotPassword(){
   var email=(g('authEmail').value||'').trim();
   var err=g('authErr');
   if(!email){err.textContent='Enter your email first.';return;}
-  await db.auth.resetPasswordForEmail(email,{redirectTo:'https://payoutmanager.app/fanvue_tracker.html?reset=1'});
+  await db.auth.resetPasswordForEmail(email,{redirectTo:'https://payoutmanager.app/tracker?reset=1'});
   err.style.color='var(--green-text)';
   err.textContent='Password reset email sent.';
 }
@@ -8101,8 +8177,71 @@ async function connectFanvue(){
   }
 }
 
-async function disconnectFanvue(){
-  if(!confirm('Disconnect Fanvue? All stored transaction history will be kept. Automatic sync will stop.'))return;
+function togglePwd(inputId,btn){
+  var inp=g(inputId);if(!inp)return;
+  var isHidden=inp.type==='password';
+  inp.type=isHidden?'text':'password';
+  btn.setAttribute('aria-label',isHidden?'Hide password':'Show password');
+  btn.innerHTML=isHidden
+    ?'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>'
+    :'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+}
+
+// ── Confirm Modal ────────────────────────────────────────────
+var _confirmCallback=null;
+function showConfirmModal(title,body,onConfirm,opts){
+  opts=opts||{};
+  g('confirmTitle').textContent=title;
+  g('confirmBody').textContent=body;
+  var okBtn=g('confirmOkBtn');
+  okBtn.textContent=opts.okLabel||'Confirm';
+  okBtn.style.background=opts.danger?'var(--neg)':'';
+  okBtn.style.boxShadow=opts.danger?'none':'';
+  _confirmCallback=onConfirm;
+  g('confirmModal').style.display='flex';
+}
+function confirmModalOk(){
+  closeConfirmModal();
+  if(_confirmCallback)_confirmCallback();
+  _confirmCallback=null;
+}
+function closeConfirmModal(){
+  g('confirmModal').style.display='none';
+  _confirmCallback=null;
+}
+
+// ── Edit Description Modal ───────────────────────────────────
+var _editDescId=null;
+function showEditDescModal(id,currentValue){
+  _editDescId=id;
+  g('editDescInput').value=currentValue||'';
+  g('editDescModal').style.display='flex';
+  setTimeout(function(){g('editDescInput').focus();},80);
+}
+function closeEditDescModal(){
+  g('editDescModal').style.display='none';
+  _editDescId=null;
+}
+async function saveEditDesc(){
+  var newDesc=g('editDescInput').value.trim()||null;
+  var id=_editDescId;
+  closeEditDescModal();
+  var res=await db.from('withdrawals').update({description:newDesc}).eq('id',id);
+  if(res.error){showToast(friendlyError(res.error),'error');return;}
+  var w=S.ws.find(function(x){return x.id===id;});
+  if(w)w.description=newDesc;
+  renderList();
+  showToast('Description updated','success');
+}
+
+function disconnectFanvue(){
+  showConfirmModal(
+    'Disconnect Fanvue?',
+    'Auto-sync will stop. All transaction history will be kept.',
+    function(){disconnectFanvueConfirmed();}
+  );
+}
+async function disconnectFanvueConfirmed(){
   var modelId=ACTIVE_MODEL_ID;
   if(!modelId){showToast('Select a model first.','error');return;}
   var res=await db.from('fanvue_connections').delete().eq('model_id',modelId);
@@ -8173,6 +8312,12 @@ function onTxPlatformChange(){
 
 function handleCallbackParams(){
   var params=new URLSearchParams(window.location.search);
+  if(params.get('reset')==='1'){
+    showLogin();
+    setAuthMode('reset');
+    history.replaceState({},'',window.location.pathname);
+    return;
+  }
   if(params.get('signup')==='1'){
     setAuthMode('signup');
     history.replaceState({},'',window.location.pathname);
@@ -8918,23 +9063,25 @@ async function confirmW(id){
   await loadWithdrawals();renderAll();
 }
 
-async function delW(id){
-  if(!confirm('Delete this withdrawal?'))return;
+function delW(id){
+  showConfirmModal(
+    'Delete withdrawal?',
+    'This cannot be undone.',
+    function(){deleteWithdrawalConfirmed(id);},
+    {danger:true,okLabel:'Delete'}
+  );
+}
+async function deleteWithdrawalConfirmed(id){
   await db.from('withdrawal_splits').delete().eq('withdrawal_id',id);
   var res=await db.from('withdrawals').delete().eq('id',id);
   if(res.error)showToast(friendlyError(res.error),'error');
+  else{await loadWithdrawals();renderAll();}
 }
 
-async function editWdDesc(id){
+function editWdDesc(id){
   var w=S.ws.find(function(x){return x.id===id;});
   if(!w)return;
-  var newDesc=prompt('Edit description:',w.description||'');
-  if(newDesc===null)return;
-  var res=await db.from('withdrawals').update({description:newDesc.trim()||null}).eq('id',id);
-  if(res.error){showToast(friendlyError(res.error),'error');return;}
-  w.description=newDesc.trim()||null;
-  renderList();
-  showToast('Description updated','success');
+  showEditDescModal(id,w.description||'');
 }
 
 async function editWdSplits(wId){
@@ -8990,11 +9137,19 @@ function cancelWdSplits(wId){
   if(form)form.remove();
 }
 
-async function resetAll(){
-  if(!confirm('Delete ALL withdrawal history from the database?'))return;
+function resetAll(){
+  showConfirmModal(
+    'Reset all withdrawal history?',
+    'This will permanently delete all withdrawal records and cannot be undone.',
+    function(){resetAllConfirmed();},
+    {danger:true,okLabel:'Delete all'}
+  );
+}
+async function resetAllConfirmed(){
   await db.from('withdrawal_splits').delete().neq('id','00000000-0000-0000-0000-000000000000');
   var res=await db.from('withdrawals').delete().neq('id','00000000-0000-0000-0000-000000000000');
   if(res.error)showToast(friendlyError(res.error),'error');
+  else{await loadWithdrawals();renderAll();showToast('Withdrawal history cleared','success');}
 }
 
 /* ---- CRUD: manual transactions ---- */
@@ -10502,5 +10657,32 @@ async function syncFullHistory(){
   },1000);
 }
 </script>
+
+<!-- ── Confirm Modal ─────────────────────────────────────── -->
+<div id="confirmModal" style="display:none;position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.6);align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--surface-2);border:1px solid var(--line-3);border-radius:var(--r5);padding:28px 32px;max-width:400px;width:100%;box-shadow:var(--shadow-overlay)">
+    <div id="confirmTitle" style="font-size:15px;font-weight:600;color:var(--t1);margin-bottom:10px"></div>
+    <div id="confirmBody" style="font-size:13px;color:var(--t3);line-height:1.6;margin-bottom:24px"></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn" onclick="closeConfirmModal()">Cancel</button>
+      <button id="confirmOkBtn" class="btn-primary" onclick="confirmModalOk()">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Edit Description Modal ────────────────────────────── -->
+<div id="editDescModal" style="display:none;position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.6);align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--surface-2);border:1px solid var(--line-3);border-radius:var(--r5);padding:28px 32px;max-width:400px;width:100%;box-shadow:var(--shadow-overlay)">
+    <div style="font-size:15px;font-weight:600;color:var(--t1);margin-bottom:16px">Edit description</div>
+    <div class="auth-field">
+      <input type="text" id="editDescInput" placeholder="Description (optional)"
+             style="width:100%;background:var(--bg);border:1px solid var(--line-2);border-radius:var(--r3);color:var(--t1);font-size:13px;padding:8px 12px;outline:none;font-family:inherit">
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px">
+      <button class="btn" onclick="closeEditDescModal()">Cancel</button>
+      <button class="btn-primary" onclick="saveEditDesc()">Save</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>

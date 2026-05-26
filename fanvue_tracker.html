@@ -4,6 +4,22 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Payout Manager</title>
+<meta name="description" content="Revenue sync, partner splits, and FX tracking for Fanvue agencies.">
+<meta name="theme-color" content="#0B0D1A" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#FAFAFA" media="(prefers-color-scheme: light)">
+<meta property="og:type"        content="website">
+<meta property="og:url"         content="https://payoutmanager.app/tracker">
+<meta property="og:title"       content="Payout Manager">
+<meta property="og:description" content="Track creator earnings, split payouts, and handle FX — automatically.">
+<meta property="og:image"       content="https://payoutmanager.app/og-image.png">
+<meta property="og:image:width"  content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card"        content="summary_large_image">
+<meta name="twitter:title"       content="Payout Manager">
+<meta name="twitter:description" content="Track creator earnings, split payouts, and handle FX — automatically.">
+<meta name="twitter:image"       content="https://payoutmanager.app/og-image.png">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="apple-touch-icon"          href="/apple-touch-icon.png">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -5817,9 +5833,30 @@ html { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
 .tx-row > *:nth-child(3) { text-align: right; font-size: 12px; color: var(--t3); white-space: nowrap; }
 .tx-row > *:last-child { text-align: right; font-family: var(--mono); font-size: 13px; font-weight: 600; white-space: nowrap; }
 
+/* ---- Task K: Auth consent ---- */
+.auth-consent { font-size: 11px; color: var(--t3); text-align: center; line-height: 1.5; margin-top: 8px; padding: 0 4px; display: none; }
+.auth-consent a { color: var(--t3); text-decoration: underline; }
+.auth-consent a:hover { color: var(--t1); }
+
+/* ---- Task G: Demo mode ---- */
+#demoBanner { position: fixed; top: 0; left: 0; right: 0; height: 36px; background: linear-gradient(90deg,#7C3AED,#6D28D9); z-index: 700; display: none; align-items: center; justify-content: center; gap: 12px; font-size: 12px; color: #fff; font-weight: 500; padding: 0 16px; }
+.demo-banner-cta { font-size: 11px; padding: 3px 12px; border-radius: 20px; background: rgba(255,255,255,.2); border: 1px solid rgba(255,255,255,.4); color: #fff; cursor: pointer; font-family: inherit; font-weight: 600; white-space: nowrap; transition: background 150ms; }
+.demo-banner-cta:hover { background: rgba(255,255,255,.35); }
+body.demo-active { padding-top: 36px; }
+.auth-demo-divider { display: flex; align-items: center; gap: 8px; margin: 16px 0 4px; color: var(--t3); font-size: 11px; }
+.auth-demo-divider::before,.auth-demo-divider::after { content: ''; flex: 1; height: 1px; background: var(--line-1); }
+.btn-demo { width: 100%; padding: 10px; background: rgba(124,58,237,.12); border: 1px solid rgba(124,58,237,.35); border-radius: 8px; color: #8B5CF6; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; transition: background 150ms,border-color 150ms; }
+.btn-demo:hover { background: rgba(124,58,237,.2); border-color: #7C3AED; }
+
 </style>
 </head>
 <body>
+
+<!-- DEMO BANNER -->
+<div id="demoBanner">
+  <span>✦ Demo Mode — no real data, no account needed</span>
+  <button class="demo-banner-cta" onclick="exitDemoMode()">Exit demo</button>
+</div>
 
 <!-- AUTH OVERLAY -->
 <div id="authOverlay">
@@ -5885,6 +5922,9 @@ html { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
           <div id="resendRow" style="display:none;text-align:center;margin-top:8px">
             <button id="resendBtn" onclick="resendConfirmation()" style="background:none;border:none;color:var(--text2);font-size:12px;cursor:pointer;font-family:inherit">Resend confirmation email</button>
           </div>
+          <div class="auth-consent" id="authConsent">By creating an account you agree to our <a href="https://payoutmanager.app/privacy" target="_blank">Privacy Policy</a> and <a href="https://payoutmanager.app/terms" target="_blank">Terms of Service</a>.</div>
+          <div class="auth-demo-divider">or</div>
+          <button class="btn-demo" onclick="enterDemoMode()">✦ Try demo — no account needed</button>
         </div>
         <!-- ── Reset password panel (shown after clicking link in email) ── -->
         <div id="resetPanel" style="display:none">
@@ -6989,6 +7029,7 @@ function setAuthMode(mode){
   g('authConfirmField').style.display=mode==='signup'?'flex':'none';
   g('authBtn').textContent=mode==='signin'?'Sign in':'Create account';
   g('authErr').textContent='';
+  var c=g('authConsent');if(c)c.style.display=mode==='signup'?'block':'none';
 }
 
 async function signup(){
@@ -7095,6 +7136,7 @@ var ALL_MODELS=[];
 var MODEL_SPLITS={};
 
 async function loadModels(){
+  if(DEMO_MODE)return;
   // Если _agencyId ещё не установлен — запросить через RPC
   if(!_agencyId){
     var agRes=await db.rpc('get_my_agency_id');
@@ -7385,6 +7427,7 @@ function onSplitInput(changedPartnerId,newValue){
 }
 
 async function saveModelSplits(){
+  if(demoGuard())return;
   var total=PARTNERS.reduce(function(s,p){return s+(_splitDraft[p.id]||0);},0);
   if(Math.abs(total-100)>0.01){showToast('Splits must add up to 100%','error');return;}
   var btn=g('saveSplitsBtn');btn.disabled=true;btn.textContent='Saving…';
@@ -7448,6 +7491,7 @@ function partnerRemaining(partnerId){
 }
 
 async function loadPartners(){
+  if(DEMO_MODE)return;
   var res=await db.from('partners')
     .select('id,name,status,invited_email,user_id,split_pct')
     .eq('agency_id',_agencyId||'00000000-0000-0000-0000-000000000001')
@@ -7904,6 +7948,7 @@ function checkSubscriptionGate(){
 }
 
 async function invitePartner(){
+  if(demoGuard())return;
   var name=(g('inviteName').value||'').trim();
   var email=(g('inviteEmail').value||'').trim();
   var models=getInviteModels();
@@ -8139,6 +8184,7 @@ async function connectFanvueOnboarding(){
 }
 
 async function connectFanvue(){
+  if(demoGuard())return;
   var btn=g('connectBtn');
   if(btn){btn.disabled=true;btn.textContent='Connecting…';}
   try{
@@ -8223,6 +8269,7 @@ function closeEditDescModal(){
   _editDescId=null;
 }
 async function saveEditDesc(){
+  if(demoGuard())return;
   var newDesc=g('editDescInput').value.trim()||null;
   var id=_editDescId;
   closeEditDescModal();
@@ -8242,6 +8289,7 @@ function disconnectFanvue(){
   );
 }
 async function disconnectFanvueConfirmed(){
+  if(demoGuard())return;
   var modelId=ACTIVE_MODEL_ID;
   if(!modelId){showToast('Select a model first.','error');return;}
   var res=await db.from('fanvue_connections').delete().eq('model_id',modelId);
@@ -8409,8 +8457,111 @@ function platformCssClass(name){
   if(lower==='telegram'||lower==='tg')return'pl-telegram';
   return'';
 }
+/* ---- Task G: Demo mode ---- */
+var DEMO_MODE=false;
+var DEMO_PID1='demo-p1',DEMO_PID2='demo-p2',DEMO_MID1='demo-m1',DEMO_MID2='demo-m2',DEMO_AID='demo-agency';
+var DEMO_STATE={
+  partners:[
+    {id:DEMO_PID1,name:'Alex Rivera',status:'active',invited_email:'alex@demo.test',user_id:null,split_pct:35},
+    {id:DEMO_PID2,name:'Jamie Lee',status:'active',invited_email:'jamie@demo.test',user_id:null,split_pct:40}
+  ],
+  modelSplits:{
+    'demo-m1':{'demo-p1':35,'demo-p2':40},
+    'demo-m2':{'demo-p1':35,'demo-p2':40}
+  },
+  models:[
+    {id:'demo-m1',name:'Aria Blake',connected:true},
+    {id:'demo-m2',name:'Mia Voss',connected:true}
+  ],
+  S:{
+    months:[
+      {id:'2026-03',name:'March 2026',revenues:{Fanvue:4210},expByPartner:{'demo-p1':120,'demo-p2':80},agencyExp:0},
+      {id:'2026-04',name:'April 2026',revenues:{Fanvue:5880},expByPartner:{'demo-p1':150,'demo-p2':90},agencyExp:0},
+      {id:'2026-05',name:'May 2026',revenues:{Fanvue:3540},expByPartner:{'demo-p1':100,'demo-p2':60},agencyExp:0}
+    ],
+    ws:[
+      {id:'dw1',pl:'fanvue',usd:3800,eur:3249,splitsByPartner:{'demo-p1':1137.15,'demo-p2':1299.60},date:'2026-04-02',rd:'2026-04-05',st:'ok',model_id:'demo-m1',description:null},
+      {id:'dw2',pl:'fanvue',usd:4200,eur:3591,splitsByPartner:{'demo-p1':1256.85,'demo-p2':1436.40},date:'2026-05-01',rd:null,st:'pend',model_id:'demo-m1',description:null}
+    ],
+    txs:[
+      {id:'dt1',amount:1420,platform:'fanvue',date:'2026-03-10',source:'sync',model_id:'demo-m1',description:'Subscription'},
+      {id:'dt2',amount:890,platform:'fanvue',date:'2026-03-18',source:'sync',model_id:'demo-m1',description:'Tip'},
+      {id:'dt3',amount:1900,platform:'fanvue',date:'2026-03-25',source:'sync',model_id:'demo-m2',description:'Subscription'},
+      {id:'dt4',amount:2240,platform:'fanvue',date:'2026-04-08',source:'sync',model_id:'demo-m1',description:'Subscription renewal'},
+      {id:'dt5',amount:1640,platform:'fanvue',date:'2026-04-15',source:'sync',model_id:'demo-m1',description:'Post unlock'},
+      {id:'dt6',amount:2000,platform:'fanvue',date:'2026-04-22',source:'sync',model_id:'demo-m2',description:'Subscription'},
+      {id:'dt7',amount:1890,platform:'fanvue',date:'2026-05-05',source:'sync',model_id:'demo-m1',description:'Subscription'},
+      {id:'dt8',amount:1650,platform:'fanvue',date:'2026-05-18',source:'sync',model_id:'demo-m2',description:'Tip'}
+    ],
+    exps:[
+      {id:'de1',amount:120,partner_id:'demo-p1',date:'2026-03-31',description:'[equipment] Lighting kit',model_id:null},
+      {id:'de2',amount:80,partner_id:'demo-p2',date:'2026-03-31',description:'[software] Editing tools',model_id:null},
+      {id:'de3',amount:150,partner_id:'demo-p1',date:'2026-04-30',description:'[equipment] Camera upgrade',model_id:null},
+      {id:'de4',amount:90,partner_id:'demo-p2',date:'2026-04-30',description:'[marketing] Promotion',model_id:null},
+      {id:'de5',amount:100,partner_id:'demo-p1',date:'2026-05-15',description:'[software] Subscription',model_id:null},
+      {id:'de6',amount:60,partner_id:'demo-p2',date:'2026-05-15',description:'[equipment] Accessories',model_id:null}
+    ],
+    am:2,
+    platforms:['Fanvue']
+  }
+};
+
 var DEFAULT_PLATFORMS=['Fanvue'];
 var MONTH_NAMES=['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+/* ---- Demo mode functions ---- */
+function demoGuard(){
+  if(DEMO_MODE){showToast('Demo mode — connect your account to save data','info');return true;}
+  return false;
+}
+function showDemoBanner(){
+  var b=g('demoBanner');if(b)b.style.display='flex';
+  document.body.classList.add('demo-active');
+}
+function hideDemoBanner(){
+  var b=g('demoBanner');if(b)b.style.display='none';
+  document.body.classList.remove('demo-active');
+}
+function enterDemoMode(){
+  DEMO_MODE=true;
+  _agencyId=DEMO_AID;
+  ALL_MODELS=DEMO_STATE.models.slice();
+  ACTIVE_MODEL_ID=DEMO_MID1;
+  PARTNERS=DEMO_STATE.partners.map(function(p){return Object.assign({},p);});
+  MODEL_SPLITS=JSON.parse(JSON.stringify(DEMO_STATE.modelSplits));
+  PARTNER_SPLITS={};
+  DEMO_STATE.partners.forEach(function(p){
+    PARTNER_SPLITS[p.id]=DEMO_STATE.models.map(function(m){
+      return{name:m.name,split_pct:(MODEL_SPLITS[m.id]&&MODEL_SPLITS[m.id][p.id])||0};
+    });
+  });
+  S=JSON.parse(JSON.stringify(DEMO_STATE.S));
+  /* Show app */
+  var ov=g('authOverlay');
+  ov.classList.add('hidden');
+  setTimeout(function(){ov.style.display='none';},260);
+  var lay=document.querySelector('.layout');if(lay)lay.style.visibility='visible';
+  currentUser={email:'demo@payoutmanager.app',id:'demo-user'};
+  currentRole='owner';currentPartnerId='';
+  var chip=g('userChip'),logBtn=g('logoutBtn');
+  chip.innerHTML='<div class="user-avatar">D</div>'
+    +'<span style="font-size:12px;color:var(--text2)">Demo</span>'
+    +'<span class="user-role-badge role-owner">demo</span>';
+  chip.style.display='flex';logBtn.style.display='flex';
+  var tbRec=g('topbarRecordWithdrawal');if(tbRec)tbRec.style.display='inline-flex';
+  showDemoBanner();
+  renderAll();
+  renderModelSwitcher();
+  renderPartnerCards();
+}
+function exitDemoMode(){
+  DEMO_MODE=false;
+  hideDemoBanner();
+  ALL_MODELS=[];ACTIVE_MODEL_ID='';PARTNERS=[];MODEL_SPLITS={};PARTNER_SPLITS={};_agencyId='';
+  S={months:[],ws:[],txs:[],exps:[],am:0,platforms:DEFAULT_PLATFORMS.slice()};
+  currentUser=null;currentRole=null;currentPartnerId='';
+  showLogin();
+}
 
 /* ---- Utils ---- */
 function pn(v){var s=String(v==null?0:v).replace(/[$€£\s]/g,'').replace(/[,]/,'.');if(s==='-'||s==='')return 0;return parseFloat(s)||0;}
@@ -8614,6 +8765,7 @@ async function confirmWithdrawal(){
 }
 async function wConfirmSubmit(){
   if(!_wPending)return;
+  if(demoGuard())return;
   g('wConfirmModal').classList.remove('open');
   var btn=g('addBtn');
   setBtnLoading(btn,true);
@@ -8805,6 +8957,7 @@ function removePlatform(i){
 
 /* ---- Load revenue data from Supabase ---- */
 async function loadRevenueData(){
+  if(DEMO_MODE)return;
   var statusEl=g('revLoadStatus');
   /* All-models aggregate mode */
   if(!ACTIVE_MODEL_ID&&ALL_MODELS.length===0){
@@ -8900,6 +9053,7 @@ async function loadRevenueData(){
 
 /* ---- Load withdrawals ---- */
 async function loadWithdrawals(){
+  if(DEMO_MODE)return;
   var wQuery=db.from('withdrawals').select('*').order('request_date',{ascending:false});
   var results=await Promise.all([wQuery,db.from('withdrawal_splits').select('*')]);
 
@@ -8934,6 +9088,7 @@ async function loadWithdrawals(){
 
 /* ---- Real-time ---- */
 function setupRealtime(){
+  if(DEMO_MODE)return;
   db.channel('db-changes')
     .on('postgres_changes',
       {event:'INSERT',schema:'public',table:'transactions'},
@@ -9072,6 +9227,7 @@ function delW(id){
   );
 }
 async function deleteWithdrawalConfirmed(id){
+  if(demoGuard())return;
   await db.from('withdrawal_splits').delete().eq('withdrawal_id',id);
   var res=await db.from('withdrawals').delete().eq('id',id);
   if(res.error)showToast(friendlyError(res.error),'error');
@@ -9146,6 +9302,7 @@ function resetAll(){
   );
 }
 async function resetAllConfirmed(){
+  if(demoGuard())return;
   await db.from('withdrawal_splits').delete().neq('id','00000000-0000-0000-0000-000000000000');
   var res=await db.from('withdrawals').delete().neq('id','00000000-0000-0000-0000-000000000000');
   if(res.error)showToast(friendlyError(res.error),'error');
@@ -9154,6 +9311,7 @@ async function resetAllConfirmed(){
 
 /* ---- CRUD: manual transactions ---- */
 async function addTransaction(){
+  if(demoGuard())return;
   var amt=pn(g('txAmt').value);
   if(amt===0){g('txAmt').focus();return;}
   var date=g('txDate').value||new Date().toISOString().slice(0,10);
@@ -9264,6 +9422,7 @@ function renderWModelSelect(){
 }
 
 async function addExpense(){
+  if(demoGuard())return;
   var amt=pn(g('expAmt').value);
   if(!amt||amt<=0){g('expAmt').focus();return;}
   var activePartners=PARTNERS.filter(function(p){return p.status==='active';});
@@ -10613,6 +10772,7 @@ async function init(){
 })();
 /* ---- Sync full history ---- */
 async function syncFullHistory(){
+  if(demoGuard())return;
   var btn=g('syncBtn'),st=g('syncStatus');
   if(!ACTIVE_MODEL_ID){
     st.innerHTML='<span class="setting-meta">No account connected</span>';

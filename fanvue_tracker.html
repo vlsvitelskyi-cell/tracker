@@ -8180,7 +8180,7 @@ function handleCallbackParams(){
     return;
   }
   if(params.get('fanvue_connected')==='1'){
-    showToast('Fanvue connected successfully!','success');
+    showToast('Fanvue connected! Syncing your history…','success');
     loadFanvueConnection();
     loadModels().then(function(){renderModelSwitcher();});
     history.replaceState({},'',window.location.pathname);
@@ -8190,6 +8190,22 @@ function handleCallbackParams(){
       var ov=g('onboardingOverlay');
       if(ov)ov.style.display='none';
     },1500);
+    // Polling каждые 3 сек пока не появятся транзакции (макс 2 минуты)
+    // Страховка на случай если Realtime не установился
+    var _pollCount=0;
+    var _pollInterval=setInterval(function(){
+      _pollCount++;
+      loadRevenueData().then(function(){
+        renderAll();
+        var hasTxs=S.months.some(function(m){
+          return (m.txs||[]).length>0;
+        });
+        if(hasTxs||_pollCount>=40){
+          clearInterval(_pollInterval);
+          if(hasTxs)showToast('Sync complete — your earnings are ready','success');
+        }
+      });
+    },3000);
   }else if(params.get('fanvue_error')){
     var errors={
       access_denied:'Authorization cancelled.',
@@ -8774,28 +8790,50 @@ async function loadWithdrawals(){
 
 /* ---- Real-time ---- */
 function setupRealtime(){
-  db.channel('app-live')
-    .on('postgres_changes',{event:'*',schema:'public',table:'withdrawals'},function(){loadWithdrawals();})
-    .on('postgres_changes',{event:'*',schema:'public',table:'withdrawal_splits'},function(){loadWithdrawals();})
-    .on('postgres_changes',{event:'*',schema:'public',table:'transactions'},async function(){
-      await loadRevenueData();renderAll();
-    })
-    .on('postgres_changes',{event:'*',schema:'public',table:'expenses'},async function(){
-      await loadRevenueData();renderAll();
-    })
+  db.channel('db-changes')
+    .on('postgres_changes',
+      {event:'INSERT',schema:'public',table:'transactions'},
+      function(payload){
+        loadRevenueData().then(function(){renderAll();});
+      }
+    )
+    .on('postgres_changes',
+      {event:'UPDATE',schema:'public',table:'transactions'},
+      function(payload){
+        loadRevenueData().then(function(){renderAll();});
+      }
+    )
+    .on('postgres_changes',
+      {event:'INSERT',schema:'public',table:'withdrawals'},
+      function(payload){
+        loadWithdrawals().then(function(){renderAll();});
+      }
+    )
+    .on('postgres_changes',
+      {event:'UPDATE',schema:'public',table:'withdrawals'},
+      function(payload){
+        loadWithdrawals().then(function(){renderAll();});
+      }
+    )
+    .on('postgres_changes',
+      {event:'INSERT',schema:'public',table:'expenses'},
+      function(payload){
+        loadRevenueData().then(function(){renderAll();});
+      }
+    )
     .subscribe(function(status){
       var dot=g('liveDot'),lbl=g('liveStatus');
       if(status==='SUBSCRIBED'){
         _liveTs=Date.now();
-        dot.className='live-dot on';
-        lbl.textContent='live';
+        if(dot)dot.classList.toggle('on',true);
+        if(lbl)lbl.textContent='live';
       }else if(status==='CLOSED'||status==='CHANNEL_ERROR'){
         _liveTs=0;
-        dot.className='live-dot';
-        lbl.textContent='disconnected';
+        if(dot)dot.classList.toggle('on',false);
+        if(lbl)lbl.textContent='disconnected';
       }else{
-        dot.className='live-dot';
-        lbl.textContent='connecting';
+        if(dot)dot.classList.toggle('on',false);
+        if(lbl)lbl.textContent='connecting…';
       }
     });
   // Periodically refresh relative timestamps in sidebar

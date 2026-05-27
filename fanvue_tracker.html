@@ -22,6 +22,8 @@
 <link rel="apple-touch-icon"          href="/apple-touch-icon.png">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <style>
 /* ============================================================
    PAYOUT MANAGER — FINANCIAL OPERATING SYSTEM
@@ -6137,6 +6139,7 @@ body.demo-active { padding-top: 36px; }
           <span id="userEmail" style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
           <span class="user-role-badge" id="userRoleBadge"></span>
         </div>
+        <button class="btn-primary" id="reportBtn" onclick="openReportModal()" style="display:none;font-size:12px;padding:6px 12px">↓ Export Report</button>
         <button class="topbar-icon-btn logout-btn" id="logoutBtn" style="display:none" onclick="logout()" title="Sign out">
           <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
@@ -6962,6 +6965,8 @@ function showApp(user,roleData){
   chip.style.display='flex';logBtn.style.display='flex';
   var tbRec=g('topbarRecordWithdrawal');
   if(tbRec)tbRec.style.display='inline-flex';
+  var reportBtn=g('reportBtn');
+  if(reportBtn)reportBtn.style.display=currentRole==='admin'?'flex':'none';
 }
 
 function showLogin(errMsg){
@@ -6970,6 +6975,7 @@ function showLogin(errMsg){
   g('userChip').style.display='none';
   g('logoutBtn').style.display='none';
   var tbRec=g('topbarRecordWithdrawal');if(tbRec)tbRec.style.display='none';
+  var reportBtn=g('reportBtn');if(reportBtn)reportBtn.style.display='none';
   currentUser=null;currentRole=null;
   if(errMsg){g('authErr').textContent=errMsg;}
   setTimeout(function(){var em=g('authEmail');if(em)em.focus();},50);
@@ -8571,6 +8577,256 @@ function exitDemoMode(){
   S={months:[],ws:[],txs:[],exps:[],am:0,platforms:DEFAULT_PLATFORMS.slice()};
   currentUser=null;currentRole=null;currentPartnerId='';
   showLogin();
+}
+
+/* ── Report Modal ──────────────────────────────────────────────────────────── */
+function openReportModal(){
+  setReportPeriod('this_month');
+  g('reportModal').style.display='flex';
+  g('reportErr').style.display='none';
+  g('reportNote').value='';
+}
+function closeReportModal(){
+  g('reportModal').style.display='none';
+}
+function setReportPeriod(preset){
+  var now=new Date();
+  var from,to;
+  if(preset==='this_month'){
+    from=new Date(now.getFullYear(),now.getMonth(),1);
+    to=new Date(now.getFullYear(),now.getMonth()+1,0);
+  }else if(preset==='last_month'){
+    from=new Date(now.getFullYear(),now.getMonth()-1,1);
+    to=new Date(now.getFullYear(),now.getMonth(),0);
+  }else if(preset==='last_3'){
+    from=new Date(now.getFullYear(),now.getMonth()-2,1);
+    to=new Date(now.getFullYear(),now.getMonth()+1,0);
+  }else if(preset==='all_time'){
+    var earliest=(S.txs||[]).reduce(function(min,tx){return tx.date<min?tx.date:min;},new Date().toISOString().split('T')[0]);
+    from=new Date(earliest);
+    to=new Date();
+  }
+  var fmt=function(d){return d.toISOString().split('T')[0];};
+  g('reportDateFrom').value=fmt(from);
+  g('reportDateTo').value=fmt(to);
+}
+function _fmtUSD(n){return '$'+Number(n||0).toFixed(2);}
+
+function generateReport(){
+  if(demoGuard())return;
+  var btn=g('reportGenerateBtn');
+  var errEl=g('reportErr');
+  errEl.style.display='none';
+  var dateFrom=g('reportDateFrom').value;
+  var dateTo=g('reportDateTo').value;
+  if(!dateFrom||!dateTo){errEl.textContent='Please select a date range.';errEl.style.display='block';return;}
+  if(dateFrom>dateTo){errEl.textContent='Start date must be before end date.';errEl.style.display='block';return;}
+  btn.disabled=true;btn.textContent='Generating…';
+  try{
+    _buildPDF(dateFrom,dateTo);
+    closeReportModal();
+  }catch(e){
+    console.error('[report] PDF generation failed:',e);
+    errEl.textContent='Failed to generate PDF. Please try again.';
+    errEl.style.display='block';
+  }finally{
+    btn.disabled=false;btn.textContent='Generate PDF';
+  }
+}
+
+function _buildPDF(dateFrom,dateTo){
+  var includeTx=g('reportIncludeTx').checked;
+  var includeExp=g('reportIncludeExp').checked;
+  var note=(g('reportNote').value||'').trim();
+
+  // ── Filter transactions & expenses ─────────────────────────
+  var allTxs=(S.txs||[]).filter(function(tx){return tx.date>=dateFrom&&tx.date<=dateTo;})
+    .sort(function(a,b){return a.date>b.date?1:-1;});
+  var allExps=(S.exps||[]).filter(function(e){return e.date>=dateFrom&&e.date<=dateTo;});
+
+  // ── Totals ──────────────────────────────────────────────────
+  var totalRevenue=allTxs.reduce(function(s,tx){return s+(tx.amount||0);},0);
+  var totalExpenses=allExps.reduce(function(s,e){return s+(e.amount||0);},0);
+  var netRevenue=totalRevenue-totalExpenses;
+
+  // Revenue by platform
+  var byPlatform={};
+  allTxs.forEach(function(tx){
+    var p=(tx.platform||'other').toLowerCase();
+    byPlatform[p]=(byPlatform[p]||0)+(tx.amount||0);
+  });
+
+  // Partner distribution rows
+  var partnerRows=PARTNERS.map(function(p){
+    var splitPct=p.split_pct||0;
+    var grossShare=netRevenue*splitPct/100;
+    var withdrawn=(S.ws||[]).reduce(function(sum,w){
+      if(!w.splitsByPartner)return sum;
+      return sum+(w.splitsByPartner[p.id]||0);
+    },0);
+    return{name:p.name||p.invited_email||'Partner',pct:splitPct,grossShare:grossShare,withdrawn:withdrawn,outstanding:grossShare-withdrawn};
+  });
+
+  // ── Init jsPDF ──────────────────────────────────────────────
+  var jsPDF=window.jspdf.jsPDF;
+  var doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  var pageW=doc.internal.pageSize.getWidth();
+  var pageH=doc.internal.pageSize.getHeight();
+  var margin=18;
+  var contentW=pageW-margin*2;
+  var y=margin;
+
+  // Colors
+  var CLR={
+    black:[15,15,18],white:[255,255,255],green:[16,185,129],
+    gray1:[248,249,250],gray2:[233,236,239],gray3:[108,117,125],
+    gray4:[52,58,64],red:[220,38,38],darkGreen:[15,118,77]
+  };
+
+  function setFont(size,style,color){
+    doc.setFontSize(size);
+    doc.setFont('helvetica',style||'normal');
+    doc.setTextColor.apply(doc,color||CLR.black);
+  }
+  function drawLine(yPos,color){
+    doc.setDrawColor.apply(doc,color||CLR.gray2);
+    doc.setLineWidth(0.3);
+    doc.line(margin,yPos,pageW-margin,yPos);
+  }
+  function checkPage(needed){
+    if(y+needed>pageH-margin){doc.addPage();y=margin;}
+  }
+
+  // ── Header ──────────────────────────────────────────────────
+  doc.setFillColor.apply(doc,CLR.green);
+  doc.rect(0,0,pageW,1.5,'F');
+
+  setFont(20,'bold',CLR.black);
+  doc.text(_agencyName||'Agency',margin,y+8);
+
+  setFont(10,'normal',CLR.gray3);
+  doc.text('PAYOUT REPORT',pageW-margin,y+4,{align:'right'});
+  setFont(9,'normal',CLR.gray3);
+  doc.text(dateFrom+'  →  '+dateTo,pageW-margin,y+9,{align:'right'});
+
+  var modelName=(ALL_MODELS.find(function(m){return m.id===ACTIVE_MODEL_ID;})||{}).name||'';
+  if(modelName){setFont(9,'normal',CLR.gray3);doc.text('Creator: '+modelName,pageW-margin,y+14,{align:'right'});}
+
+  y+=22;drawLine(y,CLR.gray2);y+=8;
+
+  // ── Summary cards ───────────────────────────────────────────
+  var cardW=(contentW-6)/3;
+  [{label:'TOTAL REVENUE',value:_fmtUSD(totalRevenue),color:CLR.black},
+   {label:'TOTAL EXPENSES',value:_fmtUSD(totalExpenses),color:CLR.red},
+   {label:'NET REVENUE',value:_fmtUSD(netRevenue),color:CLR.darkGreen}
+  ].forEach(function(card,i){
+    var cx=margin+i*(cardW+3);
+    doc.setFillColor.apply(doc,CLR.gray1);
+    doc.roundedRect(cx,y,cardW,18,2,2,'F');
+    setFont(7,'bold',CLR.gray3);doc.text(card.label,cx+5,y+6);
+    setFont(13,'bold',card.color);doc.text(card.value,cx+5,y+14);
+  });
+  y+=24;
+
+  // ── Revenue by source ───────────────────────────────────────
+  checkPage(30);
+  setFont(9,'bold',CLR.gray4);doc.text('REVENUE BY SOURCE',margin,y);
+  y+=5;drawLine(y);y+=4;
+  Object.keys(byPlatform).forEach(function(platform){
+    var amt=byPlatform[platform];
+    var pct=totalRevenue>0?(amt/totalRevenue*100).toFixed(1):'0.0';
+    setFont(9,'normal',CLR.black);
+    doc.text(platform.charAt(0).toUpperCase()+platform.slice(1),margin+3,y+4);
+    setFont(9,'bold',CLR.black);
+    doc.text(_fmtUSD(amt),pageW-margin-25,y+4,{align:'right'});
+    setFont(8,'normal',CLR.gray3);
+    doc.text(pct+'%',pageW-margin,y+4,{align:'right'});
+    y+=7;
+  });
+
+  // ── Expenses ────────────────────────────────────────────────
+  if(includeExp&&allExps.length>0){
+    checkPage(20);y+=4;
+    setFont(9,'bold',CLR.gray4);doc.text('EXPENSES',margin,y);
+    y+=5;drawLine(y);y+=4;
+    var expByPartner={};
+    allExps.forEach(function(e){
+      var pname='Agency';
+      if(e.partner_id){var pt=PARTNERS.find(function(p){return p.id===e.partner_id;});if(pt)pname=pt.name||pt.invited_email;}
+      expByPartner[pname]=(expByPartner[pname]||0)+(e.amount||0);
+    });
+    Object.keys(expByPartner).forEach(function(pname){
+      setFont(9,'normal',CLR.black);doc.text(pname,margin+3,y+4);
+      setFont(9,'bold',CLR.red);doc.text('-'+_fmtUSD(expByPartner[pname]),pageW-margin,y+4,{align:'right'});
+      y+=7;
+    });
+    drawLine(y,CLR.gray3);y+=5;
+    setFont(9,'bold',CLR.black);doc.text('Total expenses',margin+3,y);
+    setFont(9,'bold',CLR.red);doc.text('-'+_fmtUSD(totalExpenses),pageW-margin,y,{align:'right'});
+    y+=8;
+  }
+
+  // ── Partner distribution ────────────────────────────────────
+  checkPage(40);y+=4;
+  setFont(9,'bold',CLR.gray4);doc.text('PARTNER DISTRIBUTION',margin,y);
+  y+=5;drawLine(y);y+=2;
+  doc.autoTable({
+    startY:y,margin:{left:margin,right:margin},
+    styles:{fontSize:9,cellPadding:4,textColor:CLR.black,lineColor:CLR.gray2,lineWidth:0.2},
+    headStyles:{fillColor:CLR.gray1,textColor:CLR.gray4,fontStyle:'bold',fontSize:8},
+    columnStyles:{0:{cellWidth:50},1:{cellWidth:20,halign:'center'},2:{cellWidth:35,halign:'right'},3:{cellWidth:35,halign:'right'},4:{cellWidth:35,halign:'right'}},
+    head:[['Partner','Split','Gross Share','Withdrawn','Outstanding']],
+    body:partnerRows.map(function(r){return[r.name,r.pct+'%',_fmtUSD(r.grossShare),_fmtUSD(r.withdrawn),_fmtUSD(r.outstanding)];}),
+    didParseCell:function(data){
+      if(data.column.index===4&&data.section==='body'){
+        var val=partnerRows[data.row.index];
+        if(val&&val.outstanding>0){data.cell.styles.textColor=CLR.darkGreen;data.cell.styles.fontStyle='bold';}
+      }
+    }
+  });
+  y=doc.lastAutoTable.finalY+8;
+
+  // ── Transaction ledger ──────────────────────────────────────
+  if(includeTx&&allTxs.length>0){
+    checkPage(20);
+    setFont(9,'bold',CLR.gray4);doc.text('TRANSACTION LEDGER ('+allTxs.length+')',margin,y);
+    y+=5;
+    doc.autoTable({
+      startY:y,margin:{left:margin,right:margin},
+      styles:{fontSize:8,cellPadding:3,textColor:CLR.black,lineColor:CLR.gray2,lineWidth:0.1},
+      headStyles:{fillColor:CLR.gray1,textColor:CLR.gray4,fontStyle:'bold',fontSize:7.5},
+      columnStyles:{0:{cellWidth:24},1:{cellWidth:26},2:{cellWidth:'auto'},3:{cellWidth:28,halign:'right'}},
+      head:[['Date','Platform','Description','Amount']],
+      body:allTxs.map(function(tx){return[tx.date,(tx.platform||'').toUpperCase(),tx.description||'—',_fmtUSD(tx.amount)];}),
+    });
+    y=doc.lastAutoTable.finalY+8;
+  }
+
+  // ── Note ────────────────────────────────────────────────────
+  if(note){
+    checkPage(20);
+    doc.setFillColor.apply(doc,CLR.gray1);
+    doc.roundedRect(margin,y,contentW,12,2,2,'F');
+    setFont(8,'italic',CLR.gray3);
+    doc.text('Note: '+note,margin+4,y+7);
+    y+=16;
+  }
+
+  // ── Footer on every page ────────────────────────────────────
+  var totalPages=doc.internal.getNumberOfPages();
+  for(var pg=1;pg<=totalPages;pg++){
+    doc.setPage(pg);
+    drawLine(pageH-12,CLR.gray2);
+    setFont(7,'normal',CLR.gray3);
+    doc.text('Generated by Payout Manager · payoutmanager.app',margin,pageH-7);
+    doc.text('Page '+pg+' of '+totalPages,pageW-margin,pageH-7,{align:'right'});
+  }
+
+  // ── Save ────────────────────────────────────────────────────
+  var safeName=(modelName||'report').replace(/\s+/g,'-').toLowerCase();
+  var filename=[safeName,'payout-report',dateFrom,dateTo].join('_')+'.pdf';
+  doc.save(filename);
+  showToast('PDF report downloaded','success');
 }
 
 /* ---- Utils ---- */
@@ -10841,6 +11097,55 @@ async function syncFullHistory(){
 </div>
 
 <!-- ── Edit Description Modal ────────────────────────────── -->
+<div id="reportModal" style="display:none;position:fixed;inset:0;z-index:700;background:rgba(0,0,0,.7);align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--surface);border:1px solid var(--line-3);border-radius:var(--r5);padding:32px;max-width:480px;width:100%;box-shadow:var(--shadow-overlay)">
+    <div style="font-size:16px;font-weight:600;color:var(--t1);margin-bottom:6px">Generate Payout Report</div>
+    <div style="font-size:13px;color:var(--t3);margin-bottom:24px">PDF report with revenue summary, partner splits, and transaction history</div>
+    <!-- Period -->
+    <div class="field" style="margin-bottom:16px">
+      <label style="font-size:11px;font-weight:500;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:6px">Period</label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div>
+          <div style="font-size:11px;color:var(--t4);margin-bottom:4px">From</div>
+          <input type="date" id="reportDateFrom" class="auth-input" style="width:100%;font-size:13px">
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--t4);margin-bottom:4px">To</div>
+          <input type="date" id="reportDateTo" class="auth-input" style="width:100%;font-size:13px">
+        </div>
+      </div>
+    </div>
+    <!-- Quick period buttons -->
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px">
+      <button class="btn" style="font-size:11px;padding:4px 10px" onclick="setReportPeriod('this_month')">This month</button>
+      <button class="btn" style="font-size:11px;padding:4px 10px" onclick="setReportPeriod('last_month')">Last month</button>
+      <button class="btn" style="font-size:11px;padding:4px 10px" onclick="setReportPeriod('last_3')">Last 3 months</button>
+      <button class="btn" style="font-size:11px;padding:4px 10px" onclick="setReportPeriod('all_time')">All time</button>
+    </div>
+    <!-- Options -->
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:24px">
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;color:var(--t2)">
+        <input type="checkbox" id="reportIncludeTx" checked style="width:15px;height:15px;cursor:pointer">
+        Include transaction list
+      </label>
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;color:var(--t2)">
+        <input type="checkbox" id="reportIncludeExp" checked style="width:15px;height:15px;cursor:pointer">
+        Include expenses breakdown
+      </label>
+    </div>
+    <!-- Note -->
+    <div class="field" style="margin-bottom:24px">
+      <label style="font-size:11px;font-weight:500;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:6px">Note (optional)</label>
+      <input type="text" id="reportNote" class="auth-input" placeholder="e.g. May 2026 payout — please confirm receipt" style="width:100%;font-size:13px">
+    </div>
+    <div id="reportErr" style="font-size:12px;color:var(--neg);margin-bottom:12px;display:none"></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn" onclick="closeReportModal()">Cancel</button>
+      <button class="btn-primary" id="reportGenerateBtn" onclick="generateReport()">Generate PDF</button>
+    </div>
+  </div>
+</div>
+
 <div id="editDescModal" style="display:none;position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.6);align-items:center;justify-content:center;padding:20px">
   <div style="background:var(--surface-2);border:1px solid var(--line-3);border-radius:var(--r5);padding:28px 32px;max-width:400px;width:100%;box-shadow:var(--shadow-overlay)">
     <div style="font-size:15px;font-weight:600;color:var(--t1);margin-bottom:16px">Edit description</div>

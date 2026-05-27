@@ -6636,11 +6636,13 @@ body.demo-active { padding-top: 36px; }
               <div class="form-grid">
                 <div class="field">
                   <label>Name</label>
-                  <input id="inviteName" placeholder="Partner name" maxlength="60">
+                  <input id="inviteName" placeholder="Partner name" maxlength="60" oninput="var e=g('inviteNameErr');if(e)e.textContent='';this.style.borderColor=''">
+                  <div id="inviteNameErr" style="font-size:11px;color:var(--red);min-height:14px;margin-top:3px"></div>
                 </div>
                 <div class="field">
                   <label>Email</label>
-                  <input id="inviteEmail" type="email" placeholder="partner@example.com">
+                  <input id="inviteEmail" type="email" placeholder="partner@example.com" oninput="var e=g('inviteEmailErr');if(e)e.textContent='';this.style.borderColor=''">
+                  <div id="inviteEmailErr" style="font-size:11px;color:var(--red);min-height:14px;margin-top:3px"></div>
                 </div>
               </div>
               <div class="field">
@@ -6670,8 +6672,8 @@ body.demo-active { padding-top: 36px; }
                 </div>
               </div>
               <div class="form-actions">
-                <div id="inviteStatus" class="form-status"></div>
                 <button class="btn btn-primary" onclick="invitePartner()">Send invite</button>
+                <div id="inviteStatus" class="form-status"></div>
               </div>
             </div>
           </div>
@@ -7076,6 +7078,10 @@ function showLogin(errMsg){
   var tbRec=g('topbarRecordWithdrawal');if(tbRec)tbRec.style.display='none';
   var reportBtn=g('reportBtn');if(reportBtn)reportBtn.style.display='none';
   currentUser=null;currentRole=null;
+  /* Clear login form on signout to avoid leaking email */
+  var _ae=g('authEmail');if(_ae&&!errMsg)_ae.value='';
+  var _ap=g('authPass');if(_ap)_ap.value='';
+  var _ae2=g('authErr');if(_ae2&&!errMsg)_ae2.textContent='';
   if(errMsg){g('authErr').textContent=errMsg;}
   setTimeout(function(){var em=g('authEmail');if(em)em.focus();},50);
 }
@@ -7106,7 +7112,11 @@ async function login(){
   }
 
   btn.disabled=false;btn.textContent='Sign in';
+  /* Clear form fields and navigate to dashboard after login */
+  var authEmailEl=g('authEmail');if(authEmailEl)authEmailEl.value='';
+  var authPassEl=g('authPass');if(authPassEl)authPassEl.value='';
   showApp(res.data.user,roleData);
+  showTab('dashboard',document.querySelector('[data-tab="dashboard"]'));
   // Сначала загружаем agency чтобы _agencyId был установлен для RLS
   if(currentRole==='admin')await loadAgencySettings();
   await Promise.all([loadPartners(),loadModels()]);
@@ -8077,8 +8087,16 @@ async function invitePartner(){
   var st=g('inviteStatus');
   var btn=document.querySelector('[onclick="invitePartner()"]');
   clearStatus(st);
-  if(!name){setStatus(st,'err','Enter partner name.');return;}
-  if(!email||!email.includes('@')){setStatus(st,'err','Enter a valid email address.');return;}
+  if(!name){
+    var ne=g('inviteNameErr');if(ne)ne.textContent='Enter partner name.';
+    var ni=g('inviteName');if(ni)ni.style.borderColor='var(--red)';
+    return;
+  }
+  if(!email||!email.includes('@')){
+    var ee=g('inviteEmailErr');if(ee)ee.textContent='Enter a valid email address.';
+    var ei=g('inviteEmail');if(ei)ei.style.borderColor='var(--red)';
+    return;
+  }
   if(!models.length){setStatus(st,'err','No active model found.');return;}
   if(models.some(function(m){return m.split_pct<=0;})){
     setStatus(st,'err','Set split % > 0.');return;
@@ -8104,6 +8122,8 @@ async function invitePartner(){
   showToast('Invite sent to '+email,'success');
   setStatus(st,'ok','Invite sent · awaiting acceptance');
   g('inviteName').value='';g('inviteEmail').value='';
+  var ne=g('inviteNameErr');if(ne)ne.textContent='';
+  var ee=g('inviteEmailErr');if(ee)ee.textContent='';
   if(g('inviteSplitPct'))g('inviteSplitPct').value='50';
   setBtnLoading(btn,false);
   await loadPartnersList();
@@ -8608,7 +8628,7 @@ var DEMO_STATE={
       {id:'2026-05',name:'May 2026',revenues:{Fanvue:3540},expByPartner:{'demo-p1':100,'demo-p2':60},agencyExp:0}
     ],
     ws:[
-      {id:'dw1',pl:'fanvue',usd:3800,eur:3249,splitsByPartner:{'demo-p1':1137.15,'demo-p2':1299.60},date:'2026-04-02',rd:'2026-04-05',st:'ok',model_id:'demo-m1',description:null},
+      {id:'dw1',pl:'fanvue',usd:3800,eur:3142,splitsByPartner:{'demo-p1':1099.70,'demo-p2':1256.80},date:'2026-04-02',rd:'2026-04-05',st:'ok',model_id:'demo-m1',description:null},
       {id:'dw2',pl:'fanvue',usd:4200,eur:3591,splitsByPartner:{'demo-p1':1256.85,'demo-p2':1436.40},date:'2026-05-01',rd:null,st:'pend',model_id:'demo-m1',description:null}
     ],
     txs:[

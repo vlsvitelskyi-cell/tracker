@@ -7384,7 +7384,7 @@ function renderModelSplitSection(){
 function startEditSplits(){
   _editingSplits=true;
   _splitDraft={};
-  PARTNERS.forEach(function(p){_splitDraft[p.id]=getCurrentSplit(ACTIVE_MODEL_ID,p.id);});
+  PARTNERS.filter(function(p){return p.status==='active';}).forEach(function(p){_splitDraft[p.id]=getCurrentSplit(ACTIVE_MODEL_ID,p.id);});
   renderModelSplitSection();
 }
 
@@ -7396,7 +7396,7 @@ function cancelEditSplits(){
 
 function updateSplitDraftTotal(partnerId,val){
   if(partnerId!=null)_splitDraft[partnerId]=parseFloat(val)||0;
-  var total=PARTNERS.reduce(function(s,p){return s+(_splitDraft[p.id]||0);},0);
+  var total=PARTNERS.filter(function(p){return p.status==='active';}).reduce(function(s,p){return s+(_splitDraft[p.id]||0);},0);
   var lbl=g('splitTotalLabel');
   if(lbl){
     lbl.textContent=Math.round(total*100)/100+'%';
@@ -7408,7 +7408,7 @@ function updateSplitDraftTotal(partnerId,val){
 function onSplitInput(changedPartnerId,newValue){
   var val=Math.min(100,Math.max(0,parseFloat(newValue)||0));
   _splitDraft[changedPartnerId]=val;
-  var otherPartners=PARTNERS.filter(function(p){return p.id!==changedPartnerId;});
+  var otherPartners=PARTNERS.filter(function(p){return p.status==='active'&&p.id!==changedPartnerId;});
   if(otherPartners.length===1){
     // 2 партнёра — второй = 100 - первый
     var otherId=otherPartners[0].id;
@@ -7433,7 +7433,8 @@ function onSplitInput(changedPartnerId,newValue){
 
 async function saveModelSplits(){
   if(demoGuard())return;
-  var total=PARTNERS.reduce(function(s,p){return s+(_splitDraft[p.id]||0);},0);
+  var activePartners=PARTNERS.filter(function(p){return p.status==='active';});
+  var total=activePartners.reduce(function(s,p){return s+(_splitDraft[p.id]||0);},0);
   if(Math.abs(total-100)>0.01){showToast('Splits must add up to 100%','error');return;}
   var btn=g('saveSplitsBtn');btn.disabled=true;btn.textContent='Saving…';
 
@@ -7441,7 +7442,7 @@ async function saveModelSplits(){
   var delRes=await db.from('model_splits').delete().eq('model_id',ACTIVE_MODEL_ID);
   if(delRes.error){showToast(friendlyError(delRes.error),'error');btn.disabled=false;btn.textContent='Save splits';return;}
 
-  var rows=PARTNERS.map(function(p){
+  var rows=activePartners.map(function(p){
     return{model_id:ACTIVE_MODEL_ID,partner_id:p.id,split_pct:_splitDraft[p.id]||0,effective_from:new Date().toISOString()};
   });
   var res=await db.from('model_splits').insert(rows);
@@ -7826,18 +7827,10 @@ async function loadPartnersList(){
       +'<div class="partner-list-info">'
       +'<div class="partner-list-name">'+nameDisplay+'</div>'
       +(p.invited_email?'<div class="partner-list-email">'+p.invited_email+'</div>':'')
-      +(editing&&active&&isAdmin
-        ?'<div class="split-inline-edit">'
-          +'<input type="number" id="split_inp_'+p.id+'" value="'+(p.split_pct||0)+'" min="1" max="100">'
-          +'<button class="btn-save" onclick="saveSplit(\''+p.id+'\','+otherTotal+')">Save</button>'
-          +'<button class="btn-cancel" onclick="cancelSplitEdit(\''+p.id+'\')">Cancel</button>'
-          +'</div>'
-        :'')
+      +''
       +'</div>'
       +'<div class="partner-list-actions">'
-      +(p.split_pct&&!editing?'<span style="font-size:13px;color:var(--text2);font-weight:600;min-width:36px;text-align:right">'+p.split_pct+'%</span>':'')
       +statusBadge
-      +(isAdmin&&active&&!editing&&!isAdminPartner?'<button class="btn-edit" onclick="editSplitStart(\''+p.id+'\')">Edit split</button>':'')
       +(canRemove?'<button class="btn-del" title="Remove" onclick="removePartner(\''+p.id+'\',\''+p.status+'\',\''+p.name+'\')">&times;</button>':'')
       +'</div>'
       +'</div>';

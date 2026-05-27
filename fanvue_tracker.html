@@ -6000,6 +6000,13 @@ body.demo-active { padding-top: 36px; }
           <div class="auth-demo-divider">or</div>
           <button class="btn-demo" onclick="enterDemoMode()">✦ Try demo — no account needed</button>
         </div>
+        <!-- ── Check email panel (shown after forgot-password request) ── -->
+        <div id="resetSentPanel" style="display:none;text-align:center;padding:12px 0">
+          <div style="font-size:36px;margin-bottom:14px">📧</div>
+          <div style="font-size:17px;font-weight:700;color:var(--t1);margin-bottom:8px">Check your email</div>
+          <div id="resetSentEmail" style="font-size:13px;color:var(--t2);line-height:1.6;margin-bottom:24px">We sent a reset link to your email address.</div>
+          <button class="auth-btn" onclick="setAuthMode('signin')" style="margin-bottom:0">← Back to sign in</button>
+        </div>
         <!-- ── Reset password panel (shown after clicking link in email) ── -->
         <div id="resetPanel" style="display:none">
           <div style="font-size:17px;font-weight:600;color:var(--t1);margin-bottom:20px">Set new password</div>
@@ -7139,6 +7146,7 @@ function setAuthMode(mode){
   }
   g('mainAuthContent').style.display='block';
   g('resetPanel').style.display='none';
+  var rsp=g('resetSentPanel');if(rsp)rsp.style.display='none';
   g('tabSignin').classList.toggle('act',mode==='signin');
   g('tabSignup').classList.toggle('act',mode==='signup');
   g('authConfirmField').style.display=mode==='signup'?'flex':'none';
@@ -7231,10 +7239,18 @@ async function submitNewPassword(){
 async function forgotPassword(){
   var email=(g('authEmail').value||'').trim();
   var err=g('authErr');
-  if(!email){err.textContent='Enter your email first.';return;}
+  if(!email){
+    err.style.color='var(--red)';
+    err.textContent='Enter your email address first, then click Forgot password.';
+    return;
+  }
   await db.auth.resetPasswordForEmail(email,{redirectTo:'https://payoutmanager.app/tracker?reset=1'});
-  err.style.color='var(--green-text)';
-  err.textContent='Password reset email sent.';
+  /* Show "check your email" panel */
+  var sentEl=g('resetSentEmail');
+  if(sentEl)sentEl.innerHTML='We sent a reset link to<br><strong style="color:var(--t1)">'+escHtml(email)+'</strong>';
+  g('mainAuthContent').style.display='none';
+  g('resetPanel').style.display='none';
+  g('resetSentPanel').style.display='block';
 }
 
 async function logout(){
@@ -7615,6 +7631,15 @@ async function loadPartners(){
   if(res.error){console.error('loadPartners:',res.error);return;}
   if(!res.data||!res.data.length){console.warn('loadPartners: no partners found');return;}
   PARTNERS=res.data.map(function(p){return{id:p.id,name:p.name,status:p.status||'active',invited_email:p.invited_email||null,user_id:p.user_id||null,split_pct:p.split_pct||0};});
+  /* Try to load admin user_ids (used for role labels on partner cards) */
+  try{
+    var rRes=await db.from('user_roles').select('user_id,role').eq('operator_id',_agencyId);
+    if(!rRes.error&&rRes.data){
+      var adminSet={};
+      rRes.data.forEach(function(r){if(r.role==='admin')adminSet[r.user_id]=true;});
+      PARTNERS.forEach(function(p){if(p.user_id)p.is_admin=!!adminSet[p.user_id];});
+    }
+  }catch(e){}
   await loadPartnerSplits();
   renderPartnerCards();
   renderPartnerSelect();
@@ -7688,7 +7713,7 @@ function renderPartnerCards(){
         +'<div class="partner-avatar">'+initials+'</div>'
         +'<div class="partner-card-info">'
           +'<div class="partner-card-name">'+escHtml(p.name)+(isMe?' <span style="font-size:10px;color:var(--t3);font-weight:400">you</span>':'')+'</div>'
-          +'<div class="partner-card-role">'+(isMe&&currentRole==='admin'?'Admin':'Partner')+'</div>'
+          +'<div class="partner-card-role">'+(p.is_admin?'Admin':'Partner')+'</div>'
         +'</div>'
         +'<div class="partner-split-badge">'+(splitPct||0)+'% split</div>'
       +'</div>'

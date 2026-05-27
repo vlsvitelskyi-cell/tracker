@@ -2074,10 +2074,23 @@ button { font-family: var(--sans); }
 }
 .pwd-toggle:hover { color: var(--t2); }
 
+.auth-mobile-logo {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+.auth-mobile-name {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -.03em;
+  color: var(--t1);
+}
 @media(max-width:700px) {
   .auth-brand { display: none; }
   .auth-split { display: block; }
   .auth-form-side { min-height: 100vh; padding: var(--s7) var(--s5); }
+  .auth-mobile-logo { display: flex; }
 }
 
 /* ── 31. ONBOARDING OVERLAY ─────────────────────────────────── */
@@ -5867,11 +5880,13 @@ body.demo-active { padding-top: 36px; }
     <div class="auth-brand">
       <div class="auth-brand-logo">
         <div class="auth-brand-icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+          <svg width="22" height="22" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+            <polygon fill="#6d42f9" points="330.09 366.17 330.09 303.11 368.1 277.99 368.24 366.05 330.09 366.17"/>
+            <path fill="#fafafa" d="M130.03,366.06l.05-158.12,113.18,78.82,69.81-47.11c18.49-12.48,24.49-36.3,10.32-54.02-6.83-8.54-16.49-12.69-27.63-12.69l-97.33.04-.2-39.13,101.51.32c30.14.1,56.04,21.54,65.65,48.29,10.41,28.96,3.29,64-22.24,81.68l-99.75,69.09-74.84-52.67-.29,85.42-38.24.1Z"/>
+            <rect fill="#a8f740" x="130.01" y="133.87" width="38.34" height="39.17"/>
           </svg>
         </div>
-        <div class="auth-brand-name">Payout Manager</div>
+        <div class="auth-brand-name">Payout <span style="color:#6d42f9">Manager</span></div>
       </div>
       <h1 class="auth-brand-headline">Track every dollar.<br>Pay fairly.</h1>
       <p class="auth-brand-sub">Revenue sync, partner splits, and FX tracking — in one place.</p>
@@ -5887,6 +5902,14 @@ body.demo-active { padding-top: 36px; }
       <div class="auth-box">
         <!-- ── Main sign-in / sign-up panel ── -->
         <div id="mainAuthContent">
+          <div class="auth-mobile-logo">
+            <svg width="28" height="28" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+              <polygon fill="#6d42f9" points="330.09 366.17 330.09 303.11 368.1 277.99 368.24 366.05 330.09 366.17"/>
+              <path fill="#fafafa" d="M130.03,366.06l.05-158.12,113.18,78.82,69.81-47.11c18.49-12.48,24.49-36.3,10.32-54.02-6.83-8.54-16.49-12.69-27.63-12.69l-97.33.04-.2-39.13,101.51.32c30.14.1,56.04,21.54,65.65,48.29,10.41,28.96,3.29,64-22.24,81.68l-99.75,69.09-74.84-52.67-.29,85.42-38.24.1Z"/>
+              <rect fill="#a8f740" x="130.01" y="133.87" width="38.34" height="39.17"/>
+            </svg>
+            <span class="auth-mobile-name">Payout <span style="color:#6d42f9">Manager</span></span>
+          </div>
           <div class="auth-tabs">
             <button class="auth-tab act" id="tabSignin" onclick="setAuthMode('signin')">Sign in</button>
             <button class="auth-tab" id="tabSignup" onclick="setAuthMode('signup')">Create account</button>
@@ -6006,12 +6029,13 @@ body.demo-active { padding-top: 36px; }
   <div class="auth-box">
     <div class="auth-logo">
       <div class="auth-logo-icon">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="12" y1="1" x2="12" y2="23"/>
-          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+        <svg width="20" height="20" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+          <polygon fill="#6d42f9" points="330.09 366.17 330.09 303.11 368.1 277.99 368.24 366.05 330.09 366.17"/>
+          <path fill="#fafafa" d="M130.03,366.06l.05-158.12,113.18,78.82,69.81-47.11c18.49-12.48,24.49-36.3,10.32-54.02-6.83-8.54-16.49-12.69-27.63-12.69l-97.33.04-.2-39.13,101.51.32c30.14.1,56.04,21.54,65.65,48.29,10.41,28.96,3.29,64-22.24,81.68l-99.75,69.09-74.84-52.67-.29,85.42-38.24.1Z"/>
+          <rect fill="#a8f740" x="130.01" y="133.87" width="38.34" height="39.17"/>
         </svg>
       </div>
-      <div class="auth-logo-text">Payout Manager</div>
+      <div class="auth-logo-text">Payout <span style="color:#6d42f9">Manager</span></div>
     </div>
     <h2 style="font-size:18px;font-weight:700;margin:0 0 6px;letter-spacing:-.02em">You've been invited!</h2>
     <p class="auth-sub" id="inviteAgencySub">Create your account to join the agency</p>
@@ -6045,14 +6069,12 @@ body.demo-active { padding-top: 36px; }
     <!-- Brand zone: product mark + agency context -->
     <div class="sidebar-brand">
       <div class="sidebar-wordmark">
-        <!-- Ledger mark: three horizontal rules in a square — financial identity -->
-        <svg class="sidebar-mark" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect x=".75" y=".75" width="14.5" height="14.5" rx="3.25" stroke="currentColor" stroke-width="1.1" stroke-opacity=".35"/>
-          <line x1="4" y1="5.5" x2="12" y2="5.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
-          <line x1="4" y1="8"   x2="12" y2="8"   stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
-          <line x1="4" y1="10.5" x2="8.5" y2="10.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+        <svg class="sidebar-mark" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+          <polygon fill="#6d42f9" points="330.09 366.17 330.09 303.11 368.1 277.99 368.24 366.05 330.09 366.17"/>
+          <path fill="#fafafa" d="M130.03,366.06l.05-158.12,113.18,78.82,69.81-47.11c18.49-12.48,24.49-36.3,10.32-54.02-6.83-8.54-16.49-12.69-27.63-12.69l-97.33.04-.2-39.13,101.51.32c30.14.1,56.04,21.54,65.65,48.29,10.41,28.96,3.29,64-22.24,81.68l-99.75,69.09-74.84-52.67-.29,85.42-38.24.1Z"/>
+          <rect fill="#a8f740" x="130.01" y="133.87" width="38.34" height="39.17"/>
         </svg>
-        <span class="sidebar-product">Payout Manager</span>
+        <span class="sidebar-product">Payout <span style="color:#6d42f9">Manager</span></span>
       </div>
       <div class="sidebar-context">
         <div class="sidebar-agency-name" id="sidebarAgencyName">—</div>
@@ -8604,7 +8626,7 @@ function setReportPeriod(preset){
 }
 function _fmtUSD(n){return '$'+Number(n||0).toFixed(2);}
 
-function generateReport(){
+async function generateReport(){
   if(demoGuard())return;
   var btn=g('reportGenerateBtn');
   var errEl=g('reportErr');
@@ -8615,7 +8637,7 @@ function generateReport(){
   if(dateFrom>dateTo){errEl.textContent='Start date must be before end date.';errEl.style.display='block';return;}
   btn.disabled=true;btn.textContent='Generating…';
   try{
-    _buildPDF(dateFrom,dateTo);
+    await _buildPDF(dateFrom,dateTo);
     closeReportModal();
   }catch(e){
     console.error('[report] PDF generation failed:',e);
@@ -8626,7 +8648,31 @@ function generateReport(){
   }
 }
 
-function _buildPDF(dateFrom,dateTo){
+function _getLogoDataUrl(){
+  return new Promise(function(resolve){
+    try{
+      var svgStr='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500"><rect width="500" height="500" rx="100" fill="#08080A"/><polygon fill="#6d42f9" points="330.09 366.17 330.09 303.11 368.1 277.99 368.24 366.05 330.09 366.17"/><path fill="#fafafa" d="M130.03,366.06l.05-158.12,113.18,78.82,69.81-47.11c18.49-12.48,24.49-36.3,10.32-54.02-6.83-8.54-16.49-12.69-27.63-12.69l-97.33.04-.2-39.13,101.51.32c30.14.1,56.04,21.54,65.65,48.29,10.41,28.96,3.29,64-22.24,81.68l-99.75,69.09-74.84-52.67-.29,85.42-38.24.1Z"/><rect fill="#a8f740" x="130.01" y="133.87" width="38.34" height="39.17"/></svg>';
+      var blob=new Blob([svgStr],{type:'image/svg+xml'});
+      var url=URL.createObjectURL(blob);
+      var img=new Image();
+      img.onload=function(){
+        try{
+          var canvas=document.createElement('canvas');
+          canvas.width=64;canvas.height=64;
+          var ctx=canvas.getContext('2d');
+          ctx.drawImage(img,0,0,64,64);
+          URL.revokeObjectURL(url);
+          resolve(canvas.toDataURL('image/png'));
+        }catch(e){URL.revokeObjectURL(url);resolve(null);}
+      };
+      img.onerror=function(){URL.revokeObjectURL(url);resolve(null);};
+      img.src=url;
+    }catch(e){resolve(null);}
+  });
+}
+
+async function _buildPDF(dateFrom,dateTo){
+  var logoDataUrl=await _getLogoDataUrl();
   var includeTx=g('reportIncludeTx').checked;
   var includeExp=g('reportIncludeExp').checked;
   var note=(g('reportNote').value||'').trim();
@@ -8697,8 +8743,9 @@ function _buildPDF(dateFrom,dateTo){
   doc.setFillColor.apply(doc,CLR.green);
   doc.rect(0,0,pageW,1.5,'F');
 
+  if(logoDataUrl){doc.addImage(logoDataUrl,'PNG',margin,y+1,10,10);}
   setFont(20,'bold',CLR.black);
-  doc.text(_agencyName||'Agency',margin,y+8);
+  doc.text(_agencyName||'Agency',margin+(logoDataUrl?13:0),y+8);
 
   setFont(10,'normal',CLR.gray3);
   doc.text('PAYOUT REPORT',pageW-margin,y+4,{align:'right'});

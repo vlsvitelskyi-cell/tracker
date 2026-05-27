@@ -8251,9 +8251,9 @@ function showConfirmModal(title,body,onConfirm,opts){
   g('confirmModal').style.display='flex';
 }
 function confirmModalOk(){
+  var cb=_confirmCallback;
   closeConfirmModal();
-  if(_confirmCallback)_confirmCallback();
-  _confirmCallback=null;
+  if(cb)cb();
 }
 function closeConfirmModal(){
   g('confirmModal').style.display='none';

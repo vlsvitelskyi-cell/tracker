@@ -9598,6 +9598,10 @@ function setupRealtime(){
       lbl.textContent='live · '+relTime(_liveTs);
     }
   },30000);
+  // Frontend auto-sync fallback: call fanvue-sync incrementally every 15 min.
+  // Ensures new transactions appear even if cron-job.org is not running.
+  setTimeout(function(){autoSyncIncremental();},8000);
+  setInterval(function(){autoSyncIncremental();},15*60*1000);
 }
 
 /* ---- CRUD: withdrawals ---- */
@@ -11236,6 +11240,31 @@ async function init(){
   showLogin();
 })();
 /* ---- Sync full history ---- */
+async function autoSyncIncremental(){
+  if(DEMO_MODE||!ACTIVE_MODEL_ID)return;
+  try{
+    var sessionRes=await db.auth.getSession();
+    var jwt=sessionRes.data&&sessionRes.data.session&&sessionRes.data.session.access_token;
+    if(!jwt)return;
+    var res=await fetch(EDGE_URL+'/fanvue-sync',{
+      method:'POST',
+      headers:{'Authorization':'Bearer '+jwt,'Content-Type':'application/json'},
+      body:JSON.stringify({model_id:ACTIVE_MODEL_ID})
+    });
+    var data=await res.json().catch(function(){return{};});
+    if(res.ok){
+      loadFanvueConnection(); // refresh "Last synced X min ago" display
+      if(data.count>0){
+        await loadRevenueData();
+        renderAll();
+        showToast('↻ '+data.count+' new transaction'+(data.count===1?'':'s')+' synced','success');
+      }
+    }else if(data.error==='reconnect_required'){
+      showToast('⚠ Reconnect Fanvue in Settings to resume auto-sync','warn');
+    }
+  }catch(e){/* silent — auto-sync is best-effort */}
+}
+
 async function syncFullHistory(){
   if(demoGuard())return;
   var btn=g('syncBtn'),st=g('syncStatus');

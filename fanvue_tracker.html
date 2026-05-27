@@ -8655,16 +8655,20 @@ function _buildPDF(dateFrom,dateTo){
     byPlatform[p]=(byPlatform[p]||0)+(tx.amount||0);
   });
 
-  // Partner distribution rows
-  var partnerRows=PARTNERS.map(function(p){
-    var splitPct=p.split_pct||0;
-    var grossShare=netRevenue*splitPct/100;
-    var withdrawn=(S.ws||[]).reduce(function(sum,w){
-      if(!w.splitsByPartner)return sum;
-      return sum+(w.splitsByPartner[p.id]||0);
-    },0);
-    return{name:p.name||p.invited_email||'Partner',pct:splitPct,grossShare:grossShare,withdrawn:withdrawn,outstanding:grossShare-withdrawn};
-  });
+  // Partner distribution rows — use MODEL_SPLITS for correct per-model %, skip 0%
+  var _modelSplits=ACTIVE_MODEL_ID&&MODEL_SPLITS[ACTIVE_MODEL_ID]?MODEL_SPLITS[ACTIVE_MODEL_ID]:null;
+  var partnerRows=PARTNERS
+    .filter(function(p){return p.status==='active';})
+    .map(function(p){
+      var splitPct=_modelSplits?(_modelSplits[p.id]||0):(p.split_pct||0);
+      var grossShare=netRevenue*splitPct/100;
+      var withdrawn=(S.ws||[]).reduce(function(sum,w){
+        if(!w.splitsByPartner)return sum;
+        return sum+(w.splitsByPartner[p.id]||0);
+      },0);
+      return{name:p.name||p.invited_email||'Partner',pct:splitPct,grossShare:grossShare,withdrawn:withdrawn,outstanding:grossShare-withdrawn};
+    })
+    .filter(function(r){return r.pct>0;});
 
   // ── Init jsPDF ──────────────────────────────────────────────
   var jsPDF=window.jspdf.jsPDF;
@@ -8779,7 +8783,8 @@ function _buildPDF(dateFrom,dateTo){
     didParseCell:function(data){
       if(data.column.index===4&&data.section==='body'){
         var val=partnerRows[data.row.index];
-        if(val&&val.outstanding>0){data.cell.styles.textColor=CLR.darkGreen;data.cell.styles.fontStyle='bold';}
+        if(val&&val.outstanding>0.005){data.cell.styles.textColor=CLR.darkGreen;data.cell.styles.fontStyle='bold';}
+        else if(val&&val.outstanding<-0.005){data.cell.styles.textColor=CLR.red;data.cell.styles.fontStyle='bold';}
       }
     }
   });

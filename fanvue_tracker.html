@@ -6573,13 +6573,13 @@ body.demo-active { padding-top: 36px; }
             </div>
             <!-- Zone 2: FX rate -->
             <hr class="form-sep">
-            <div class="form-inline">
-              <div class="field">
-                <label>FX Rate (USD→EUR)</label>
-                <input id="nFxRate" class="num" placeholder="0.0000">
-                <div id="fxRateHint" class="sub-hint"></div>
+            <div class="field">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+                <label style="margin-bottom:0">FX Rate (USD→EUR)</label>
+                <button class="btn" style="height:26px;padding:0 10px;font-size:12px;white-space:nowrap" onclick="if(WISE_RATE){g('nFxRate').value=WISE_RATE.toFixed(4)}">Use current rate</button>
               </div>
-              <button class="btn" style="white-space:nowrap;flex-shrink:0" onclick="if(WISE_RATE){g('nFxRate').value=WISE_RATE.toFixed(4)}">Use current rate</button>
+              <input id="nFxRate" class="num" placeholder="0.0000">
+              <div id="fxRateHint" class="sub-hint"></div>
             </div>
             <!-- Zone 3: description + actions -->
             <div class="field">

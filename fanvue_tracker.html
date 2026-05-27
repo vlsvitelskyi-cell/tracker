@@ -210,45 +210,53 @@ button { font-family: var(--sans); }
 
 /* ── Brand zone: wordmark + agency context, unified ── */
 .sidebar-brand {
-  padding: 20px 18px 16px;
-  border-bottom: 1px solid var(--line-1);
-  flex-shrink: 0;
-}
-.sidebar-wordmark {
   display: flex;
   align-items: center;
-  gap: 9px;
-  margin-bottom: 11px;
-}
-.sidebar-mark {
-  width: 26px;
-  height: 26px;
+  gap: 10px;
+  padding: 20px 16px 8px;
   flex-shrink: 0;
 }
-.sidebar-product {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: .07em;
-  text-transform: uppercase;
-  color: var(--t1);
-  line-height: 1;
+.sidebar-brand-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: rgba(109,66,249,.12);
+  border-radius: 8px;
+  flex-shrink: 0;
 }
-.sidebar-context {
-  padding-left: 25px; /* optically align under product name */
+.sidebar-brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+.sidebar-brand-payout {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--t1);
+  letter-spacing: -.01em;
+}
+.sidebar-brand-manager {
+  font-size: 11px;
+  font-weight: 600;
+  color: #6d42f9;
+  letter-spacing: .04em;
+  text-transform: uppercase;
 }
 .sidebar-agency-name {
+  padding: 6px 16px 14px;
   font-size: var(--f12);
-  font-weight: 400;
+  font-weight: 500;
   color: var(--t3);
+  border-bottom: 1px solid var(--line-1);
+  margin-bottom: 8px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  line-height: 1.4;
 }
 .sidebar-agency-meta {
-  font-size: 10px;
-  color: var(--t4);
-  margin-top: 1px;
+  display: none;
 }
 
 /* Legacy aliases — kept for JS compat */
@@ -466,6 +474,26 @@ button { font-family: var(--sans); }
 }
 .topbar-icon-btn:hover { color: var(--t2); }
 .logout-btn:hover { color: var(--neg-txt); }
+#reportBtn {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 14px;
+  height: 32px;
+  background: rgba(109,66,249,.12);
+  color: #6d42f9;
+  border: 1px solid rgba(109,66,249,.25);
+  border-radius: var(--r3);
+  cursor: pointer;
+  font-family: inherit;
+  transition: background var(--fast), border-color var(--fast);
+}
+#reportBtn:hover {
+  background: rgba(109,66,249,.2);
+  border-color: rgba(109,66,249,.4);
+}
 
 /* ── 6. FINANCIAL SUMMARY STRIP ─────────────────────────────── */
 /* Primary KPI row — always visible, answers "what is the state?" */
@@ -3679,7 +3707,7 @@ button { font-family: var(--sans); }
 }
 
 /* Sidebar agency: identity anchor — needs weight */
-.sidebar-agency-name { font-weight: 500; color: var(--t2); }
+.sidebar-agency-name { font-weight: 500; }
 
 /* Sidebar model chips: resting → t3, active → t1 */
 .model-chip { color: var(--t3); }
@@ -6066,19 +6094,20 @@ body.demo-active { padding-top: 36px; }
 
     <!-- Brand zone: product mark + agency context -->
     <div class="sidebar-brand">
-      <div class="sidebar-wordmark">
-        <svg class="sidebar-mark" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+      <div class="sidebar-brand-logo">
+        <svg viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg" style="width:32px;height:32px">
           <polygon fill="#6d42f9" points="416.84 492.01 416.86 360.65 496.04 308.31 496.33 491.76 416.84 492.01"/>
           <path fill="#fafafa" d="M.07,491.78l.11-329.41,235.78,164.2,145.43-98.15c38.52-26,51.01-75.62,21.5-112.54-14.23-17.8-34.36-26.45-57.57-26.44l-202.77.07-.42-81.52,211.47.67c62.8.2,116.74,44.88,136.77,100.6,21.69,60.34,6.86,133.33-46.33,170.17l-207.8,143.93-155.92-109.74-.6,177.95-79.66.21Z"/>
           <rect fill="#a8f740" x=".02" y="8.06" width="79.87" height="81.61"/>
         </svg>
-        <span class="sidebar-product">Payout <span style="color:#6d42f9">Manager</span></span>
       </div>
-      <div class="sidebar-context">
-        <div class="sidebar-agency-name" id="sidebarAgencyName">—</div>
-        <div class="sidebar-agency-meta" id="sidebarModelsCount"></div>
+      <div class="sidebar-brand-text">
+        <span class="sidebar-brand-payout">Payout</span>
+        <span class="sidebar-brand-manager">Manager</span>
       </div>
     </div>
+    <div class="sidebar-agency-name" id="sidebarAgencyName">—</div>
+    <div class="sidebar-agency-meta" id="sidebarModelsCount"></div>
 
     <!-- Navigation — text-first, grouped by function -->
     <nav class="sidebar-nav">
@@ -6158,7 +6187,14 @@ body.demo-active { padding-top: 36px; }
           <span id="userEmail" style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
           <span class="user-role-badge" id="userRoleBadge"></span>
         </div>
-        <button id="reportBtn" onclick="openReportModal()" style="display:none;align-items:center;gap:5px;background:none;border:1px solid var(--line-2);border-radius:6px;color:var(--t2);font-size:11px;font-weight:500;padding:5px 10px;cursor:pointer;font-family:inherit;letter-spacing:.01em;transition:border-color 150ms,color 150ms" onmouseover="this.style.color='var(--t1)';this.style.borderColor='var(--line-3)'" onmouseout="this.style.color='var(--t2)';this.style.borderColor='var(--line-2)'"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>PDF Report</button>
+        <button id="reportBtn" onclick="openReportModal()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          PDF Report
+        </button>
         <button class="topbar-icon-btn logout-btn" id="logoutBtn" style="display:none" onclick="logout()" title="Sign out">
           <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>

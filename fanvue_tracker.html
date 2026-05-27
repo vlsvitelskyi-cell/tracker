@@ -6834,7 +6834,7 @@ body.demo-active { padding-top: 36px; }
         <div id="settings-about" class="settings-tab-content">
 
         <!-- SECTION: WORKSPACE -->
-        <div class="settings-section">
+        <div class="settings-section" id="workspaceSection">
           <div class="settings-section-heading">WORKSPACE</div>
           <div class="settings-card">
             <div class="settings-row-title" style="margin-bottom:10px">Workspace name</div>
@@ -7045,6 +7045,25 @@ function showApp(user,roleData){
   if(tbRec)tbRec.style.display='inline-flex';
   var reportBtn=g('reportBtn');
   if(reportBtn)reportBtn.style.display=currentRole==='admin'?'flex':'none';
+  applyRoleUI();
+}
+function applyRoleUI(){
+  var isAdmin=currentRole==='admin'||currentRole==='owner';
+  /* Revenue: hide "Add manually" button for partners */
+  var amBtn=document.querySelector('[onclick="toggleAddTxForm()"]');
+  if(amBtn)amBtn.style.display=isAdmin?'':'none';
+  /* Withdrawals: hide "Record withdrawal" button for partners */
+  var rwBtn=document.querySelector('[onclick="toggleAddWithdrawalForm()"]');
+  if(rwBtn)rwBtn.style.display=isAdmin?'':'none';
+  /* Topbar record withdrawal button */
+  var tbRec=g('topbarRecordWithdrawal');
+  if(tbRec)tbRec.style.display=isAdmin?'inline-flex':'none';
+  /* Settings: hide Preferences tab for partners */
+  var prefTab=document.querySelector('[data-stab="preferences"]');
+  if(prefTab)prefTab.style.display=isAdmin?'':'none';
+  /* Settings About: hide Workspace name section for partners */
+  var wsSection=g('workspaceSection');
+  if(wsSection)wsSection.style.display=isAdmin?'':'none';
 }
 
 function showLogin(errMsg){
@@ -9216,7 +9235,7 @@ function showTab(name,btn,isMobile){
   if(name==='dashboard'||name==='revenue'){
     requestAnimationFrame(function(){requestAnimationFrame(function(){renderChart();});});
   }
-  if(name==='settings'){loadAgencySettings();renderModelSplitSection();loadFanvueConnection();renderInviteModelRows();}
+  if(name==='settings'){loadAgencySettings();renderModelSplitSection();loadFanvueConnection();renderInviteModelRows();if(currentRole==='partner')switchSettingsTab('team');}
   /* KPI grid: only visible on dashboard */
   var dashStats=g('dashStats');
   if(dashStats)dashStats.style.display=name==='dashboard'?'grid':'none';
@@ -10803,8 +10822,9 @@ function renderMonths(){
 /* ---- Render: Withdrawal list ---- */
 function renderList(){
   var el=g('wList');
+  var isAdmin=currentRole==='admin'||currentRole==='owner';
   if(!S.ws.length){
-    el.innerHTML=mkEmpty(null,'No withdrawals recorded','Record each payout as it occurs.','Add entry →',"toggleAddWithdrawalForm()");
+    el.innerHTML=mkEmpty(null,'No withdrawals recorded','Record each payout as it occurs.',isAdmin?'Add entry →':null,isAdmin?"toggleAddWithdrawalForm()":null);
     return;
   }
   var pend=S.ws.filter(function(w){return w.st==='pend';});
@@ -10843,8 +10863,8 @@ function renderList(){
           +descHtmlPend
         +'</div>'
         +'<div class="wd-right">'
-          +'<button class="wd-delete-btn" onclick="delW(\''+w.id+'\')" title="Delete">'+DEL_SVG+'</button>'
-          +'<button class="btn" onclick="toggleExp(\''+w.id+'\')">'+(isE?'Cancel':'Money received →')+'</button>'
+          +(isAdmin?'<button class="wd-delete-btn" onclick="delW(\''+w.id+'\')" title="Delete">'+DEL_SVG+'</button>':'')
+          +(isAdmin?'<button class="btn" onclick="toggleExp(\''+w.id+'\')">'+(isE?'Cancel':'Money received →')+'</button>':'')
         +'</div>'
       +'</div>';
       if(isE){

@@ -7627,6 +7627,10 @@ async function loadFanvueConnection(){
     if(modelObj)modelObj.subscription_active=FANVUE_CONNECTION.subscription_active!==false;
   }
   checkSubscriptionGate();
+  // Проверка scope — read:creator нужен для webhook-событий
+  if(FANVUE_CONNECTION&&FANVUE_CONNECTION.scopes&&!FANVUE_CONNECTION.scopes.includes('read:creator')){
+    showToast('⚠ Please reconnect Fanvue to enable real-time sync','warn');
+  }
 }
 
 function renderSyncStatus(){

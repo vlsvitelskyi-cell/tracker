@@ -5402,12 +5402,25 @@ html { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
   letter-spacing: .07em;
   color: var(--t3);
 }
+/* Date separators inside expense list — no sticky, no z-index */
+.exp-date-sep {
+  padding: 5px 20px 4px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--line-1);
+}
+.exp-date-sep-label {
+  font-size: var(--f11);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  color: var(--t3);
+}
 
 /* ── Part B: Expense rows — 5-column strict grid ── */
 /* ── Expense rows — match .tx-row layout exactly ── */
 .expense-row {
   display: grid;
-  grid-template-columns: 90px 1fr 68px 88px;
+  grid-template-columns: 90px 1fr 88px;
   align-items: center;
   padding: 9px 20px;
   border-bottom: 1px solid var(--line-1);
@@ -9900,7 +9913,7 @@ function renderExpenses(){
     /* Date separator — group rows by day, same as Dashboard ledger */
     var d=exp.date?exp.date.slice(0,10):'';
     if(d!==lastDate){
-      html+='<div class="tx-date-sep"><span class="tx-date-sep-label">'+fdate(d)+'</span></div>';
+      html+='<div class="exp-date-sep"><span class="exp-date-sep-label">'+fdate(d)+'</span></div>';
       lastDate=d;
     }
     var p=PARTNERS.find(function(x){return x.id===exp.partner_id;})||{name:'?'};
@@ -9942,8 +9955,7 @@ function renderExpenses(){
         +(parsed.text?'<span class="expense-desc">'+escHtml(parsed.text)+'</span>':'')
         +modelBadge
       +'</div>'
-      +'<span class="expense-date">'+fdate(exp.date)+'</span>'
-      +'<span class="expense-amount">−'+fu(exp.amount)+'</span>'
+      +'<span class="expense-amount" style="grid-column:3/5">−'+fu(exp.amount)+'</span>'
       +'<div class="expense-actions">'
         +(isAdmin?'<button class="btn-edit" onclick="expEditStart(\''+exp.id+'\')">Edit</button>':'')
         +(isAdmin?'<button class="btn-del" onclick="deleteExpense(\''+exp.id+'\')" title="Delete">'+EXP_DEL_SVG+'</button>':'')

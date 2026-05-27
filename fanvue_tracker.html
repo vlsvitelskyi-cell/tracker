@@ -5404,21 +5404,22 @@ html { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
 }
 
 /* ── Part B: Expense rows — 5-column strict grid ── */
+/* ── Expense rows — match .tx-row layout exactly ── */
 .expense-row {
   display: grid;
-  grid-template-columns: 88px 1fr 72px 88px 60px;
+  grid-template-columns: 90px 1fr 68px 88px;
   align-items: center;
-  gap: 0 10px;
   padding: 9px 20px;
   border-bottom: 1px solid var(--line-1);
-  border-left: 2px solid var(--line-2);
-  min-height: 42px;
+  border-left: 2px solid transparent;
+  min-height: 40px;
+  position: relative;
   transition: background 100ms ease;
 }
-.expense-row:hover { background: rgba(255,255,255,.03); }
+.expense-row:hover { background: rgba(255,255,255,.04); }
 .expense-row:last-child { border-bottom: none; }
 
-/* col 1: category pill (standalone, not based on platform-pill) */
+/* col 1: category pill — same visual weight as platform-pill */
 .expense-cat-pill {
   display: inline-flex;
   align-items: center;
@@ -5443,11 +5444,11 @@ html { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
 .expense-cat-pill.equipment { background: var(--warn-bg);        color: var(--warn-txt); }
 .expense-cat-pill.other     { background: var(--surface-3);      color: var(--t3); }
 
-/* Left border colour by category */
+/* Left accent by category */
 .expense-row:has(.expense-cat-pill.marketing) { border-left-color: var(--p0); }
 .expense-row:has(.expense-cat-pill.software)  { border-left-color: var(--p2); }
 .expense-row:has(.expense-cat-pill.equipment) { border-left-color: var(--warn-txt); }
-.expense-row:has(.expense-cat-pill.other)     { border-left-color: var(--t3); }
+.expense-row:has(.expense-cat-pill.other)     { border-left-color: rgba(255,255,255,.12); }
 
 /* col 2: partner + description stacked */
 .expense-info {
@@ -5456,6 +5457,7 @@ html { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
   gap: 1px;
   min-width: 0;
   overflow: hidden;
+  padding: 0 6px;
 }
 .expense-partner {
   font-size: 13px;
@@ -5489,16 +5491,23 @@ html { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
   white-space: nowrap;
   letter-spacing: -.02em;
 }
-/* col 5: actions (hidden, show on hover) */
+/* actions: absolutely positioned overlay (out of grid flow) */
 .expense-actions {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
   display: flex;
   align-items: center;
-  justify-content: flex-end;
   gap: 2px;
   opacity: 0;
+  pointer-events: none;
   transition: opacity 120ms ease;
+  background: var(--surface-2);
+  border-radius: var(--r2);
+  padding: 0 4px;
 }
-.expense-row:hover .expense-actions { opacity: 1; }
+.expense-row:hover .expense-actions { opacity: 1; pointer-events: auto; }
 
 /* ── Part D: Model Performance rows — 4-column grid ── */
 .model-perf-row {
@@ -6493,17 +6502,17 @@ body.demo-active { padding-top: 36px; }
           </div>
           <div class="empty-page-title">No expenses recorded</div>
           <div class="empty-page-desc">Track tools, ads, and operator costs to see your real net per model</div>
-          <button class="btn-primary" onclick="toggleAddExpenseForm()">Add first expense</button>
+          <button class="btn" onclick="toggleAddExpenseForm()">+ Add first expense</button>
         </div>
 
         <!-- Expense history by month -->
         <div class="card" id="expensesHistCard">
           <div class="sec-row">
-            <div class="sec-label">Expense History</div>
-            <div style="display:flex;gap:8px;align-items:center">
-              <span id="expTotalLabel" style="font-size:13px;font-weight:600;color:var(--neg-txt)"></span>
-              <button class="btn-primary" onclick="toggleAddExpenseForm()">Add expense</button>
+            <div style="display:flex;align-items:center;gap:12px">
+              <div class="sec-label">Expenses</div>
+              <span id="expTotalLabel" style="font-size:13px;font-weight:600;color:var(--neg-txt);font-family:var(--mono);letter-spacing:-.02em"></span>
             </div>
+            <button class="btn" onclick="toggleAddExpenseForm()">+ Add expense</button>
           </div>
           <div class="mtab-row" id="expMTabs"></div>
           <div id="expList"></div>
@@ -9885,7 +9894,15 @@ function renderExpenses(){
     +'<path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>'
     +'<path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>'
     +'</svg>';
-  el.innerHTML=filtered.map(function(exp){
+  var html='';
+  var lastDate='';
+  filtered.forEach(function(exp){
+    /* Date separator — group rows by day, same as Dashboard ledger */
+    var d=exp.date?exp.date.slice(0,10):'';
+    if(d!==lastDate){
+      html+='<div class="tx-date-sep"><span class="tx-date-sep-label">'+fdate(d)+'</span></div>';
+      lastDate=d;
+    }
     var p=PARTNERS.find(function(x){return x.id===exp.partner_id;})||{name:'?'};
     var pIdx=PARTNERS.findIndex(function(x){return x.id===exp.partner_id;});
     var cls='p'+(pIdx>=0?pIdx%5:0);
@@ -9893,7 +9910,7 @@ function renderExpenses(){
       var editParsed=parseExpDesc(exp.description);
       var editCatLabel=editParsed.cat||'Other';
       var editCatPill='<span class="platform-pill exp-cat-pill exp-cat-pill--'+editCatLabel.toLowerCase()+'">'+escHtml(editCatLabel)+'</span>';
-      return '<div class="exp-item editing-item">'
+      html+='<div class="exp-item editing-item">'
         +'<div style="display:flex;align-items:center;gap:8px">'
         +editCatPill
         +'<span style="font-size:var(--f12);color:var(--t2);font-weight:600">'+escHtml(p.name)+'</span>'
@@ -9910,38 +9927,30 @@ function renderExpenses(){
         +'<button class="btn-cancel" onclick="expEditCancel(\''+exp.id+'\')">Cancel</button>'
         +'</div>'
         +'</div>';
+      return;
     }
     var parsed=parseExpDesc(exp.description);
     var mObj=exp.model_id?ALL_MODELS.find(function(m){return m.id===exp.model_id;}):{name:'Agency'};
     var modelBadge=(!ACTIVE_MODEL_ID&&ALL_MODELS.length>1)
       ?'<span style="font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;border:1px solid var(--line-1);color:var(--t4)">'+(mObj?escHtml(mObj.name):'Agency')+'</span>'
       :'';
-    /* Category pill — like platform-pill on Dashboard/Revenue */
-    var catLabel=parsed.cat||'Other';
-    var catPill='<span class="platform-pill exp-cat-pill exp-cat-pill--'+catLabel.toLowerCase()+'">'+escHtml(catLabel)+'</span>';
-    /* Partner name (primary) + optional inline description (smaller) */
-    var descInline=parsed.text?'<span class="tx-note-inline">'+escHtml(parsed.text)+'</span>':'';
     var catCls=(parsed.cat||'other').toLowerCase();
-    return '<div class="expense-row">'
-      /* col 1: standalone category pill */
+    html+='<div class="expense-row">'
       +'<span class="expense-cat-pill '+catCls+'">'+escHtml(parsed.cat||'Other')+'</span>'
-      /* col 2: partner name + description stacked */
       +'<div class="expense-info">'
-        +'<span class="expense-partner">'+escHtml(p.name)+'</span>'
+        +'<span class="expense-partner">'+escHtml(p.name||'Agency')+'</span>'
         +(parsed.text?'<span class="expense-desc">'+escHtml(parsed.text)+'</span>':'')
         +modelBadge
       +'</div>'
-      /* col 3: date */
       +'<span class="expense-date">'+fdate(exp.date)+'</span>'
-      /* col 4: amount */
       +'<span class="expense-amount">−'+fu(exp.amount)+'</span>'
-      /* col 5: actions */
       +'<div class="expense-actions">'
         +(isAdmin?'<button class="btn-edit" onclick="expEditStart(\''+exp.id+'\')">Edit</button>':'')
         +(isAdmin?'<button class="btn-del" onclick="deleteExpense(\''+exp.id+'\')" title="Delete">'+EXP_DEL_SVG+'</button>':'')
       +'</div>'
       +'</div>';
-  }).join('');
+  });
+  el.innerHTML='<div class="fin-table-wrap" style="border:1px solid var(--line-1);border-radius:var(--r3);overflow:hidden">'+html+'</div>';
 }
 
 async function refreshRevenue(){

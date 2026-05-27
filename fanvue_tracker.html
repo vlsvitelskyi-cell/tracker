@@ -2199,8 +2199,9 @@ button { font-family: var(--sans); }
   opacity: 0;
   pointer-events: none;
   transition: opacity var(--normal), transform var(--normal);
-  max-width: 360px;
-  white-space: nowrap;
+  max-width: 380px;
+  white-space: normal;
+  word-break: break-word;
 }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
 .toast.success { background: #051C0E; border: 1px solid rgba(74,222,128,.20); color: var(--pos-txt); }
@@ -9524,7 +9525,7 @@ async function addW(){
 
   var wModelId=(g('wModel')&&g('wModel').value)||null;
   var wdDescVal=(g('wdDesc')&&g('wdDesc').value.trim())||null;
-  _wPending={platform:platform,usd:r2(usd),request_date:date,eur:0,v_eur:0,vl_eur:0,status:'pending',model_id:wModelId||null,description:wdDescVal};
+  _wPending={platform:platform,usd:r2(usd),request_date:date,eur:0,status:'pending',model_id:wModelId||null,description:wdDescVal};
 
   // B7: styled confirm dialog with withdrawal currency
   var sym={EUR:'€',GBP:'£',USD:'$'}[WD_CURRENCY]||'€';

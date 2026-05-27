@@ -6409,6 +6409,7 @@ body.demo-active { padding-top: 36px; }
           <div class="form-panel-header">
             <span class="form-panel-title">Add Transaction</span>
             <span class="form-panel-meta">Manual entry</span>
+            <button class="btn" onclick="toggleAddTxForm()" style="margin-left:auto;padding:3px 12px;height:28px;font-size:12px">Cancel</button>
           </div>
           <div class="form-panel-body">
             <div class="form-grid">
@@ -6428,7 +6429,7 @@ body.demo-active { padding-top: 36px; }
             <div class="form-actions">
               <div class="field" style="flex:1;margin-bottom:0">
                 <label>Amount (USD)</label>
-                <input id="txAmt" class="num" placeholder="50.00 or -10.00">
+                <input id="txAmt" class="num" placeholder="50.00 or -10.00" oninput="this.style.borderColor='';var s=g('txStatus');if(s)s.innerHTML=''">
               </div>
               <button class="btn btn-primary" id="txAddBtn" onclick="addTransaction()" style="align-self:flex-end">Add transaction</button>
             </div>
@@ -6548,6 +6549,7 @@ body.demo-active { padding-top: 36px; }
         <div class="form-panel" id="addWithdrawalForm" style="display:none">
           <div class="form-panel-header">
             <span class="form-panel-title">New Withdrawal</span>
+            <button class="btn" onclick="toggleAddWithdrawalForm()" style="margin-left:auto;padding:3px 12px;height:28px;font-size:12px">Cancel</button>
           </div>
           <div class="form-panel-body">
             <!-- Zone 1: request fields -->
@@ -6564,7 +6566,7 @@ body.demo-active { padding-top: 36px; }
             <div class="form-grid">
               <div class="field">
                 <label>Amount (USD)</label>
-                <input id="nUSD" class="num" placeholder="200" oninput="onWithdrawalUSDChange(this.value)">
+                <input id="nUSD" class="num" placeholder="200" oninput="this.style.borderColor='';onWithdrawalUSDChange(this.value)">
               </div>
               <div class="field">
                 <label>Date</label>
@@ -7803,6 +7805,8 @@ async function loadAgencySettings(){
   var invForm=g('inviteNewPartner');
   if(invForm)invForm.style.display=currentRole==='admin'?'block':'none';
   if(!currentUser)return;
+  /* Demo mode: render demo partners list, skip all Supabase calls */
+  if(DEMO_MODE){await loadPartnersList();return;}
 
   var agRes=await db.rpc('get_my_agency_id');
   if(agRes.error||!agRes.data)return;
@@ -7896,6 +7900,24 @@ var _splitEditing={};
 
 async function loadPartnersList(){
   var el=g('partnersList');if(!el)return;
+  /* Demo mode: render from DEMO_STATE, never hit Supabase */
+  if(DEMO_MODE){
+    var dRows=PARTNERS.filter(function(p){return p.status==='active'||p.status==='pending';});
+    if(!dRows.length){el.innerHTML='<div class="empty-state-sm">No partners.</div>';return;}
+    el.innerHTML=dRows.map(function(p,i){
+      var ac=i===0?'blue':i===1?'green':'gray';
+      var ini=p.name.split(' ').map(function(w){return w[0]||'';}).join('').toUpperCase().slice(0,2)||'?';
+      return '<div class="partner-list-row">'
+        +'<div class="partner-avatar '+ac+'">'+ini+'</div>'
+        +'<div class="partner-list-info">'
+        +'<div class="partner-list-name">'+escHtml(p.name)+'</div>'
+        +(p.invited_email?'<div class="partner-list-email">'+escHtml(p.invited_email)+'</div>':'')
+        +'</div>'
+        +'<div class="partner-list-actions"><span class="badge badge-ok">Active</span></div>'
+        +'</div>';
+    }).join('');
+    return;
+  }
   var res=await db.from('partners').select('id,name,split_pct,status,invited_email,user_id').in('status',['active','pending']).order('created_at',{ascending:true});
   if(res.error||!res.data){el.innerHTML='<div class="empty-state-sm">No partners.</div>';return;}
   var rows=res.data;
@@ -9536,7 +9558,12 @@ function setupRealtime(){
 /* ---- CRUD: withdrawals ---- */
 async function addW(){
   var usd=pn(g('nUSD').value);
-  if(!usd||usd<=0){g('nUSD').focus();return;}
+  if(!usd||usd<=0){
+    g('nUSD').style.borderColor='var(--red)';
+    g('nUSD').focus();
+    return;
+  }
+  g('nUSD').style.borderColor='';
   var fxInput=g('nFxRate');
   var rate=fxInput&&pn(fxInput.value)>0?pn(fxInput.value):WISE_RATE;
   var date=g('nDate').value||new Date().toISOString().slice(0,10);
@@ -9699,7 +9726,14 @@ async function resetAllConfirmed(){
 async function addTransaction(){
   if(demoGuard())return;
   var amt=pn(g('txAmt').value);
-  if(amt===0){g('txAmt').focus();return;}
+  if(amt===0){
+    var _s=g('txStatus');
+    if(_s)_s.innerHTML='<span style="color:var(--red)">Enter an amount (e.g. 50.00 or -10.00).</span>';
+    g('txAmt').style.borderColor='var(--red)';
+    g('txAmt').focus();
+    return;
+  }
+  g('txAmt').style.borderColor='';
   var date=g('txDate').value||new Date().toISOString().slice(0,10);
   var pl=g('txPl').value;
   var btn=g('txAddBtn');

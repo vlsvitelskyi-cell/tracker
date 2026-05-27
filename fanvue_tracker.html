@@ -8703,7 +8703,7 @@ function _buildPDF(dateFrom,dateTo){
   setFont(10,'normal',CLR.gray3);
   doc.text('PAYOUT REPORT',pageW-margin,y+4,{align:'right'});
   setFont(9,'normal',CLR.gray3);
-  doc.text(dateFrom+'  →  '+dateTo,pageW-margin,y+9,{align:'right'});
+  doc.text(dateFrom+' to '+dateTo,pageW-margin,y+9,{align:'right'});
 
   var modelName=(ALL_MODELS.find(function(m){return m.id===ACTIVE_MODEL_ID;})||{}).name||'';
   if(modelName){setFont(9,'normal',CLR.gray3);doc.text('Creator: '+modelName,pageW-margin,y+14,{align:'right'});}

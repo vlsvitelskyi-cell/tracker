@@ -9955,7 +9955,7 @@ function renderExpenses(){
         +(parsed.text?'<span class="expense-desc">'+escHtml(parsed.text)+'</span>':'')
         +modelBadge
       +'</div>'
-      +'<span class="expense-amount" style="grid-column:3/5">−'+fu(exp.amount)+'</span>'
+      +'<span class="expense-amount">−'+fu(exp.amount)+'</span>'
       +'<div class="expense-actions">'
         +(isAdmin?'<button class="btn-edit" onclick="expEditStart(\''+exp.id+'\')">Edit</button>':'')
         +(isAdmin?'<button class="btn-del" onclick="deleteExpense(\''+exp.id+'\')" title="Delete">'+EXP_DEL_SVG+'</button>':'')

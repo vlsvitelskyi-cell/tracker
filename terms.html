@@ -4,147 +4,568 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Terms of Service — Payout Manager</title>
+<meta name="description" content="Terms of Service for Payout Manager. Rules for using the service.">
+<meta name="theme-color" content="#08080A">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #08080A; --surface: #0F0F12; --line: rgba(255,255,255,.08);
-    --t1: #F0F0F2; --t2: #A0A0AA; --t3: #747480; --cta: #10B981;
-    --sans: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: var(--bg); color: var(--t1); font-family: var(--sans); font-size: 15px; line-height: 1.7; -webkit-font-smoothing: antialiased; }
-  .topbar { position: sticky; top: 0; z-index: 10; background: rgba(8,8,10,.95); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); padding: 0 32px; height: 52px; display: flex; align-items: center; justify-content: space-between; }
-  .topbar-brand { font-size: 13px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--t1); text-decoration: none; }
-  .topbar-back { font-size: 13px; color: var(--t3); text-decoration: none; transition: color .15s; }
-  .topbar-back:hover { color: var(--t1); }
-  .wrap { max-width: 720px; margin: 0 auto; padding: 64px 32px 120px; }
-  .doc-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--cta); margin-bottom: 16px; }
-  h1 { font-size: 32px; font-weight: 800; letter-spacing: -.04em; line-height: 1.1; color: var(--t1); margin-bottom: 12px; }
-  .meta { font-size: 13px; color: var(--t3); margin-bottom: 56px; padding-bottom: 32px; border-bottom: 1px solid var(--line); }
-  h2 { font-size: 17px; font-weight: 700; letter-spacing: -.02em; color: var(--t1); margin: 44px 0 12px; }
-  p { color: var(--t2); margin-bottom: 14px; }
-  ul, ol { color: var(--t2); padding-left: 22px; margin-bottom: 14px; }
-  li { margin-bottom: 6px; }
-  a { color: var(--cta); text-decoration: none; }
-  a:hover { text-decoration: underline; }
-  .highlight-box { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 20px 24px; margin: 24px 0; }
-  .highlight-box p { margin: 0; font-size: 13px; }
-  strong { color: var(--t1); font-weight: 600; }
-  footer { border-top: 1px solid var(--line); padding: 32px; text-align: center; font-size: 12px; color: var(--t3); }
-  footer a { color: var(--t3); margin: 0 12px; }
-  footer a:hover { color: var(--t1); }
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#08080A;--surface:#0D0D10;--surface2:#121216;--surface3:#16161B;
+  --purple:#6d42f9;--purple-lt:rgba(109,66,249,.1);--purple-md:rgba(109,66,249,.2);
+  --green:#a8f740;--green-lt:rgba(168,247,64,.08);--green-md:rgba(168,247,64,.15);
+  --emerald:#10B981;
+  --t1:#F2F2F4;--t2:#9898A8;--t3:#606068;
+  --line:rgba(255,255,255,.06);--line2:rgba(255,255,255,.10);
+  --sans:'DM Sans',-apple-system,sans-serif;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--t1);font-family:var(--sans);
+  -webkit-font-smoothing:antialiased;overflow-x:hidden}
+
+/* ── TOPBAR ── */
+.topbar{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  height:56px;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 32px;
+  background:rgba(8,8,10,.8);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--line);
+}
+.tb-brand{display:flex;align-items:center;gap:9px;text-decoration:none}
+.tb-name{font-size:15px;font-weight:700;letter-spacing:-.01em;color:var(--t1)}
+.tb-name span{color:var(--purple)}
+.tb-right{display:flex;align-items:center;gap:12px}
+.tb-link{font-size:13px;color:var(--t2);text-decoration:none;transition:color .15s}
+.tb-link:hover{color:var(--t1)}
+.tb-cta{
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--green);color:#08080A;
+  font-size:13px;font-weight:700;
+  padding:7px 16px;border-radius:8px;
+  text-decoration:none;
+  transition:opacity .15s,transform .15s;
+}
+.tb-cta:hover{opacity:.88;transform:translateY(-1px)}
+
+/* ── HERO ── */
+.legal-hero{
+  padding:120px 32px 64px;
+  text-align:center;
+  position:relative;
+  overflow:hidden;
+}
+.legal-hero::before{
+  content:'';position:absolute;
+  width:600px;height:400px;
+  background:radial-gradient(circle, rgba(109,66,249,.12) 0%, transparent 70%);
+  top:0;left:50%;transform:translateX(-50%);
+  pointer-events:none;
+}
+.legal-hero::after{
+  content:'';position:absolute;
+  width:300px;height:300px;
+  background:radial-gradient(circle, rgba(168,247,64,.07) 0%, transparent 70%);
+  bottom:0;left:10%;
+  pointer-events:none;
+}
+.legal-eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--green-lt);
+  border:1px solid rgba(168,247,64,.2);
+  border-radius:20px;
+  padding:5px 14px;
+  font-size:11px;font-weight:700;
+  color:var(--green);
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  margin-bottom:24px;
+  animation:fadeInDown .5s ease both;
+}
+.legal-hero h1{
+  font-size:clamp(36px,6vw,58px);
+  font-weight:800;
+  letter-spacing:-.04em;
+  line-height:1.05;
+  color:var(--t1);
+  margin-bottom:24px;
+  animation:fadeInDown .5s .1s ease both;
+}
+.legal-meta{
+  display:inline-flex;align-items:center;gap:10px;
+  font-size:13px;color:var(--t3);
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:8px;
+  padding:9px 20px;
+  animation:fadeInDown .5s .2s ease both;
+}
+.meta-sep{color:var(--line2)}
+
+/* ── CONTENT ── */
+.legal-wrap{
+  max-width:720px;margin:0 auto;
+  padding:0 32px 120px;
+}
+
+.summary-card{
+  background:var(--surface);
+  border:1px solid var(--line2);
+  border-radius:16px;
+  padding:32px;
+  margin-bottom:14px;
+  position:relative;
+  overflow:hidden;
+}
+.summary-card::before{
+  content:'';position:absolute;
+  top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--purple),var(--green));
+}
+.summary-label{
+  font-size:10px;font-weight:800;
+  text-transform:uppercase;letter-spacing:.1em;
+  color:var(--green);margin-bottom:12px;
+}
+.summary-card p{
+  font-size:14px;color:var(--t2);line-height:1.75;margin:0;
+}
+.summary-card strong{color:var(--t1);font-weight:600}
+
+/* Highlights grid */
+.highlights-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+  margin-bottom:56px;
+}
+.hi{
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:18px 16px;
+  transition:border-color .2s,transform .2s;
+  cursor:default;
+}
+.hi:hover{border-color:rgba(168,247,64,.2);transform:translateY(-2px)}
+.hi-icon{
+  width:34px;height:34px;
+  background:var(--green-lt);
+  border:1px solid rgba(168,247,64,.15);
+  border-radius:9px;
+  display:flex;align-items:center;justify-content:center;
+  margin-bottom:12px;
+}
+.hi-label{font-size:12px;font-weight:700;color:var(--t1);margin-bottom:4px;letter-spacing:-.01em}
+.hi-desc{font-size:11px;color:var(--t3);line-height:1.5}
+
+/* Sections */
+.legal-section{
+  border-top:1px solid var(--line);
+  padding:44px 0;
+}
+.section-num{
+  display:inline-flex;
+  background:var(--green-lt);
+  border:1px solid rgba(168,247,64,.2);
+  border-radius:6px;
+  padding:3px 10px;
+  font-size:10px;font-weight:800;
+  color:var(--green);
+  letter-spacing:.08em;
+  font-variant-numeric:tabular-nums;
+  margin-bottom:14px;
+}
+.legal-section h2{
+  font-size:clamp(18px,2.5vw,23px);
+  font-weight:800;
+  letter-spacing:-.03em;
+  color:var(--t1);
+  margin-bottom:18px;
+  line-height:1.2;
+}
+.legal-section p{
+  font-size:14px;color:var(--t2);
+  line-height:1.75;margin-bottom:14px;
+}
+.legal-section p:last-child{margin-bottom:0}
+.legal-section strong{color:var(--t1);font-weight:600}
+.legal-section a{color:var(--green);text-decoration:none;transition:opacity .15s}
+.legal-section a:hover{text-decoration:underline;opacity:.8}
+.legal-section a.contact-btn{color:#08080A}
+.legal-section a.contact-btn:hover{text-decoration:none;opacity:.88}
+
+/* Lists */
+.llist{list-style:none;padding:0;margin:0 0 16px}
+.llist li{
+  display:flex;align-items:flex-start;gap:12px;
+  font-size:14px;color:var(--t2);
+  line-height:1.65;
+  padding:8px 0;
+  border-bottom:1px solid var(--line);
+}
+.llist li:last-child{border-bottom:none;padding-bottom:0}
+.llist li::before{
+  content:'';
+  width:5px;height:5px;min-width:5px;
+  background:var(--green);
+  border-radius:1px;
+  margin-top:8px;
+  flex-shrink:0;
+}
+.llist li strong{color:var(--t1);font-weight:600}
+.llist li a{color:var(--green);text-decoration:none}
+
+/* Prohibited list — red accent */
+.llist.prohibited li::before{background:#F87171}
+
+/* Note box */
+.note-box{
+  background:var(--surface2);
+  border:1px solid var(--line);
+  border-left:3px solid var(--green);
+  border-radius:0 10px 10px 0;
+  padding:14px 18px;
+  margin:18px 0;
+  font-size:13px;color:var(--t2);line-height:1.65;
+}
+.note-box strong{color:var(--t1)}
+.note-box a{color:var(--green);text-decoration:none}
+
+/* Warning note box */
+.note-box.warn{border-left-color:#F59E0B}
+
+/* Service features list */
+.service-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin-bottom:16px;
+}
+.service-item{
+  background:var(--surface2);
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:12px 16px;
+  font-size:13px;color:var(--t2);
+  display:flex;align-items:flex-start;gap:10px;
+}
+.service-item::before{
+  content:'';
+  width:5px;height:5px;min-width:5px;
+  background:var(--green);
+  border-radius:1px;
+  margin-top:6px;
+  flex-shrink:0;
+}
+
+/* Contact card */
+.contact-card{
+  background:var(--surface);
+  border:1px solid var(--line2);
+  border-radius:14px;
+  padding:32px;
+  text-align:center;
+  margin-top:8px;
+}
+.contact-name{font-size:16px;font-weight:700;color:var(--t1);margin-bottom:16px}
+.contact-btn{
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--green);color:#08080A;
+  font-size:13px;font-weight:700;
+  padding:10px 22px;border-radius:8px;
+  text-decoration:none;
+  transition:opacity .15s,transform .15s;
+}
+.contact-btn:hover{opacity:.88;transform:translateY(-1px)}
+
+/* ── FOOTER ── */
+footer{
+  border-top:1px solid var(--line);
+  padding:36px 32px;
+  text-align:center;
+}
+.footer-logo{
+  display:flex;align-items:center;justify-content:center;
+  gap:8px;margin-bottom:16px;text-decoration:none;
+}
+.footer-logo-name{font-size:14px;font-weight:700;color:var(--t1)}
+.footer-logo-name span{color:var(--purple)}
+.footer-links{
+  display:flex;align-items:center;justify-content:center;
+  gap:24px;margin-bottom:16px;flex-wrap:wrap;
+}
+.footer-links a{font-size:13px;color:var(--t3);text-decoration:none;transition:color .15s}
+.footer-links a:hover{color:var(--t1)}
+.footer-copy{font-size:12px;color:var(--t3)}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeInDown{
+  from{opacity:0;transform:translateY(-14px)}
+  to{opacity:1;transform:translateY(0)}
+}
+.reveal{opacity:0;transform:translateY(20px);transition:opacity .55s ease,transform .55s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+
+/* ── MOBILE ── */
+@media(max-width:768px){
+  .topbar{padding:0 20px}
+  .tb-link{display:none}
+  .legal-hero{padding:90px 20px 48px}
+  .legal-wrap{padding-left:20px;padding-right:20px}
+  .highlights-grid{grid-template-columns:repeat(2,1fr)}
+  .service-grid{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>
 
-<div class="topbar">
-  <a class="topbar-brand" href="/" style="display:flex;align-items:center;gap:8px;text-decoration:none">
-    <svg viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg" style="width:24px;height:24px;flex-shrink:0">
+<!-- ── TOPBAR ── -->
+<nav class="topbar">
+  <a class="tb-brand" href="/">
+    <svg viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg" style="width:28px;height:28px;flex-shrink:0">
       <polygon fill="#6d42f9" points="330.09 366.17 330.09 303.11 368.1 277.99 368.24 366.05 330.09 366.17"/>
       <path fill="#fafafa" d="M130.03,366.06l.05-158.12,113.18,78.82,69.81-47.11c18.49-12.48,24.49-36.3,10.32-54.02-6.83-8.54-16.49-12.69-27.63-12.69l-97.33.04-.2-39.13,101.51.32c30.14.1,56.04,21.54,65.65,48.29,10.41,28.96,3.29,64-22.24,81.68l-99.75,69.09-74.84-52.67-.29,85.42-38.24.1Z"/>
       <rect fill="#a8f740" x="130.01" y="133.87" width="38.34" height="39.17"/>
     </svg>
-    <span style="font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#F0F0F2">
-      Payout <span style="color:#6d42f9">Manager</span>
-    </span>
+    <span class="tb-name">Payout <span>Manager</span></span>
   </a>
-  <a class="topbar-back" href="/">← Back to home</a>
-</div>
+  <div class="tb-right">
+    <a class="tb-link" href="/#features">Features</a>
+    <a class="tb-link" href="/#pricing">Pricing</a>
+    <a class="tb-link" href="/tracker">Sign in</a>
+    <a class="tb-cta" href="/tracker">Get started →</a>
+  </div>
+</nav>
 
-<div class="wrap">
-  <div class="doc-label">Legal</div>
+<!-- ── HERO ── -->
+<section class="legal-hero">
+  <div class="legal-eyebrow">Legal Document</div>
   <h1>Terms of Service</h1>
-  <p class="meta">Last updated: 22 May 2026 &nbsp;·&nbsp; Effective date: 22 May 2026</p>
+  <div class="legal-meta">
+    <span>Last updated: 22 May 2026</span>
+    <span class="meta-sep">·</span>
+    <span>Effective: 22 May 2026</span>
+  </div>
+</section>
 
-  <div class="highlight-box">
-    <p><strong>Plain English summary:</strong> Payout Manager is a financial tracking tool for Fanvue agencies. You pay via the Fanvue App Store. We provide the service as-is and are not liable for financial decisions you make using it. You own your data and can delete it anytime.</p>
+<!-- ── CONTENT ── -->
+<div class="legal-wrap">
+
+  <!-- Summary -->
+  <div class="summary-card reveal">
+    <div class="summary-label">Plain English Summary</div>
+    <p><strong>Payout Manager is a financial tracking tool for Fanvue agencies.</strong> You pay via the Fanvue App Store. We provide the service as-is and are not liable for financial decisions you make using it. You own your data and can delete it anytime.</p>
   </div>
 
-  <h2>1. Acceptance of Terms</h2>
-  <p>By accessing or using Payout Manager ("the Service"), you agree to be bound by these Terms of Service ("Terms"). If you do not agree, do not use the Service. These Terms constitute a legally binding agreement between you and <strong>Vladyslav Svitelskyi</strong> ("Operator", "we", "us").</p>
+  <!-- Quick highlights -->
+  <div class="highlights-grid reveal" style="transition-delay:.08s">
+    <div class="hi">
+      <div class="hi-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+      </div>
+      <div class="hi-label">App Store Only</div>
+      <div class="hi-desc">All payments via Fanvue App Store</div>
+    </div>
+    <div class="hi">
+      <div class="hi-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+      </div>
+      <div class="hi-label">Your Data</div>
+      <div class="hi-desc">You own all records, delete anytime</div>
+    </div>
+    <div class="hi">
+      <div class="hi-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      </div>
+      <div class="hi-label">Not Advice</div>
+      <div class="hi-desc">Not a financial advisor or accountant</div>
+    </div>
+    <div class="hi">
+      <div class="hi-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      </div>
+      <div class="hi-label">EU Law</div>
+      <div class="hi-desc">Governed by European Union law</div>
+    </div>
+  </div>
 
-  <h2>2. Description of Service</h2>
-  <p>Payout Manager is a financial management application for Fanvue content creator agencies. It provides:</p>
-  <ul>
-    <li>Automated synchronisation of earnings from Fanvue via the Fanvue API</li>
-    <li>Revenue tracking across multiple platforms (Fanvue, PayPal, Telegram, and others)</li>
-    <li>Partner revenue split calculation and payout tracking</li>
-    <li>Withdrawal history and FX conversion tracking</li>
-    <li>Expense management and net revenue reporting</li>
-  </ul>
-  <p>The Service is available via the <strong>Fanvue App Store</strong> and is accessible at <a href="https://payoutmanager.app/tracker">payoutmanager.app/tracker</a>.</p>
+  <!-- 01 -->
+  <div class="legal-section reveal">
+    <div class="section-num">01</div>
+    <h2>Acceptance of Terms</h2>
+    <p>By accessing or using Payout Manager ("the Service"), you agree to be bound by these Terms of Service ("Terms"). If you do not agree, do not use the Service. These Terms constitute a legally binding agreement between you and <strong>Vladyslav Svitelskyi</strong> ("Operator", "we", "us").</p>
+  </div>
 
-  <h2>3. Eligibility</h2>
-  <p>You must be at least 18 years of age to use this Service. By using Payout Manager, you represent that you are of legal age and have the authority to enter into these Terms on behalf of yourself or your agency.</p>
+  <!-- 02 -->
+  <div class="legal-section reveal">
+    <div class="section-num">02</div>
+    <h2>Description of Service</h2>
+    <p>Payout Manager is a financial management application for Fanvue content creator agencies. It provides:</p>
+    <div class="service-grid">
+      <div class="service-item">Automated synchronisation of earnings from Fanvue via the Fanvue API</div>
+      <div class="service-item">Revenue tracking across multiple platforms (Fanvue, PayPal, Telegram, and others)</div>
+      <div class="service-item">Partner revenue split calculation and payout tracking</div>
+      <div class="service-item">Withdrawal history and FX conversion tracking</div>
+      <div class="service-item">Expense management and net revenue reporting</div>
+    </div>
+    <p>The Service is available via the <strong>Fanvue App Store</strong> and is accessible at <a href="https://payoutmanager.app/tracker">payoutmanager.app/tracker</a>.</p>
+  </div>
 
-  <h2>4. Payments and Subscriptions</h2>
-  <p><strong>All payments for Payout Manager are processed exclusively through the Fanvue App Store.</strong> We do not accept payment through any other processor, platform, or method for the paid functionality of this app.</p>
-  <ul>
-    <li>Subscription pricing and billing cycles are managed by Fanvue</li>
-    <li>Refund requests are subject to Fanvue's App Store refund policy</li>
-    <li>We do not store payment card or banking information</li>
-  </ul>
-  <p>Attempting to access paid features through means other than the Fanvue App Store subscription is a violation of these Terms and may result in account termination.</p>
+  <!-- 03 -->
+  <div class="legal-section reveal">
+    <div class="section-num">03</div>
+    <h2>Eligibility</h2>
+    <p>You must be at least 18 years of age to use this Service. By using Payout Manager, you represent that you are of legal age and have the authority to enter into these Terms on behalf of yourself or your agency.</p>
+  </div>
 
-  <h2>5. Fanvue Integration</h2>
-  <p>Payout Manager connects to Fanvue via OAuth. By connecting your Fanvue account, you authorise us to access your earnings data and transaction history as described in our <a href="/privacy">Privacy Policy</a>. You may revoke this access at any time via Fanvue's third-party app settings.</p>
-  <p>We are not affiliated with, endorsed by, or a representative of Fanvue. Use of Fanvue's platform is governed by Fanvue's own Terms of Service.</p>
+  <!-- 04 -->
+  <div class="legal-section reveal">
+    <div class="section-num">04</div>
+    <h2>Payments and Subscriptions</h2>
+    <p><strong>All payments for Payout Manager are processed exclusively through the Fanvue App Store.</strong> We do not accept payment through any other processor, platform, or method for the paid functionality of this app.</p>
+    <ul class="llist">
+      <li>Subscription pricing and billing cycles are managed by Fanvue</li>
+      <li>Refund requests are subject to Fanvue's App Store refund policy</li>
+      <li>We do not store payment card or banking information</li>
+    </ul>
+    <div class="note-box">Attempting to access paid features through means other than the Fanvue App Store subscription is a violation of these Terms and may result in account termination.</div>
+  </div>
 
-  <h2>6. Acceptable Use</h2>
-  <p>You agree not to:</p>
-  <ul>
-    <li>Use the Service for any unlawful purpose or in violation of applicable law</li>
-    <li>Attempt to gain unauthorised access to any part of the Service or its infrastructure</li>
-    <li>Reverse engineer, decompile, or attempt to extract the source code of the Service</li>
-    <li>Use the Service to store or process data you are not authorised to handle</li>
-    <li>Interfere with the Service's operation or circumvent any security measures</li>
-    <li>Share your account credentials with unauthorised third parties</li>
-  </ul>
+  <!-- 05 -->
+  <div class="legal-section reveal">
+    <div class="section-num">05</div>
+    <h2>Fanvue Integration</h2>
+    <p>Payout Manager connects to Fanvue via OAuth. By connecting your Fanvue account, you authorise us to access your earnings data and transaction history as described in our <a href="/privacy">Privacy Policy</a>. You may revoke this access at any time via Fanvue's third-party app settings.</p>
+    <div class="note-box">We are not affiliated with, endorsed by, or a representative of Fanvue. Use of Fanvue's platform is governed by Fanvue's own Terms of Service.</div>
+  </div>
 
-  <h2>7. Your Data</h2>
-  <p>You retain full ownership of all financial data, records, and content you create within Payout Manager. We do not claim any rights over your data. See our <a href="/privacy">Privacy Policy</a> for details on how we handle your data.</p>
-  <p>You can export your data (CSV) or permanently delete your account and all associated data at any time via Settings → About → Delete my data.</p>
+  <!-- 06 -->
+  <div class="legal-section reveal">
+    <div class="section-num">06</div>
+    <h2>Acceptable Use</h2>
+    <p>You agree not to:</p>
+    <ul class="llist prohibited">
+      <li>Use the Service for any unlawful purpose or in violation of applicable law</li>
+      <li>Attempt to gain unauthorised access to any part of the Service or its infrastructure</li>
+      <li>Reverse engineer, decompile, or attempt to extract the source code of the Service</li>
+      <li>Use the Service to store or process data you are not authorised to handle</li>
+      <li>Interfere with the Service's operation or circumvent any security measures</li>
+      <li>Share your account credentials with unauthorised third parties</li>
+    </ul>
+  </div>
 
-  <h2>8. Accuracy of Financial Data</h2>
-  <p>Payout Manager displays financial information based on data synced from Fanvue and entries you create manually. While we strive for accuracy:</p>
-  <ul>
-    <li>FX conversion rates are approximate (sourced from Wise mid-market rates) and may differ from actual rates applied by your bank or payment provider</li>
-    <li>Synced data is dependent on Fanvue API availability and may be delayed</li>
-    <li>The Service is a management and tracking tool — it is not a financial advisor, accountant, or regulated financial service</li>
-  </ul>
-  <p><strong>Do not rely solely on Payout Manager for accounting, tax, or legal financial reporting.</strong> Always verify critical figures with your official payment provider statements.</p>
+  <!-- 07 -->
+  <div class="legal-section reveal">
+    <div class="section-num">07</div>
+    <h2>Your Data</h2>
+    <p>You retain full ownership of all financial data, records, and content you create within Payout Manager. We do not claim any rights over your data. See our <a href="/privacy">Privacy Policy</a> for details on how we handle your data.</p>
+    <div class="note-box"><strong>Export &amp; delete:</strong> You can export your data (CSV) or permanently delete your account and all associated data at any time via Settings → About → Delete my data.</div>
+  </div>
 
-  <h2>9. Disclaimer of Warranties</h2>
-  <p>The Service is provided <strong>"as is"</strong> and <strong>"as available"</strong> without warranties of any kind, express or implied. To the fullest extent permitted by applicable law, we disclaim all warranties including fitness for a particular purpose, merchantability, and non-infringement.</p>
-  <p>We do not warrant that the Service will be uninterrupted, error-free, or free of viruses or other harmful components.</p>
+  <!-- 08 -->
+  <div class="legal-section reveal">
+    <div class="section-num">08</div>
+    <h2>Accuracy of Financial Data</h2>
+    <p>Payout Manager displays financial information based on data synced from Fanvue and entries you create manually. While we strive for accuracy:</p>
+    <ul class="llist">
+      <li>FX conversion rates are approximate (sourced from Wise mid-market rates) and may differ from actual rates applied by your bank or payment provider</li>
+      <li>Synced data is dependent on Fanvue API availability and may be delayed</li>
+      <li>The Service is a management and tracking tool — it is not a financial advisor, accountant, or regulated financial service</li>
+    </ul>
+    <div class="note-box warn"><strong>Do not rely solely on Payout Manager for accounting, tax, or legal financial reporting.</strong> Always verify critical figures with your official payment provider statements.</div>
+  </div>
 
-  <h2>10. Limitation of Liability</h2>
-  <p>To the maximum extent permitted by EU law, the Operator shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including loss of profits, data, or goodwill, arising out of or related to your use of the Service.</p>
-  <p>Our total liability to you for any claim arising from use of the Service shall not exceed the amount you paid for the Service in the 3 months preceding the claim.</p>
+  <!-- 09 -->
+  <div class="legal-section reveal">
+    <div class="section-num">09</div>
+    <h2>Disclaimer of Warranties</h2>
+    <p>The Service is provided <strong>"as is"</strong> and <strong>"as available"</strong> without warranties of any kind, express or implied. To the fullest extent permitted by applicable law, we disclaim all warranties including fitness for a particular purpose, merchantability, and non-infringement.</p>
+    <p>We do not warrant that the Service will be uninterrupted, error-free, or free of viruses or other harmful components.</p>
+  </div>
 
-  <h2>11. Termination</h2>
-  <p>We may suspend or terminate your access to the Service at any time if you violate these Terms, if required by law, or if Fanvue removes or suspends our API access. You may terminate your account at any time by deleting it via Settings.</p>
-  <p>Upon termination, your data will be deleted in accordance with our Privacy Policy.</p>
+  <!-- 10 -->
+  <div class="legal-section reveal">
+    <div class="section-num">10</div>
+    <h2>Limitation of Liability</h2>
+    <p>To the maximum extent permitted by EU law, the Operator shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including loss of profits, data, or goodwill, arising out of or related to your use of the Service.</p>
+    <p>Our total liability to you for any claim arising from use of the Service shall not exceed the amount you paid for the Service in the 3 months preceding the claim.</p>
+  </div>
 
-  <h2>12. Changes to These Terms</h2>
-  <p>We may update these Terms from time to time. Material changes will be communicated by updating the "Last updated" date. Continued use of the Service after changes are posted constitutes acceptance of the updated Terms.</p>
+  <!-- 11 -->
+  <div class="legal-section reveal">
+    <div class="section-num">11</div>
+    <h2>Termination</h2>
+    <p>We may suspend or terminate your access to the Service at any time if you violate these Terms, if required by law, or if Fanvue removes or suspends our API access. You may terminate your account at any time by deleting it via Settings.</p>
+    <p>Upon termination, your data will be deleted in accordance with our <a href="/privacy">Privacy Policy</a>.</p>
+  </div>
 
-  <h2>13. Governing Law</h2>
-  <p>These Terms are governed by the laws of the European Union and applicable national law. Any disputes shall be resolved in the courts of the EU member state in which the Operator is resident.</p>
+  <!-- 12 -->
+  <div class="legal-section reveal">
+    <div class="section-num">12</div>
+    <h2>Changes to These Terms</h2>
+    <p>We may update these Terms from time to time. Material changes will be communicated by updating the "Last updated" date. Continued use of the Service after changes are posted constitutes acceptance of the updated Terms.</p>
+  </div>
 
-  <h2>14. Contact</h2>
-  <p>For questions about these Terms:<br>
-  <strong>Vladyslav Svitelskyi</strong><br>
-  <a href="mailto:support@payoutmanager.app">support@payoutmanager.app</a></p>
+  <!-- 13 -->
+  <div class="legal-section reveal">
+    <div class="section-num">13</div>
+    <h2>Governing Law</h2>
+    <p>These Terms are governed by the laws of the European Union and applicable national law. Any disputes shall be resolved in the courts of the EU member state in which the Operator is resident.</p>
+  </div>
+
+  <!-- 14 -->
+  <div class="legal-section reveal">
+    <div class="section-num">14</div>
+    <h2>Contact</h2>
+    <p>For questions about these Terms:</p>
+    <div class="contact-card">
+      <div class="contact-name">Vladyslav Svitelskyi</div>
+      <a class="contact-btn" href="mailto:support@payoutmanager.app">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        support@payoutmanager.app
+      </a>
+    </div>
+  </div>
+
 </div>
 
+<!-- ── FOOTER ── -->
 <footer>
-  <div>© 2026 Payout Manager · Vladyslav Svitelskyi</div>
-  <div style="margin-top:8px">
+  <a class="footer-logo" href="/">
+    <svg viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg" style="width:22px;height:22px;flex-shrink:0">
+      <polygon fill="#6d42f9" points="330.09 366.17 330.09 303.11 368.1 277.99 368.24 366.05 330.09 366.17"/>
+      <path fill="#fafafa" d="M130.03,366.06l.05-158.12,113.18,78.82,69.81-47.11c18.49-12.48,24.49-36.3,10.32-54.02-6.83-8.54-16.49-12.69-27.63-12.69l-97.33.04-.2-39.13,101.51.32c30.14.1,56.04,21.54,65.65,48.29,10.41,28.96,3.29,64-22.24,81.68l-99.75,69.09-74.84-52.67-.29,85.42-38.24.1Z"/>
+      <rect fill="#a8f740" x="130.01" y="133.87" width="38.34" height="39.17"/>
+    </svg>
+    <span class="footer-logo-name">Payout <span>Manager</span></span>
+  </a>
+  <div class="footer-links">
+    <a href="/#features">Features</a>
+    <a href="/#pricing">Pricing</a>
     <a href="/privacy">Privacy Policy</a>
     <a href="/terms">Terms of Service</a>
-    <a href="/">Home</a>
+    <a href="/tracker">Open App</a>
   </div>
+  <div class="footer-copy">© 2026 Payout Manager · Vladyslav Svitelskyi</div>
 </footer>
+
+<script>
+(function(){
+  var els = document.querySelectorAll('.reveal');
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){
+        e.target.classList.add('visible');
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.08 });
+  els.forEach(function(el){ io.observe(el); });
+})();
+</script>
 
 </body>
 </html>

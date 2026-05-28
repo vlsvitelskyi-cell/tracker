@@ -7957,6 +7957,16 @@ async function loadAgencySettings(){
     }
     if(agData.data.tax_rate_pct!=null){
       TAX_RATE_PCT=parseFloat(agData.data.tax_rate_pct);
+    } else {
+      // DB column is NULL (not saved yet) — use localStorage fallback and
+      // write it back to DB so future loads come from the source of truth.
+      var _lsRate=parseFloat(localStorage.getItem('taxRate')||'');
+      if(!isNaN(_lsRate)&&_lsRate>0){
+        TAX_RATE_PCT=_lsRate;
+        db.from('agencies').update({tax_rate_pct:_lsRate}).eq('id',_agencyId).then(function(r){
+          if(!r.error)console.log('[loadAgencySettings] backfilled tax_rate_pct='+_lsRate+' from localStorage');
+        });
+      }
     }
   }
   await loadPartnersList();
@@ -10296,7 +10306,8 @@ function saveTaxRate(value){
   TAX_RATE_PCT=rate;
   if(_agencyId&&!DEMO_MODE){
     db.from('agencies').update({tax_rate_pct:rate}).eq('id',_agencyId).then(function(res){
-      if(res.error)console.error('[saveTaxRate]',res.error);
+      if(res.error)console.error('[saveTaxRate] DB error:',res.error);
+      else console.log('[saveTaxRate] saved tax_rate_pct='+rate+' to DB');
     });
   }
   renderTaxSummary();

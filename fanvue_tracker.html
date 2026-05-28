@@ -5942,6 +5942,160 @@ body.demo-active { padding-top: 36px; }
 .btn-demo { width: 100%; padding: 10px; background: rgba(124,58,237,.12); border: 1px solid rgba(124,58,237,.35); border-radius: 8px; color: #8B5CF6; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; transition: background 150ms,border-color 150ms; }
 .btn-demo:hover { background: rgba(124,58,237,.2); border-color: #7C3AED; }
 
+/* ══ M1. PRODUCTION MOBILE OPTIMISATION ══════════════════════════════
+   Systematic responsive improvements for real mobile users.
+   · Removes 300ms tap delay & flash on all interactive elements
+   · Bottom-sheet modals with safe-area padding
+   · iOS font-size ≥ 16px on all inputs (prevents autozoom)
+   · 44px touch targets on key controls
+   · Settings rows wrap on narrow screens
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── 1. Global: tap delay + highlight removal ── */
+button, a,
+.btn, .tab-mob, .tab-btn, .topbar-icon-btn,
+.mtab, .ssnav-item, .setting-row, .settings-row,
+.rev-stmt-row, .exp-item, .dpt-row, .wd-row,
+.tx-row, .srl-item {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ── 2. overscroll containment on all modal overlays ── */
+#splitDateModal,
+#confirmModal,
+#reportModal,
+#editDescModal,
+#taxPaymentModal,
+.w-confirm-modal {
+  overscroll-behavior: contain;
+}
+
+/* ── 3. Tax tab: match desktop card padding of other tabs ── */
+@media (min-width: 961px) {
+  #tab-tax .card { padding: var(--s5) var(--s6); }
+}
+
+/* ── 4. 640px phone: bottom-sheet modals + iOS zoom fix ── */
+@media (max-width: 640px) {
+
+  /* Bottom-sheet transformation: inline-styled modal overlays */
+  #splitDateModal,
+  #confirmModal,
+  #reportModal,
+  #editDescModal,
+  #taxPaymentModal {
+    align-items: flex-end !important;
+    justify-content: flex-start !important;
+    padding: 0 !important;
+  }
+
+  /* Bottom-sheet inner panels */
+  #splitDateModal > div,
+  #confirmModal > div,
+  #reportModal > div,
+  #editDescModal > div,
+  #taxPaymentModal > div {
+    border-radius: 20px 20px 0 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    max-height: 88vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 24px 20px !important;
+    padding-bottom: max(28px, env(safe-area-inset-bottom, 28px)) !important;
+    /* ensure scroll reveals inputs above keyboard */
+    scroll-padding-bottom: 80px;
+  }
+
+  /* Bottom-sheet: withdrawal confirm modal (.w-confirm-modal class-based) */
+  .w-confirm-modal {
+    align-items: flex-end;
+    justify-content: flex-start;
+    padding: 0;
+  }
+  .w-confirm-box {
+    border-radius: 20px 20px 0 0 !important;
+    max-width: 100%;
+    padding: 24px 20px max(28px, env(safe-area-inset-bottom, 28px)) !important;
+  }
+
+  /* iOS autozoom prevention: font-size must be ≥ 16px */
+  .field input,
+  .field select,
+  .field textarea,
+  .auth-field input,
+  .auth-field select,
+  .auth-input,
+  .settings-input,
+  .settings-input-sm,
+  input[type="text"],
+  input[type="number"],
+  input[type="email"],
+  input[type="password"],
+  input[type="date"],
+  input[type="search"],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+
+  /* Touch targets: settings inputs → 44px */
+  .settings-input    { height: 44px; }
+  .settings-input-sm { height: 44px; min-height: 44px; }
+
+  /* Topbar right: shrink user email on very small topbars */
+  #userEmail { max-width: 90px; font-size: 11px; }
+
+  /* Tax tab sec-row: allow wrap when content is long */
+  #tab-tax .card .sec-row {
+    flex-wrap: wrap;
+    height: auto;
+    min-height: 48px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    gap: 8px;
+  }
+
+  /* Report modal: date grid stacks on very narrow sheets */
+  #reportModal > div [style*="grid-template-columns:1fr 1fr"],
+  #reportModal > div [style*="grid-template-columns: 1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+}
+
+/* ── 5. 480px: settings rows wrap ── */
+@media (max-width: 480px) {
+  .settings-row {
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .settings-input-sm {
+    width: 100% !important;
+    text-align: left;
+  }
+  /* Topbar: hide text label on PDF report button, show icon only */
+  #reportBtn {
+    gap: 0;
+    padding: 6px 10px;
+    font-size: 0;     /* hides text node */
+  }
+  #reportBtn svg {
+    flex-shrink: 0;
+  }
+}
+
+/* ── 6. Safe-area bottom nav padding ── */
+/* Already handled by .tabs-mobile padding-bottom: max(env(safe-area-inset-bottom), 4px) */
+/* Extra override for iPhone X+ notch phones */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .tabs-mobile {
+    padding-bottom: max(env(safe-area-inset-bottom), 6px);
+  }
+}
+
 </style>
 </head>
 <body>

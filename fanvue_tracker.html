@@ -4579,15 +4579,25 @@ button { font-family: var(--sans); }
 .toggle-track {
   position: absolute; inset: 0;
   border-radius: 12px;
-  transition: background .2s;
+  background: var(--border2);
+  transition: background .2s, border-color .2s;
 }
 .toggle-thumb {
   position: absolute;
   left: 3px; top: 3px;
   width: 18px; height: 18px;
-  background: #fff;
+  background: var(--t3);
   border-radius: 50%;
-  transition: left .2s;
+  transition: left .2s, background .2s;
+}
+/* Active (checked) state — green */
+.toggle-switch input:checked + .toggle-track {
+  background: rgba(168,247,64,.18);
+  border: 1px solid rgba(168,247,64,.35);
+}
+.toggle-switch input:checked ~ .toggle-thumb {
+  background: #a8f740;
+  left: 23px;
 }
 
 /* ─ N. Link buttons (no text-decoration) */
@@ -6247,17 +6257,26 @@ body.demo-active { padding-top: 36px; }
 
     <!-- SUMMARY RAIL — sticky below topbar, visible on dashboard only -->
     <div class="summary-rail" id="dashStats">
-      <div class="srl-item">
-        <span class="srl-label">This month</span>
-        <div class="skeleton sk-line sk-rail sk-md"></div>
+      <!-- Dynamic KPI items — overwritten by renderBal() -->
+      <div id="dashKpis" style="display:contents">
+        <div class="srl-item">
+          <span class="srl-label">This month</span>
+          <div class="skeleton sk-line sk-rail sk-md"></div>
+        </div>
+        <div class="srl-item">
+          <span class="srl-label">Total revenue</span>
+          <div class="skeleton sk-line sk-rail sk-sm"></div>
+        </div>
+        <div class="srl-item">
+          <span class="srl-label">Withdrawn</span>
+          <div class="skeleton sk-line sk-rail sk-sm"></div>
+        </div>
       </div>
-      <div class="srl-item">
-        <span class="srl-label">Total revenue</span>
-        <div class="skeleton sk-line sk-rail sk-sm"></div>
-      </div>
-      <div class="srl-item">
-        <span class="srl-label">Withdrawn</span>
-        <div class="skeleton sk-line sk-rail sk-sm"></div>
+      <!-- Tax reserve card — static, shown/hidden by renderTaxCard() -->
+      <div class="srl-item" id="taxReserveCard" style="display:none">
+        <span class="srl-label">Set aside (tax)</span>
+        <span class="srl-value warn" id="taxReserveVal">$0</span>
+        <span class="srl-sub" id="taxReserveRate"></span>
       </div>
     </div>
 
@@ -6811,7 +6830,7 @@ body.demo-active { padding-top: 36px; }
               </div>
               <label class="toggle-switch">
                 <input type="checkbox" id="digestToggle" onchange="saveDigestPreference(this.checked)">
-                <span id="digestToggleTrack" class="toggle-track" style="background:var(--border2)"></span>
+                <span id="digestToggleTrack" class="toggle-track"></span>
                 <span id="digestToggleThumb" class="toggle-thumb"></span>
               </label>
             </div>
@@ -6829,7 +6848,7 @@ body.demo-active { padding-top: 36px; }
               </div>
               <label class="toggle-switch">
                 <input type="checkbox" id="taxTrackingToggle" onchange="handleTaxToggle(this.checked)">
-                <span id="taxToggleTrack" class="toggle-track" style="background:var(--border2)"></span>
+                <span id="taxToggleTrack" class="toggle-track"></span>
                 <span id="taxToggleThumb" class="toggle-thumb"></span>
               </label>
             </div>
@@ -7271,7 +7290,7 @@ async function forgotPassword(){
 
 async function logout(){
   await db.auth.signOut();
-  PARTNERS=[];ALL_MODELS=[];ACTIVE_MODEL_ID='';MODEL_SPLITS={};SPLIT_HISTORY=[];PARTNER_SPLITS={};FANVUE_CONNECTION=null;TAX_RATE_PCT=null;
+  PARTNERS=[];ALL_MODELS=[];ACTIVE_MODEL_ID='';MODEL_SPLITS={};SPLIT_HISTORY=[];PARTNER_SPLITS={};FANVUE_CONNECTION=null;TAX_RATE_PCT=null;TAX_ENABLED=false;
   showLogin();
   S={months:[],ws:[],txs:[],exps:[],am:0,platforms:DEFAULT_PLATFORMS.slice()};
   renderAll();
@@ -7282,7 +7301,8 @@ var ACTIVE_MODEL_ID='';
 var ALL_MODELS=[];
 var MODEL_SPLITS={};
 var SPLIT_HISTORY=[]; // flat array: [{model_id,partner_id,split_pct,effective_from}]
-var TAX_RATE_PCT=null; // numeric %, loaded from agencies.tax_rate_pct
+var TAX_RATE_PCT=parseFloat(localStorage.getItem('taxRate')||'')||null; // initialise from cache; overwritten by DB
+var TAX_ENABLED=localStorage.getItem('taxTrackingEnabled')==='1';
 
 async function loadModels(){
   if(DEMO_MODE)return;
@@ -7949,11 +7969,9 @@ async function loadDigestPreference(){
 }
 
 function setDigestToggleUI(enabled){
-  var cb=g('digestToggle'),track=g('digestToggleTrack'),thumb=g('digestToggleThumb');
+  var cb=g('digestToggle');
   if(!cb)return;
   cb.checked=enabled;
-  if(track)track.style.background=enabled?'var(--text)':'var(--border2)';
-  if(thumb)thumb.style.transform=enabled?'translateX(20px)':'translateX(0)';
 }
 
 async function saveDigestPreference(enabled){
@@ -8788,6 +8806,7 @@ function enterDemoMode(){
   MODEL_SPLITS=JSON.parse(JSON.stringify(DEMO_STATE.modelSplits));
   SPLIT_HISTORY=(DEMO_STATE.splitHistory||[]).slice();
   TAX_RATE_PCT=20;
+  TAX_ENABLED=true;
   PARTNER_SPLITS={};
   DEMO_STATE.partners.forEach(function(p){
     PARTNER_SPLITS[p.id]=DEMO_STATE.models.map(function(m){
@@ -8816,7 +8835,7 @@ function enterDemoMode(){
 function exitDemoMode(){
   DEMO_MODE=false;
   hideDemoBanner();
-  ALL_MODELS=[];ACTIVE_MODEL_ID='';PARTNERS=[];MODEL_SPLITS={};SPLIT_HISTORY=[];PARTNER_SPLITS={};_agencyId='';TAX_RATE_PCT=null;
+  ALL_MODELS=[];ACTIVE_MODEL_ID='';PARTNERS=[];MODEL_SPLITS={};SPLIT_HISTORY=[];PARTNER_SPLITS={};_agencyId='';TAX_RATE_PCT=null;TAX_ENABLED=false;
   S={months:[],ws:[],txs:[],exps:[],am:0,platforms:DEFAULT_PLATFORMS.slice()};
   currentUser=null;currentRole=null;currentPartnerId='';
   showLogin();
@@ -10256,12 +10275,13 @@ function switchSettingsTab(tabName){
 
 /* ---- Tax tracking (Stage 5) ---- */
 function handleTaxToggle(enabled){
+  TAX_ENABLED=enabled;
+  var toggle=g('taxTrackingToggle');if(toggle)toggle.checked=enabled;
   var row=g('taxRateRow');
   if(row)row.style.display=enabled?'block':'none';
-  var track=g('taxToggleTrack'),thumb=g('taxToggleThumb');
-  if(track)track.style.background=enabled?'var(--text)':'var(--border2)';
-  if(thumb)thumb.style.transform=enabled?'translateX(20px)':'translateX(0)';
   localStorage.setItem('taxTrackingEnabled',enabled?'1':'0');
+  renderTaxCard();
+  renderBal();
 }
 
 function saveTaxRate(value){
@@ -10275,14 +10295,17 @@ function saveTaxRate(value){
     });
   }
   renderTaxSummary();
+  renderTaxCard();
   renderBal();
 }
 
 function loadTaxSettings(){
   var enabled=localStorage.getItem('taxTrackingEnabled')==='1';
+  TAX_ENABLED=enabled;
   var toggle=g('taxTrackingToggle');
   if(toggle)toggle.checked=enabled;
-  handleTaxToggle(enabled);
+  var row=g('taxRateRow');
+  if(row)row.style.display=enabled?'block':'none';
   // Prefer DB value (TAX_RATE_PCT), fall back to localStorage
   var rate=TAX_RATE_PCT!=null?TAX_RATE_PCT:parseFloat(localStorage.getItem('taxRate')||'');
   var rateInput=g('taxRateInput');
@@ -10292,6 +10315,20 @@ function loadTaxSettings(){
 
 function showRecordTaxPaymentModal(){
   showToast('Tax payment recording coming soon','info');
+}
+
+/* ---- Tax reserve card (dashboard summary rail) ---- */
+function renderTaxCard(){
+  var card=g('taxReserveCard');
+  if(!card)return;
+  if(!TAX_ENABLED||!TAX_RATE_PCT||TAX_RATE_PCT<=0){card.style.display='none';return;}
+  var totalRev=r2(S.months.reduce(function(s,m){return s+mTot(m);},0));
+  var taxReserve=r2(totalRev*TAX_RATE_PCT/100);
+  if(taxReserve<=0){card.style.display='none';return;}
+  var valEl=g('taxReserveVal'),subEl=g('taxReserveRate');
+  if(valEl)valEl.textContent=fc(taxReserve);
+  if(subEl)subEl.textContent=TAX_RATE_PCT+'% of YTD revenue';
+  card.style.display='';
 }
 
 /* ---- Tax reserve summary ---- */
@@ -10505,7 +10542,8 @@ function renderBal(){
   if(!ACTIVE_MODEL_ID&&ALL_MODELS.length===0){
     var dw=g('dashWelcome');if(dw)dw.style.display='block';
     var dps=g('dashPartnerSection');if(dps)dps.style.display='none';
-    g('dashStats').innerHTML='';
+    var dk=g('dashKpis');if(dk)dk.innerHTML='';
+    renderTaxCard();
     return;
   }
   var dw=g('dashWelcome');if(dw)dw.style.display='none';
@@ -10513,25 +10551,23 @@ function renderBal(){
 
   /* All-models aggregate view */
   if(!ACTIVE_MODEL_ID&&ALL_MODELS.length>=1){
-    g('dashStats').innerHTML=
+    var dk=g('dashKpis');if(dk)dk.innerHTML=
       mkSrl('This month (all)',fc(curRev),'',trendHtml)
       +mkSrl('Total revenue',fc(totalRev))
       +(totalOutstanding>0.01?mkSrl('Outstanding',fc(totalOutstanding),'warn'):'')
       +mkSrl('FX Loss',tLoss>0?'−'+fe(tLoss):'—',tLoss>0?'neg':'dim');
     g('dashStats')&&g('dashStats').querySelectorAll('.srl-value').forEach(function(el){animateCountUp(el,el.textContent,500);});
+    renderTaxCard();
     return;
   }
 
   /* Per-model view */
-  var taxEnabled=localStorage.getItem('taxTrackingEnabled')==='1';
-  var taxReserve=0;
-  if(taxEnabled&&TAX_RATE_PCT!=null&&TAX_RATE_PCT>0){taxReserve=r2(totalRev*TAX_RATE_PCT/100);}
-  g('dashStats').innerHTML=
+  var dk=g('dashKpis');if(dk)dk.innerHTML=
     mkSrl('This month',fc(curRev),'',trendHtml)
     +mkSrl('Total revenue',fc(totalRev))
     +(totalOutstanding>0.01?mkSrl('Outstanding',fc(totalOutstanding),'warn'):'')
-    +(taxReserve>0?mkSrl('Set aside (tax)',fc(taxReserve),'warn',TAX_RATE_PCT+'% est.'):'')
     +mkSrl('FX Loss',tLoss>0?'−'+fe(tLoss):'—',tLoss>0?'neg':'dim');
+  renderTaxCard();
   g('dashStats')&&g('dashStats').querySelectorAll('.srl-value').forEach(function(el){animateCountUp(el,el.textContent,500);});
 
   /* Partner cards */
@@ -11283,7 +11319,7 @@ function downloadCSV(rows,filename){
 function renderAll(){
   renderBal();renderChartLegend();renderMonths();renderList();
   renderPlatformSettings();renderPlatformSelect();renderExpenses();renderRecentTx();
-  renderModelProfitSection();updateSidebarStats();
+  renderModelProfitSection();updateSidebarStats();renderTaxCard();
 }
 
 /* ---- Numeric input filter ---- */

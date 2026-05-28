@@ -6279,9 +6279,9 @@ body.demo-active { padding-top: 36px; }
       </div>
       <!-- Tax reserve card — static, shown/hidden by renderTaxCard() -->
       <div class="srl-item srl-hidden" id="taxReserveCard">
-        <span class="srl-label">Set aside (tax)</span>
+        <span class="srl-label">Your tax reserve</span>
         <span class="srl-value warn" id="taxReserveVal">$0</span>
-        <span class="srl-sub" id="taxReserveRate"></span>
+        <span class="srl-sub" id="taxReserveRate">based on your share</span>
       </div>
     </div>
 
@@ -10347,30 +10347,67 @@ function renderTaxCard(){
   var rail=g('dashStats');
   if(!card)return;
   function _hide(){card.classList.add('srl-hidden');if(rail)rail.classList.remove('has-tax');}
-  // Only show when tax is enabled, rate is set, and we have revenue data
   if(!TAX_ENABLED||!TAX_RATE_PCT||TAX_RATE_PCT<=0||!S.months||!S.months.length){_hide();return;}
-  var totalRev=r2(S.months.reduce(function(s,m){return s+mTot(m);},0));
-  var taxReserve=r2(totalRev*TAX_RATE_PCT/100);
+
+  // ── Resolve which partner represents the current user ───────────────────
+  var myPartnerId=null;
+  if(currentRole==='partner'&&currentPartnerId){
+    myPartnerId=currentPartnerId;
+  }else if(currentUser){
+    var _ap=PARTNERS.find(function(p){return p.user_id===currentUser.id;});
+    if(_ap)myPartnerId=_ap.id;
+  }
+
+  // ── Calculate YTD net share ──────────────────────────────────────────────
+  var myShare;
+  if(myPartnerId&&PARTNERS.length>1){
+    // Use existing engine: handles temporal splits + per-partner expenses
+    myShare=totalPartnerShare(myPartnerId);
+  }else{
+    // Solo creator (no split partners) — 100% of revenue minus all expenses
+    var _rev=r2(S.months.reduce(function(s,m){return s+mTot(m);},0));
+    var _exp=r2(S.exps.reduce(function(s,e){return s+e.amount;},0));
+    myShare=r2(_rev-_exp);
+  }
+
+  var taxReserve=r2(Math.max(0,myShare)*TAX_RATE_PCT/100);
   if(taxReserve<=0){_hide();return;}
+
   var valEl=g('taxReserveVal'),subEl=g('taxReserveRate');
   if(valEl)valEl.textContent=fc(taxReserve);
-  if(subEl)subEl.textContent=TAX_RATE_PCT+'% of YTD';
+  if(subEl)subEl.textContent=TAX_RATE_PCT+'% of '+fc(myShare)+' share';
   card.classList.remove('srl-hidden');
   if(rail)rail.classList.add('has-tax');
 }
 
-/* ---- Tax reserve summary ---- */
+/* ---- Tax reserve summary (Settings → Preferences panel) ---- */
 function renderTaxSummary(){
   var container=g('taxSummaryContainer');
   if(!container)return;
-  var enabled=localStorage.getItem('taxTrackingEnabled')==='1';
-  if(!enabled||!TAX_RATE_PCT){container.style.display='none';return;}
-  var totalRev=r2(S.months.reduce(function(s,m){return s+mTot(m);},0));
-  var taxReserve=r2(totalRev*TAX_RATE_PCT/100);
+  if(!TAX_ENABLED||!TAX_RATE_PCT||!S.months||!S.months.length){container.style.display='none';return;}
+
+  // Re-use same identity + share logic as renderTaxCard()
+  var myPartnerId=null;
+  if(currentRole==='partner'&&currentPartnerId){
+    myPartnerId=currentPartnerId;
+  }else if(currentUser){
+    var _ap=PARTNERS.find(function(p){return p.user_id===currentUser.id;});
+    if(_ap)myPartnerId=_ap.id;
+  }
+  var myShare;
+  if(myPartnerId&&PARTNERS.length>1){
+    myShare=totalPartnerShare(myPartnerId);
+  }else{
+    var _rev=r2(S.months.reduce(function(s,m){return s+mTot(m);},0));
+    var _exp=r2(S.exps.reduce(function(s,e){return s+e.amount;},0));
+    myShare=r2(_rev-_exp);
+  }
+  var taxReserve=r2(Math.max(0,myShare)*TAX_RATE_PCT/100);
+
   container.style.display='block';
   container.innerHTML='<div class="tax-summary-card">'
-    +'<div class="sec-label" style="margin-bottom:12px">Tax reserve (YTD)</div>'
-    +'<div class="tax-summary-row"><span>Total revenue</span><span>'+fc(totalRev)+'</span></div>'
+    +'<div class="sec-label" style="margin-bottom:12px">Your tax reserve (YTD)</div>'
+    +'<div class="tax-summary-row"><span>Your net share</span><span>'+fc(myShare)+'</span></div>'
     +'<div class="tax-summary-row"><span>Set aside ('+TAX_RATE_PCT+'%)</span>'
     +'<span class="tax-summary-total" style="color:var(--warn-txt)">'+fc(taxReserve)+'</span></div>'
     +'<div class="tax-summary-note">Estimate only — consult a tax professional for accuracy.</div>'

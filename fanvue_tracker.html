@@ -5925,7 +5925,8 @@ html { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
   transition: background 100ms ease;
 }
 .tx-row:hover { background: rgba(255,255,255,.04); }
-.tx-row > *:first-child { justify-self: start; }
+/* Force first grid cell to clip — prevents pill from bleeding into description */
+.tx-row > *:first-child { justify-self: start; min-width: 0; overflow: hidden; max-width: 112px; }
 .tx-row > *:nth-child(3) { text-align: right; font-size: 12px; color: var(--t3); white-space: nowrap; }
 .tx-row > *:last-child { text-align: right; font-family: var(--mono); font-size: 13px; font-weight: 600; white-space: nowrap; }
 
@@ -7233,7 +7234,7 @@ button, a,
             <div id="platformList" style="margin-bottom:14px"></div>
             <div class="pl-add-row">
               <div class="field" style="margin-bottom:0">
-                <input id="newPlatform" placeholder="Platform name…" maxlength="18" onkeydown="if(event.key==='Enter')addPlatform()">
+                <input id="newPlatform" placeholder="Platform name…" maxlength="12" onkeydown="if(event.key==='Enter')addPlatform()">
               </div>
               <button class="btn" onclick="addPlatform()" style="align-self:flex-end">Add</button>
             </div>
@@ -9951,7 +9952,7 @@ function renderPlatformSettings(){
   var addRow=g('newPlatform')?g('newPlatform').closest('.pl-add-row'):null;
   if(addRow)addRow.style.display=currentRole==='admin'?'':'none';
 }
-var PLATFORM_NAME_MAX=18;
+var PLATFORM_NAME_MAX=12;
 function addPlatform(){
   var input=g('newPlatform');
   var name=(input.value||'').trim();

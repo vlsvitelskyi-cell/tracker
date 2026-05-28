@@ -6087,7 +6087,21 @@ button, a,
   }
 }
 
-/* ── 6. Safe-area bottom nav padding ── */
+/* ── 6. 6-item nav: icon-only mode when Tax tab is visible ── */
+/* .nav-6 is toggled by _syncTaxNavVisibility() in JS */
+.tabs-mobile-inner.nav-6 .tab-mob span {
+  display: none;
+}
+.tabs-mobile-inner.nav-6 .tab-mob {
+  min-height: 52px;
+  justify-content: center;
+  padding: 0;
+}
+.tabs-mobile-inner.nav-6 .tab-mob::after {
+  left: 28%; right: 28%;
+}
+
+/* ── 7. Safe-area bottom nav padding ── */
 /* Already handled by .tabs-mobile padding-bottom: max(env(safe-area-inset-bottom), 4px) */
 /* Extra override for iPhone X+ notch phones */
 @supports (padding-bottom: env(safe-area-inset-bottom)) {
@@ -10490,6 +10504,9 @@ function switchSettingsTab(tabName){
 function _syncTaxNavVisibility(enabled){
   var taxBtn=g('taxNavBtn');if(taxBtn)taxBtn.style.display=enabled?'block':'none';
   var mobTax=g('mob-tax');if(mobTax)mobTax.style.display=enabled?'flex':'none';
+  // 6-item nav: add class so CSS switches to icon-only on mobile
+  var inner=document.querySelector('.tabs-mobile-inner');
+  if(inner)inner.classList.toggle('nav-6',!!enabled);
   // If tax tab was active and we're disabling, fall back to dashboard
   if(!enabled&&currentTab==='tax'){
     showTab('dashboard',document.querySelector('[data-tab="dashboard"]'));

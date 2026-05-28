@@ -6171,6 +6171,7 @@ body.demo-active { padding-top: 36px; }
         <button class="tab-btn" data-tab="revenue"      onclick="showTab('revenue',this)">Revenue</button>
         <button class="tab-btn" data-tab="expenses"     onclick="showTab('expenses',this)">Expenses</button>
         <button class="tab-btn" data-tab="withdrawals"  onclick="showTab('withdrawals',this)">Withdrawals</button>
+        <button class="tab-btn" id="taxNavBtn" data-tab="tax" onclick="showTab('tax',this)" style="display:none">Tax</button>
       </div>
       <div class="sidebar-nav-group">
         <button class="tab-btn" data-tab="settings"     onclick="showTab('settings',this)">Settings</button>
@@ -6991,6 +6992,11 @@ body.demo-active { padding-top: 36px; }
 
       </div><!-- end tab-settings -->
 
+      <!-- ══ TAX TAB ══════════════════════════════════════════════════════ -->
+      <div class="tab-page" id="tab-tax">
+        <div id="taxTabContent"></div>
+      </div><!-- end tab-tax -->
+
     </div><!-- end page-content -->
 
   </main><!-- end main-area -->
@@ -7055,6 +7061,14 @@ body.demo-active { padding-top: 36px; }
         <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
       </svg>
       Settings
+    </button>
+    <button class="tab-mob" id="mob-tax" onclick="showTab('tax',this,true)" style="display:none">
+      <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+        <rect x="4" y="2" width="16" height="20" rx="2"/>
+        <line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/>
+        <line x1="8" y1="15" x2="12" y2="15"/>
+      </svg>
+      Tax
     </button>
   </div>
 </nav>
@@ -9400,6 +9414,7 @@ var PAGE_TITLES={
   revenue:'Revenue',
   expenses:'Expenses',
   withdrawals:'Withdrawals',
+  tax:'Tax',
   settings:'Settings'
 };
 
@@ -9416,7 +9431,7 @@ function showTab(name,btn,isMobile){
 
   if(isMobile){
     /* Mobile: sync sidebar items by tab order */
-    var idx=['dashboard','revenue','expenses','withdrawals','settings'].indexOf(name);
+    var idx=['dashboard','revenue','expenses','withdrawals','tax','settings'].indexOf(name);
     var dBtns=document.querySelectorAll('.tab-btn');
     if(dBtns[idx])dBtns[idx].classList.add('act');
     btn.classList.add('act');
@@ -9428,6 +9443,7 @@ function showTab(name,btn,isMobile){
     requestAnimationFrame(function(){requestAnimationFrame(function(){renderChart();});});
   }
   if(name==='settings'){loadAgencySettings();renderModelSplitSection();loadFanvueConnection();renderInviteModelRows();if(currentRole==='partner')switchSettingsTab('team');}
+  if(name==='tax'){renderTaxPage();}
   /* KPI grid: only visible on dashboard */
   var dashStats=g('dashStats');
   if(dashStats)dashStats.style.display=name==='dashboard'?'grid':'none';
@@ -9678,6 +9694,7 @@ async function loadTaxPayments(){
       amount:parseFloat(r.amount)||0,paid_date:r.paid_date,
       period:r.period||'',notes:r.notes||'',created_at:r.created_at};
   });
+  _syncTaxNavVisibility(TAX_ENABLED);
   renderTaxSummary();
 }
 
@@ -10311,13 +10328,24 @@ function switchSettingsTab(tabName){
 }
 
 /* ---- Tax tracking (Stage 5) ---- */
+function _syncTaxNavVisibility(enabled){
+  var taxBtn=g('taxNavBtn');if(taxBtn)taxBtn.style.display=enabled?'block':'none';
+  var mobTax=g('mob-tax');if(mobTax)mobTax.style.display=enabled?'flex':'none';
+  // If tax tab was active and we're disabling, fall back to dashboard
+  if(!enabled&&currentTab==='tax'){
+    showTab('dashboard',document.querySelector('[data-tab="dashboard"]'));
+  }
+}
+
 function handleTaxToggle(enabled){
   TAX_ENABLED=enabled;
   var toggle=g('taxTrackingToggle');if(toggle)toggle.checked=enabled;
   var row=g('taxRateRow');
   if(row)row.style.display=enabled?'block':'none';
   localStorage.setItem('taxTrackingEnabled',enabled?'1':'0');
+  _syncTaxNavVisibility(enabled);
   renderTaxCard();
+  renderTaxPage();
   renderBal();
 }
 
@@ -10352,6 +10380,7 @@ function loadTaxSettings(){
   var rate=TAX_RATE_PCT!=null?TAX_RATE_PCT:parseFloat(localStorage.getItem('taxRate')||'');
   var rateInput=g('taxRateInput');
   if(rateInput&&rate&&!isNaN(rate))rateInput.value=rate;
+  _syncTaxNavVisibility(enabled);
   renderTaxSummary();
 }
 
@@ -10399,7 +10428,7 @@ async function saveTaxPayment(){
       amount:parseFloat(res.data.amount)||0,paid_date:res.data.paid_date,
       period:res.data.period||'',notes:res.data.notes||'',created_at:res.data.created_at});
     closeTaxPaymentModal();
-    renderTaxSummary();
+    renderTaxSummary();renderTaxPage();
     showToast('Payment recorded — '+fc(amtVal),'success');
   }
   if(saveBtn){saveBtn.disabled=false;saveBtn.textContent='Record payment';}
@@ -10413,8 +10442,7 @@ async function deleteTaxPayment(id){
       var res=await db.from('tax_payments').delete().eq('id',id);
       if(res.error){showToast(friendlyError(res.error),'error');return;}
       TAX_PAYMENTS=TAX_PAYMENTS.filter(function(p){return p.id!==id;});
-      renderTaxSummary();
-      renderTaxCard();
+      renderTaxSummary();renderTaxCard();renderTaxPage();
       showToast('Payment removed','success');
     },
     {danger:true,okLabel:'Delete'}
@@ -10458,6 +10486,105 @@ function renderTaxCard(){
   if(subEl)subEl.textContent=TAX_RATE_PCT+'% of '+fc(myShare)+' share';
   card.classList.remove('srl-hidden');
   if(rail)rail.classList.add('has-tax');
+}
+
+/* ---- Tax tab page (full standalone view) ---- */
+function renderTaxPage(){
+  var el=g('taxTabContent');
+  if(!el)return;
+
+  if(!TAX_ENABLED||!TAX_RATE_PCT||TAX_RATE_PCT<=0){
+    el.innerHTML='<div style="padding:48px 0;text-align:center">'
+      +'<div style="font-size:32px;margin-bottom:12px">🧾</div>'
+      +'<div style="font-size:14px;font-weight:600;color:var(--t2);margin-bottom:6px">Tax tracking is off</div>'
+      +'<div style="font-size:13px;color:var(--t3);max-width:300px;margin:0 auto 20px">Enable it in '
+      +'<button class="btn-ghost" style="font-size:13px;padding:0" onclick="showTab(\'settings\','
+      +'document.querySelector(\'[data-tab=settings]\'));setTimeout(function(){switchSettingsTab(\'preferences\');},80)">Settings → Preferences</button>'
+      +' and set your tax rate.</div>'
+      +'</div>';
+    return;
+  }
+
+  // ── Resolve personal share (same logic as renderTaxCard) ─────────────────
+  var myPartnerId=null;
+  if(currentRole==='partner'&&currentPartnerId){
+    myPartnerId=currentPartnerId;
+  }else if(currentUser){
+    var _ap=PARTNERS.find(function(p){return p.user_id===currentUser.id;});
+    if(_ap)myPartnerId=_ap.id;
+  }
+  var myShare;
+  if(myPartnerId&&PARTNERS.length>1){
+    myShare=S.months&&S.months.length?totalPartnerShare(myPartnerId):0;
+  }else{
+    var _rev=r2((S.months||[]).reduce(function(s,m){return s+mTot(m);},0));
+    var _exp=r2((S.exps||[]).reduce(function(s,e){return s+e.amount;},0));
+    myShare=r2(_rev-_exp);
+  }
+  var taxReserve=r2(Math.max(0,myShare)*TAX_RATE_PCT/100);
+
+  var curYear=new Date().getFullYear();
+  var paidThisYear=r2(TAX_PAYMENTS.reduce(function(s,p){
+    var y=p.paid_date?parseInt(p.paid_date.slice(0,4)):0;
+    return y===curYear?s+p.amount:s;
+  },0));
+  var remaining=r2(Math.max(0,taxReserve-paidThisYear));
+
+  // ── KPI stat cards ────────────────────────────────────────────────────────
+  function kpi(label,val,sub,color){
+    return '<div style="background:var(--surface-2);border:1px solid var(--line-2);border-radius:var(--r3);padding:16px 18px">'
+      +'<div style="font-size:10px;font-weight:600;color:var(--t4);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">'+label+'</div>'
+      +'<div style="font-size:24px;font-weight:700;color:'+(color||'var(--t1)')+';letter-spacing:-.02em">'+val+'</div>'
+      +'<div style="font-size:11px;color:var(--t4);margin-top:4px">'+sub+'</div>'
+      +'</div>';
+  }
+
+  var kpiGrid='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px">'
+    +kpi('Net share (YTD)',fc(myShare),'after expenses')
+    +kpi('Set aside',fc(taxReserve),TAX_RATE_PCT+'% rate','var(--warn-txt)')
+    +kpi('Paid in '+curYear,fc(paidThisYear),'recorded payments','var(--pos-txt)')
+    +kpi('Remaining',fc(remaining),'estimated',remaining>0?'var(--warn-txt)':'var(--pos-txt)')
+    +'</div>';
+
+  // ── Payment history (all) ─────────────────────────────────────────────────
+  var histHtml;
+  if(TAX_PAYMENTS.length){
+    histHtml='<table style="width:100%;border-collapse:collapse">'
+      +'<thead><tr>'
+      +'<th style="text-align:left;font-size:10px;font-weight:600;color:var(--t4);text-transform:uppercase;letter-spacing:.07em;padding:0 0 10px;border-bottom:1px solid var(--line-2)">Date</th>'
+      +'<th style="text-align:left;font-size:10px;font-weight:600;color:var(--t4);text-transform:uppercase;letter-spacing:.07em;padding:0 0 10px;border-bottom:1px solid var(--line-2)">Period</th>'
+      +'<th style="text-align:left;font-size:10px;font-weight:600;color:var(--t4);text-transform:uppercase;letter-spacing:.07em;padding:0 0 10px;border-bottom:1px solid var(--line-2)">Notes</th>'
+      +'<th style="text-align:right;font-size:10px;font-weight:600;color:var(--t4);text-transform:uppercase;letter-spacing:.07em;padding:0 0 10px;border-bottom:1px solid var(--line-2)">Amount</th>'
+      +'<th style="border-bottom:1px solid var(--line-2)"></th>'
+      +'</tr></thead><tbody>';
+    TAX_PAYMENTS.forEach(function(p){
+      histHtml+='<tr>'
+        +'<td style="font-size:13px;color:var(--t2);padding:10px 0 10px;border-bottom:1px solid var(--line-1)">'+p.paid_date+'</td>'
+        +'<td style="font-size:13px;color:var(--t3);padding:10px 12px;border-bottom:1px solid var(--line-1)">'+(p.period||'—')+'</td>'
+        +'<td style="font-size:12px;color:var(--t4);padding:10px 12px;border-bottom:1px solid var(--line-1);font-style:italic">'+(p.notes||'')+'</td>'
+        +'<td style="font-size:14px;font-weight:600;color:var(--pos-txt);text-align:right;padding:10px 12px;border-bottom:1px solid var(--line-1)">'+fc(p.amount)+'</td>'
+        +'<td style="padding:10px 0 10px 8px;border-bottom:1px solid var(--line-1)">'
+        +'<button onclick="deleteTaxPayment(\''+p.id+'\')" '
+        +'style="background:none;border:none;cursor:pointer;color:var(--t4);font-size:12px;padding:2px 6px;border-radius:4px;transition:color .15s,background .15s" '
+        +'onmouseover="this.style.color=\'var(--neg)\';this.style.background=\'var(--neg-muted)\'" '
+        +'onmouseout="this.style.color=\'var(--t4)\';this.style.background=\'none\'">✕</button>'
+        +'</td>'
+        +'</tr>';
+    });
+    histHtml+='</tbody></table>';
+  }else{
+    histHtml='<div style="padding:32px 0;text-align:center;color:var(--t4);font-size:13px">No payments recorded yet</div>';
+  }
+
+  el.innerHTML=kpiGrid
+    +'<div class="card card-static">'
+    +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">'
+    +'<div class="sec-label">Payment history</div>'
+    +'<button class="btn btn-primary" onclick="openTaxPaymentModal()">+ Record payment</button>'
+    +'</div>'
+    +histHtml
+    +'<div style="font-size:11px;color:var(--t4);margin-top:14px;font-style:italic">Estimate only — consult a tax professional for accuracy.</div>'
+    +'</div>';
 }
 
 /* ---- Tax reserve summary (Settings → Preferences panel) ---- */

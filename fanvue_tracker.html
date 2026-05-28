@@ -6863,9 +6863,13 @@ body.demo-active { padding-top: 36px; }
                   <div class="settings-row-title">Tax rate (%)</div>
                   <div class="settings-row-desc">Approximate rate. For estimation only — consult a tax professional for accuracy.</div>
                 </div>
-                <input type="number" class="settings-input-sm" id="taxRateInput"
-                       min="0" max="60" step="0.5" placeholder="20"
-                       onchange="saveTaxRate(this.value)">
+                <div style="display:flex;align-items:center;gap:8px">
+                  <input type="number" class="settings-input-sm" id="taxRateInput"
+                         min="0" max="60" step="0.5" placeholder="20"
+                         onkeydown="if(event.key==='Enter')saveTaxRate(this.value)">
+                  <button class="btn btn-primary" style="white-space:nowrap;flex-shrink:0"
+                          onclick="saveTaxRate(g('taxRateInput').value)">Save</button>
+                </div>
               </div>
               <div class="settings-row">
                 <div class="settings-row-info">
@@ -10299,20 +10303,24 @@ function handleTaxToggle(enabled){
   renderBal();
 }
 
-function saveTaxRate(value){
+async function saveTaxRate(value){
   var rate=parseFloat(value);
-  if(isNaN(rate)||rate<0||rate>60)return;
-  localStorage.setItem('taxRate',String(rate));
+  console.log('[saveTaxRate] saving:',rate,'agency:',_agencyId);
+  if(isNaN(rate)||rate<0||rate>100){showToast('Enter a tax rate between 0 and 100','error');return;}
+  // Update global + localStorage immediately so renderTaxCard works even before DB responds
   TAX_RATE_PCT=rate;
-  if(_agencyId&&!DEMO_MODE){
-    db.from('agencies').update({tax_rate_pct:rate}).eq('id',_agencyId).then(function(res){
-      if(res.error)console.error('[saveTaxRate] DB error:',res.error);
-      else console.log('[saveTaxRate] saved tax_rate_pct='+rate+' to DB');
-    });
+  localStorage.setItem('taxRate',String(rate));
+  renderTaxSummary();renderTaxCard();renderBal();
+  if(DEMO_MODE){showToast('Tax rate set to '+rate+'%','success');return;}
+  if(!_agencyId){showToast('Agency not loaded — rate saved locally only','warn');return;}
+  var res=await db.from('agencies').update({tax_rate_pct:rate}).eq('id',_agencyId);
+  if(res.error){
+    console.error('[saveTaxRate] DB error:',res.error);
+    showToast('Saved locally — DB write failed: '+res.error.message,'warn');
+  }else{
+    console.log('[saveTaxRate] saved tax_rate_pct='+rate+' to DB');
+    showToast('Tax rate saved — '+rate+'%','success');
   }
-  renderTaxSummary();
-  renderTaxCard();
-  renderBal();
 }
 
 function loadTaxSettings(){

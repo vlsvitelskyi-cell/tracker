@@ -6088,11 +6088,11 @@ button, a,
 }
 
 /* ── 6. 6-item nav: icon-only mode when Tax tab is visible ── */
-/* .nav-6 is toggled by _syncTaxNavVisibility() in JS */
-.tabs-mobile-inner.nav-6 .tab-mob span {
-  display: none;
-}
+/* .nav-6 is toggled by _syncTaxNavVisibility() in JS.
+   Labels are bare text nodes — font-size:0 hides them without
+   touching the SVG (which has explicit width/height attrs). */
 .tabs-mobile-inner.nav-6 .tab-mob {
+  font-size: 0;
   min-height: 52px;
   justify-content: center;
   padding: 0;

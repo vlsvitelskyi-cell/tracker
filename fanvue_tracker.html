@@ -1774,6 +1774,16 @@ button { font-family: var(--sans); }
 .split-total-ok  { color: var(--pos-txt); }
 .split-total-err { color: var(--neg); }
 .split-remaining { font-size: var(--f11); color: var(--t3); margin-top: 2px; }
+.split-history-row { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--line-1); }
+.split-history-row:last-child { border-bottom: none; }
+.split-history-date { color: var(--t3); width: 90px; flex-shrink: 0; font-size: 11px; }
+.split-history-splits { color: var(--t2); display: flex; flex-wrap: wrap; gap: 10px; font-size: 12px; }
+.split-history-splits b { color: var(--t1); }
+.tax-summary-card { background: var(--surface-2); border: 1px solid var(--line-2); border-radius: var(--r3); padding: 16px; margin-top: 16px; }
+.tax-summary-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--t2); padding: 6px 0; border-bottom: 1px solid var(--line-1); }
+.tax-summary-row:last-of-type { border-bottom: none; }
+.tax-summary-total { font-weight: 600; color: var(--t1); }
+.tax-summary-note { font-size: 11px; color: var(--t3); margin-top: 10px; font-style: italic; }
 .w-done-eur { font-size: 22px; font-weight: 700; letter-spacing: -.04em; color: var(--pos-txt); font-variant-numeric: tabular-nums; }
 .w-done-usd { font-size: var(--f12); color: var(--t3); margin-top: 1px; }
 
@@ -6697,6 +6707,11 @@ body.demo-active { padding-top: 36px; }
               <button class="btn btn-primary" style="flex:1" id="saveSplitsBtn" onclick="saveModelSplits()">Save splits</button>
             </div>
           </div>
+          <!-- Split history -->
+          <div class="card" id="splitHistoryCard" style="display:none">
+            <div class="sec-label">Split history</div>
+            <div id="splitHistoryList" class="split-history"></div>
+          </div>
         </div>
 
         <!-- SECTION: AGENCY -->
@@ -6836,6 +6851,7 @@ body.demo-active { padding-top: 36px; }
                 <button class="btn" onclick="showRecordTaxPaymentModal()">Record payment</button>
               </div>
             </div>
+            <div id="taxSummaryContainer" style="display:none"></div>
           </div>
         </div>
 
@@ -7255,7 +7271,7 @@ async function forgotPassword(){
 
 async function logout(){
   await db.auth.signOut();
-  PARTNERS=[];ALL_MODELS=[];ACTIVE_MODEL_ID='';MODEL_SPLITS={};PARTNER_SPLITS={};FANVUE_CONNECTION=null;
+  PARTNERS=[];ALL_MODELS=[];ACTIVE_MODEL_ID='';MODEL_SPLITS={};SPLIT_HISTORY=[];PARTNER_SPLITS={};FANVUE_CONNECTION=null;TAX_RATE_PCT=null;
   showLogin();
   S={months:[],ws:[],txs:[],exps:[],am:0,platforms:DEFAULT_PLATFORMS.slice()};
   renderAll();
@@ -7265,6 +7281,8 @@ async function logout(){
 var ACTIVE_MODEL_ID='';
 var ALL_MODELS=[];
 var MODEL_SPLITS={};
+var SPLIT_HISTORY=[]; // flat array: [{model_id,partner_id,split_pct,effective_from}]
+var TAX_RATE_PCT=null; // numeric %, loaded from agencies.tax_rate_pct
 
 async function loadModels(){
   if(DEMO_MODE)return;
@@ -7298,15 +7316,20 @@ async function loadModels(){
 
 async function loadModelSplits(modelId){
   var res=await db.from('model_splits')
-    .select('partner_id,split_pct')
-    .eq('model_id',modelId);
+    .select('partner_id,split_pct,effective_from')
+    .eq('model_id',modelId)
+    .order('effective_from',{ascending:true});
   if(!res.error&&res.data){
     MODEL_SPLITS[modelId]={};
-    res.data.forEach(function(row){MODEL_SPLITS[modelId][row.partner_id]=row.split_pct;});
+    res.data.forEach(function(row){
+      MODEL_SPLITS[modelId][row.partner_id]=row.split_pct; // latest wins (ordered asc)
+      SPLIT_HISTORY.push({model_id:modelId,partner_id:row.partner_id,split_pct:row.split_pct,effective_from:row.effective_from||''});
+    });
   }
 }
 
 async function loadAllModelsSplits(){
+  SPLIT_HISTORY=[];
   await Promise.all(ALL_MODELS.map(function(m){return loadModelSplits(m.id);}));
 }
 
@@ -7314,6 +7337,17 @@ function getCurrentSplit(modelId,partnerId){
   var splits=MODEL_SPLITS[modelId];
   if(!splits)return 50;
   return splits[partnerId]!=null?splits[partnerId]:50;
+}
+
+// Returns the split % that was effective on a given date (YYYY-MM-DD).
+// Falls back to getCurrentSplit if no history exists.
+function getSplitForDate(modelId,partnerId,dateStr){
+  var relevant=SPLIT_HISTORY.filter(function(r){
+    return r.model_id===modelId&&r.partner_id===partnerId&&(r.effective_from||'').slice(0,10)<=dateStr;
+  });
+  if(!relevant.length)return getCurrentSplit(modelId,partnerId);
+  relevant.sort(function(a,b){return a.effective_from<b.effective_from?-1:1;});
+  return relevant[relevant.length-1].split_pct;
 }
 
 /* ---- Model switcher (UI removed — keeps ACTIVE_MODEL_ID + fills sidebar name) ---- */
@@ -7457,8 +7491,9 @@ function renderModelSplitSection(){
   var sec=g('modelSplitSection');
   var actions=g('splitEditActions');
   if(!sec)return;
-  if(!ACTIVE_MODEL_ID||!PARTNERS.length||currentRole!=='admin'){sec.style.display='none';return;}
+  if(!ACTIVE_MODEL_ID||!PARTNERS.length||currentRole!=='admin'){sec.style.display='none';var hc=g('splitHistoryCard');if(hc)hc.style.display='none';return;}
   sec.style.display='block';
+  renderSplitHistory();
   var listEl=g('modelSplitList');
   var activePartners=PARTNERS.filter(function(p){return p.status==='active';});
   var pendingPartners=PARTNERS.filter(function(p){return p.status==='pending';});
@@ -7562,26 +7597,31 @@ async function saveModelSplits(){
   var activePartners=PARTNERS.filter(function(p){return p.status==='active';});
   var total=activePartners.reduce(function(s,p){return s+(_splitDraft[p.id]||0);},0);
   if(Math.abs(total-100)>0.01){showToast('Splits must add up to 100%','error');return;}
-  var btn=g('saveSplitsBtn');btn.disabled=true;btn.textContent='Saving…';
+  // Open date modal — actual DB write happens in confirmSplitDateAndSave()
+  showSplitDateModal();
+}
 
-  // DELETE + INSERT надёжнее чем upsert (не требует UNIQUE constraint)
-  var delRes=await db.from('model_splits').delete().eq('model_id',ACTIVE_MODEL_ID);
-  if(delRes.error){showToast(friendlyError(delRes.error),'error');btn.disabled=false;btn.textContent='Save splits';return;}
-
+async function _doSaveModelSplits(effectiveDate){
+  var btn=g('saveSplitsBtn');if(btn){btn.disabled=true;btn.textContent='Saving…';}
+  var activePartners=PARTNERS.filter(function(p){return p.status==='active';});
   var rows=activePartners.map(function(p){
-    return{model_id:ACTIVE_MODEL_ID,partner_id:p.id,split_pct:_splitDraft[p.id]||0,effective_from:new Date().toISOString()};
+    return{model_id:ACTIVE_MODEL_ID,partner_id:p.id,split_pct:_splitDraft[p.id]||0,effective_from:effectiveDate+'T00:00:00.000Z'};
   });
   var res=await db.from('model_splits').insert(rows);
   if(res.error){showToast(friendlyError(res.error),'error');}
   else{
     MODEL_SPLITS[ACTIVE_MODEL_ID]={};
-    rows.forEach(function(r){MODEL_SPLITS[ACTIVE_MODEL_ID][r.partner_id]=r.split_pct;});
+    rows.forEach(function(r){
+      MODEL_SPLITS[ACTIVE_MODEL_ID][r.partner_id]=r.split_pct;
+      SPLIT_HISTORY.push({model_id:ACTIVE_MODEL_ID,partner_id:r.partner_id,split_pct:r.split_pct,effective_from:r.effective_from});
+    });
     _editingSplits=false;_splitDraft={};
     renderModelSplitSection();
     renderBal();
+    renderSplitHistory();
     showToast('Splits updated successfully','success');
   }
-  btn.disabled=false;btn.textContent='Save splits';
+  if(btn){btn.disabled=false;btn.textContent='Save splits';}
 }
 
 /* ---- Partners ---- */
@@ -7603,10 +7643,14 @@ function partnerTotalExp(partnerId){
   return S.months.reduce(function(sum,m){return sum+((m.expByPartner||{})[partnerId]||0);},0);
 }
 function partnerShareForMonth(partnerId,month){
+  // Use last day of the month as representative date for temporal split lookup
+  var parts=month.id.split('-');
+  var lastDay=new Date(parseInt(parts[0]),parseInt(parts[1]),0).getDate();
+  var dateStr=month.id+'-'+String(lastDay).padStart(2,'0');
   var allExp=0;
   Object.values(month.expByPartner||{}).forEach(function(v){allExp+=v;});
   var netPool=mTot(month)-allExp-(month.agencyExp||0);
-  var split=getCurrentSplit(ACTIVE_MODEL_ID,partnerId)/100;
+  var split=getSplitForDate(ACTIVE_MODEL_ID,partnerId,dateStr)/100;
   var ownExp=(month.expByPartner||{})[partnerId]||0;
   return netPool*split+ownExp;
 }
@@ -7870,7 +7914,7 @@ async function loadAgencySettings(){
   if(agRes.error||!agRes.data)return;
   _agencyId=agRes.data;
 
-  var agData=await db.from('agencies').select('name,trial_ends_at,withdrawal_currency,platforms').eq('id',_agencyId).single();
+  var agData=await db.from('agencies').select('name,trial_ends_at,withdrawal_currency,platforms,tax_rate_pct').eq('id',_agencyId).single();
   if(!agData.error&&agData.data){
     _agencyName=agData.data.name||'';
     var inp=g('agencyNameInput');
@@ -7885,6 +7929,9 @@ async function loadAgencySettings(){
       S.platforms=agData.data.platforms;
       renderPlatformSelect();
       renderPlatformSettings();
+    }
+    if(agData.data.tax_rate_pct!=null){
+      TAX_RATE_PCT=parseFloat(agData.data.tax_rate_pct);
     }
   }
   await loadPartnersList();
@@ -8671,6 +8718,14 @@ var DEMO_STATE={
     'demo-m1':{'demo-p1':35,'demo-p2':40},
     'demo-m2':{'demo-p1':35,'demo-p2':40}
   },
+  splitHistory:[
+    {model_id:'demo-m1',partner_id:'demo-p1',split_pct:30,effective_from:'2026-01-01T00:00:00.000Z'},
+    {model_id:'demo-m1',partner_id:'demo-p2',split_pct:35,effective_from:'2026-01-01T00:00:00.000Z'},
+    {model_id:'demo-m1',partner_id:'demo-p1',split_pct:35,effective_from:'2026-03-01T00:00:00.000Z'},
+    {model_id:'demo-m1',partner_id:'demo-p2',split_pct:40,effective_from:'2026-03-01T00:00:00.000Z'},
+    {model_id:'demo-m2',partner_id:'demo-p1',split_pct:35,effective_from:'2026-01-01T00:00:00.000Z'},
+    {model_id:'demo-m2',partner_id:'demo-p2',split_pct:40,effective_from:'2026-01-01T00:00:00.000Z'}
+  ],
   models:[
     {id:'demo-m1',name:'Aria Blake',connected:true},
     {id:'demo-m2',name:'Mia Voss',connected:true}
@@ -8731,6 +8786,8 @@ function enterDemoMode(){
   ACTIVE_MODEL_ID=DEMO_MID1;
   PARTNERS=DEMO_STATE.partners.map(function(p){return Object.assign({},p);});
   MODEL_SPLITS=JSON.parse(JSON.stringify(DEMO_STATE.modelSplits));
+  SPLIT_HISTORY=(DEMO_STATE.splitHistory||[]).slice();
+  TAX_RATE_PCT=20;
   PARTNER_SPLITS={};
   DEMO_STATE.partners.forEach(function(p){
     PARTNER_SPLITS[p.id]=DEMO_STATE.models.map(function(m){
@@ -8759,7 +8816,7 @@ function enterDemoMode(){
 function exitDemoMode(){
   DEMO_MODE=false;
   hideDemoBanner();
-  ALL_MODELS=[];ACTIVE_MODEL_ID='';PARTNERS=[];MODEL_SPLITS={};PARTNER_SPLITS={};_agencyId='';
+  ALL_MODELS=[];ACTIVE_MODEL_ID='';PARTNERS=[];MODEL_SPLITS={};SPLIT_HISTORY=[];PARTNER_SPLITS={};_agencyId='';TAX_RATE_PCT=null;
   S={months:[],ws:[],txs:[],exps:[],am:0,platforms:DEFAULT_PLATFORMS.slice()};
   currentUser=null;currentRole=null;currentPartnerId='';
   showLogin();
@@ -10211,6 +10268,14 @@ function saveTaxRate(value){
   var rate=parseFloat(value);
   if(isNaN(rate)||rate<0||rate>60)return;
   localStorage.setItem('taxRate',String(rate));
+  TAX_RATE_PCT=rate;
+  if(_agencyId&&!DEMO_MODE){
+    db.from('agencies').update({tax_rate_pct:rate}).eq('id',_agencyId).then(function(res){
+      if(res.error)console.error('[saveTaxRate]',res.error);
+    });
+  }
+  renderTaxSummary();
+  renderBal();
 }
 
 function loadTaxSettings(){
@@ -10218,13 +10283,87 @@ function loadTaxSettings(){
   var toggle=g('taxTrackingToggle');
   if(toggle)toggle.checked=enabled;
   handleTaxToggle(enabled);
-  var rate=localStorage.getItem('taxRate');
+  // Prefer DB value (TAX_RATE_PCT), fall back to localStorage
+  var rate=TAX_RATE_PCT!=null?TAX_RATE_PCT:parseFloat(localStorage.getItem('taxRate')||'');
   var rateInput=g('taxRateInput');
-  if(rateInput&&rate)rateInput.value=rate;
+  if(rateInput&&rate&&!isNaN(rate))rateInput.value=rate;
+  renderTaxSummary();
 }
 
 function showRecordTaxPaymentModal(){
   showToast('Tax payment recording coming soon','info');
+}
+
+/* ---- Tax reserve summary ---- */
+function renderTaxSummary(){
+  var container=g('taxSummaryContainer');
+  if(!container)return;
+  var enabled=localStorage.getItem('taxTrackingEnabled')==='1';
+  if(!enabled||!TAX_RATE_PCT){container.style.display='none';return;}
+  var totalRev=r2(S.months.reduce(function(s,m){return s+mTot(m);},0));
+  var taxReserve=r2(totalRev*TAX_RATE_PCT/100);
+  container.style.display='block';
+  container.innerHTML='<div class="tax-summary-card">'
+    +'<div class="sec-label" style="margin-bottom:12px">Tax reserve (YTD)</div>'
+    +'<div class="tax-summary-row"><span>Total revenue</span><span>'+fc(totalRev)+'</span></div>'
+    +'<div class="tax-summary-row"><span>Set aside ('+TAX_RATE_PCT+'%)</span>'
+    +'<span class="tax-summary-total" style="color:var(--warn-txt)">'+fc(taxReserve)+'</span></div>'
+    +'<div class="tax-summary-note">Estimate only — consult a tax professional for accuracy.</div>'
+    +'</div>';
+}
+
+/* ---- Split date modal ---- */
+function showSplitDateModal(){
+  var modal=g('splitDateModal');
+  if(!modal)return;
+  var inp=g('splitDateInput');
+  if(inp)inp.value=new Date().toISOString().split('T')[0];
+  modal.style.display='flex';
+}
+
+function closeSplitDateModal(){
+  var modal=g('splitDateModal');
+  if(modal)modal.style.display='none';
+}
+
+async function confirmSplitDateAndSave(){
+  var inp=g('splitDateInput');
+  var effectiveDate=inp?inp.value:'';
+  if(!effectiveDate){showToast('Please select an effective date','error');return;}
+  closeSplitDateModal();
+  await _doSaveModelSplits(effectiveDate);
+}
+
+/* ---- Split history renderer ---- */
+function renderSplitHistory(){
+  var card=g('splitHistoryCard');
+  var list=g('splitHistoryList');
+  if(!card||!list)return;
+  var modelHistory=SPLIT_HISTORY.filter(function(r){return r.model_id===ACTIVE_MODEL_ID;});
+  if(!modelHistory.length){card.style.display='none';return;}
+  // Group rows by effective_from date
+  var grouped={};
+  modelHistory.forEach(function(r){
+    var date=(r.effective_from||'').slice(0,10);
+    if(!grouped[date])grouped[date]=[];
+    grouped[date].push(r);
+  });
+  var dates=Object.keys(grouped).sort(function(a,b){return a<b?1:-1;}); // newest first
+  var html='';
+  dates.forEach(function(date){
+    var entries=grouped[date];
+    var splitsHtml=entries.map(function(r){
+      var partner=PARTNERS.find(function(p){return p.id===r.partner_id;});
+      var name=partner?escHtml(partner.name):r.partner_id;
+      return'<span>'+name+': <b>'+r.split_pct+'%</b></span>';
+    }).join('');
+    html+='<div class="split-history-row">'
+      +'<span class="split-history-date">'+fdate(date)+'</span>'
+      +'<span class="split-history-splits">'+splitsHtml+'</span>'
+      +'</div>';
+  });
+  list.innerHTML=html;
+  card.style.display='block';
 }
 
 /* ---- Workspace name (Stage 5) ---- */
@@ -10384,10 +10523,14 @@ function renderBal(){
   }
 
   /* Per-model view */
+  var taxEnabled=localStorage.getItem('taxTrackingEnabled')==='1';
+  var taxReserve=0;
+  if(taxEnabled&&TAX_RATE_PCT!=null&&TAX_RATE_PCT>0){taxReserve=r2(totalRev*TAX_RATE_PCT/100);}
   g('dashStats').innerHTML=
     mkSrl('This month',fc(curRev),'',trendHtml)
     +mkSrl('Total revenue',fc(totalRev))
     +(totalOutstanding>0.01?mkSrl('Outstanding',fc(totalOutstanding),'warn'):'')
+    +(taxReserve>0?mkSrl('Set aside (tax)',fc(taxReserve),'warn',TAX_RATE_PCT+'% est.'):'')
     +mkSrl('FX Loss',tLoss>0?'−'+fe(tLoss):'—',tLoss>0?'neg':'dim');
   g('dashStats')&&g('dashStats').querySelectorAll('.srl-value').forEach(function(el){animateCountUp(el,el.textContent,500);});
 
@@ -11351,6 +11494,22 @@ async function syncFullHistory(){
   },1000);
 }
 </script>
+
+<!-- ── Split Date Modal ───────────────────────────────────── -->
+<div id="splitDateModal" style="display:none;position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.6);align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--surface-2);border:1px solid var(--line-3);border-radius:var(--r5);padding:28px 32px;max-width:360px;width:100%;box-shadow:var(--shadow-overlay)">
+    <div style="font-size:15px;font-weight:600;color:var(--t1);margin-bottom:8px">Set effective date</div>
+    <div style="font-size:13px;color:var(--t3);line-height:1.5;margin-bottom:20px">Choose the date from which these splits take effect. Previous splits are preserved in history.</div>
+    <div class="field" style="margin-bottom:20px">
+      <label style="font-size:11px;font-weight:500;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:6px">Effective from</label>
+      <input type="date" id="splitDateInput" class="auth-input" style="width:100%;font-size:13px;box-sizing:border-box">
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn" onclick="closeSplitDateModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="confirmSplitDateAndSave()">Save splits</button>
+    </div>
+  </div>
+</div>
 
 <!-- ── Confirm Modal ─────────────────────────────────────── -->
 <div id="confirmModal" style="display:none;position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.6);align-items:center;justify-content:center;padding:20px">

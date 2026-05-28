@@ -4846,6 +4846,10 @@ html { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
   gap: 0;
   scrollbar-width: none;
 }
+/* 5-column layout when tax card is active */
+.summary-rail.has-tax {
+  grid-template-columns: repeat(5, 1fr);
+}
 .summary-rail::-webkit-scrollbar { display: none; }
 .srl-item {
   padding: 20px 24px 18px !important;
@@ -4864,7 +4868,6 @@ html { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
 .srl-item:first-child { padding-left: 24px !important; }
 .srl-item:last-child  { border-right: none; }
 .srl-item:hover { background: rgba(255,255,255,.018); }
-.srl-item:nth-child(n+5) { display: none !important; }
 .srl-label {
   font-size: var(--f11) !important;
   font-weight: 700 !important;
@@ -10320,14 +10323,17 @@ function showRecordTaxPaymentModal(){
 /* ---- Tax reserve card (dashboard summary rail) ---- */
 function renderTaxCard(){
   var card=g('taxReserveCard');
+  var rail=g('dashStats');
   if(!card)return;
-  if(!TAX_ENABLED||!TAX_RATE_PCT||TAX_RATE_PCT<=0){card.style.display='none';return;}
+  var show=TAX_ENABLED&&!!TAX_RATE_PCT&&TAX_RATE_PCT>0;
+  if(rail)rail.classList.toggle('has-tax',show);
+  if(!show){card.style.display='none';return;}
   var totalRev=r2(S.months.reduce(function(s,m){return s+mTot(m);},0));
   var taxReserve=r2(totalRev*TAX_RATE_PCT/100);
-  if(taxReserve<=0){card.style.display='none';return;}
+  if(taxReserve<=0){card.style.display='none';if(rail)rail.classList.remove('has-tax');return;}
   var valEl=g('taxReserveVal'),subEl=g('taxReserveRate');
   if(valEl)valEl.textContent=fc(taxReserve);
-  if(subEl)subEl.textContent=TAX_RATE_PCT+'% of YTD revenue';
+  if(subEl)subEl.textContent=TAX_RATE_PCT+'% of YTD';
   card.style.display='';
 }
 

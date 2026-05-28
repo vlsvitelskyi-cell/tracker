@@ -7729,6 +7729,9 @@ function renderPartnerCards(){
           +'<div class="partner-stat-value outstanding">'+fc(rem)+'</div>'
         +'</div>'
       +'</div>'
+      +((!p.is_admin&&!isMe&&(currentRole==='admin'||currentRole==='owner')&&p.user_id)
+        ?'<button class="btn" style="width:100%;margin-top:10px;font-size:11px;color:var(--t3)" onclick="makeAdmin(\''+p.id+'\')">Make Admin</button>'
+        :'')
     +'</div>';
   }).join('');
 
@@ -7749,6 +7752,28 @@ function renderPartnerCards(){
   grid.querySelectorAll('.partner-card-total').forEach(function(el){
     animateCountUp(el,el.textContent,700);
   });
+}
+
+async function makeAdmin(partnerId){
+  if(currentRole!=='admin'&&currentRole!=='owner')return;
+  var p=PARTNERS.find(function(x){return x.id===partnerId;});
+  if(!p||p.is_admin)return;
+  if(!p.user_id){showToast('Partner must accept their invite before being made admin','warn');return;}
+  showConfirmModal(
+    'Make '+p.name+' an Admin?',
+    'Admins can record transactions, manage withdrawals, and access all settings. This cannot be undone from the app.',
+    async function(){
+      var res=await db.from('user_roles')
+        .update({role:'admin'})
+        .eq('user_id',p.user_id)
+        .eq('operator_id',_agencyId);
+      if(res.error){showToast('Error: '+res.error.message,'err');return;}
+      p.is_admin=true;
+      renderPartnerCards();
+      showToast(escHtml(p.name)+' is now an Admin','success');
+    },
+    {okLabel:'Make Admin'}
+  );
 }
 
 /* ---- Fanvue Connection ---- */

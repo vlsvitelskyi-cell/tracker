@@ -5033,8 +5033,10 @@ html { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
   font-weight: 600;
   letter-spacing: .03em;
   text-transform: uppercase;
-  flex-shrink: 0;         /* не сжимается внутри flex-строк */
+  flex-shrink: 0;
   white-space: nowrap;
+  max-width: 108px;
+  overflow: hidden;
 }
 .platform-pill--fanvue   { background: var(--fanvue-bg);   color: var(--fanvue); }
 .platform-pill--paypal   { background: var(--paypal-bg);   color: var(--paypal); }
@@ -5370,7 +5372,7 @@ html { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
   gap: 6px;
   min-width: 0;
   overflow: hidden;
-  padding: 0 6px;
+  padding: 0 6px 0 4px;
 }
 /* col 3: date */
 .tx-date {
@@ -5915,7 +5917,7 @@ html { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
 /* ── tx-row: единственное итоговое правило ── */
 .tx-row {
   display: grid !important;
-  grid-template-columns: 90px 1fr 68px 88px;
+  grid-template-columns: 112px 1fr 68px 88px;
   align-items: center;
   padding: 9px 20px;
   border-bottom: 1px solid var(--line-1);
@@ -7231,7 +7233,7 @@ button, a,
             <div id="platformList" style="margin-bottom:14px"></div>
             <div class="pl-add-row">
               <div class="field" style="margin-bottom:0">
-                <input id="newPlatform" placeholder="Platform name…" onkeydown="if(event.key==='Enter')addPlatform()">
+                <input id="newPlatform" placeholder="Platform name…" maxlength="18" onkeydown="if(event.key==='Enter')addPlatform()">
               </div>
               <button class="btn" onclick="addPlatform()" style="align-self:flex-end">Add</button>
             </div>
@@ -9160,6 +9162,13 @@ function platformColorForName(name){
   if(lower==='telegram'||lower==='tg')return'#0EA5E9';
   return null;
 }
+/* Single source of truth — use this everywhere instead of inline fallback chains */
+function getPlatformColor(name){
+  var known=platformColorForName(name);
+  if(known)return known;
+  var idx=S.platforms.indexOf(name);
+  return PLATFORM_COLORS[(idx>=0?idx:0)%PLATFORM_COLORS.length];
+}
 function platformCssClass(name){
   var lower=(name||'').toLowerCase().trim();
   if(lower==='fanvue')return'pl-fanvue';
@@ -9942,10 +9951,13 @@ function renderPlatformSettings(){
   var addRow=g('newPlatform')?g('newPlatform').closest('.pl-add-row'):null;
   if(addRow)addRow.style.display=currentRole==='admin'?'':'none';
 }
+var PLATFORM_NAME_MAX=18;
 function addPlatform(){
   var input=g('newPlatform');
   var name=(input.value||'').trim();
-  if(!name||S.platforms.indexOf(name)!==-1)return;
+  if(!name)return;
+  if(name.length>PLATFORM_NAME_MAX){showToast('Platform name must be '+PLATFORM_NAME_MAX+' characters or fewer','warn');return;}
+  if(S.platforms.indexOf(name)!==-1)return;
   S.platforms.push(name);
   savePlatforms();
   input.value='';
@@ -11371,7 +11383,7 @@ function renderRecentTx(){
     groups[dateKey].forEach(function(tx){
       var pl=normalizePlatform(tx.platform);
       var plIdx=S.platforms.indexOf(pl);
-      var plColor=platformColorForName(pl)||PLATFORM_COLORS[(plIdx>=0?plIdx:0)%PLATFORM_COLORS.length];
+      var plColor=getPlatformColor(pl);
       var pos=tx.amount>=0;
       var autoTag=tx.source==='scraper'?'<span class="badge" style="margin-left:5px">auto</span>':'';
       var modelTag='';
@@ -11382,7 +11394,7 @@ function renderRecentTx(){
       var noteText=tx.description?'<span class="tx-note-inline">'+escHtml(tx.description)+'</span>':'';
       var plCls=pl.toLowerCase();
       html+='<div class="tx-row">'
-        +'<span class="platform-pill platform-pill--'+plCls+'">'+escHtml(pl)+'</span>'
+        +'<span class="platform-pill platform-pill--'+plCls+'" style="background:'+plColor+'1f;color:'+plColor+'">'+escHtml(pl)+'</span>'
         +'<span class="tx-spacer">'+autoTag+modelTag+noteText+'</span>'
         +'<span class="tx-date">'+fdate(tx.date)+'</span>'
         +'<span class="tx-amount '+(pos?'pos':'neg')+'">'+(pos?'+':'−')+fu(tx.amount)+'</span>'
@@ -11396,7 +11408,7 @@ function renderRecentTx(){
 function renderChartLegend(){
   var el=g('chartLegend');if(!el)return;
   el.innerHTML=S.platforms.map(function(p,i){
-    var lColor=platformColorForName(p)||PLATFORM_COLORS[i%PLATFORM_COLORS.length];
+    var lColor=getPlatformColor(p);
     return '<div class="legend-item"><div class="legend-dot" style="background:'+lColor+'"></div>'+p+'</div>';
   }).join('');
 }
@@ -11427,7 +11439,7 @@ function renderChart(){
   months.forEach(function(m,i){
     var x=PL+gap+i*(barW+gap);
     var base=PT+cH;
-    var segs=S.platforms.map(function(p,pi){return{v:(m.revenues||{})[p]||0,c:PLATFORM_COLORS[pi%PLATFORM_COLORS.length]};});
+    var segs=S.platforms.map(function(p,pi){return{v:(m.revenues||{})[p]||0,c:getPlatformColor(p)};});
     var tot=mTot(m);
     var yOff=0;
     segs.forEach(function(s,si){
@@ -11504,7 +11516,7 @@ function showChartTooltip(idx){
   var rowsHtml=S.platforms.map(function(plat,pi){
     var val=(m.revenues||{})[plat]||0;
     if(val<=0)return'';
-    var color=platformColorForName(plat)||PLATFORM_COLORS[pi%PLATFORM_COLORS.length];
+    var color=getPlatformColor(plat);
     var fmt='$'+val.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
     return '<div class="ct-row">'
       +'<div class="ct-dot" style="background:'+color+'"></div>'
@@ -11592,7 +11604,7 @@ function renderMonths(){
   var tot=r2(mTot(m));
   var activePartners=PARTNERS.filter(function(p){return p.status==='active';});
 
-  var pColorVars=['var(--p0)','var(--p1)','var(--p2)','var(--p3)','var(--p4)'];
+  var pColorVars=['var(--p0)','var(--p1)','var(--p2)','var(--p3)','var(--p4)'];  /* legacy — kept for partner rows only */
 
   /* Partner-role: personal summary header */
   var partnerSummaryHtml='';
@@ -11628,7 +11640,7 @@ function renderMonths(){
     var val=(m.revenues||{})[plat]||0;
     if(val<=0)return;
     hasRevRows=true;
-    var pColor=platformColorForName(plat)||pColorVars[pi%5];
+    var pColor=getPlatformColor(plat);
     html+='<div class="rev-stmt-row">'
       +'<div style="display:flex;align-items:center;gap:10px">'
         +'<div class="rev-pl-dot" style="background:'+pColor+'"></div>'

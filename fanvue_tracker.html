@@ -4241,7 +4241,8 @@ button { font-family: var(--sans); }
   /* 24px horizontal grid. Creates consistent inset rhythm.           */
   #tab-revenue,
   #tab-expenses,
-  #tab-withdrawals {
+  #tab-withdrawals,
+  #tab-tax {
     padding: var(--s6) var(--s6) var(--s10);
   }
 
@@ -4313,7 +4314,8 @@ button { font-family: var(--sans); }
 @media (min-width: 1380px) {
   #tab-revenue,
   #tab-expenses,
-  #tab-withdrawals {
+  #tab-withdrawals,
+  #tab-tax {
     max-width: 1020px;
     margin-left: auto;
     margin-right: auto;
@@ -4798,7 +4800,7 @@ html { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
 .auth-btn:hover { background: var(--cta-dark) !important; }
 
 /* ── LAYOUT: tab padding & widths ──────────────────────────────── */
-#tab-revenue, #tab-expenses, #tab-withdrawals {
+#tab-revenue, #tab-expenses, #tab-withdrawals, #tab-tax {
   padding: var(--s6) var(--s7) var(--s10);
   max-width: 1200px;
 }

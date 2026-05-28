@@ -7729,9 +7729,6 @@ function renderPartnerCards(){
           +'<div class="partner-stat-value outstanding">'+fc(rem)+'</div>'
         +'</div>'
       +'</div>'
-      +((!p.is_admin&&!isMe&&(currentRole==='admin'||currentRole==='owner')&&p.user_id)
-        ?'<button class="btn" style="width:100%;margin-top:10px;font-size:11px;color:var(--t3)" onclick="makeAdmin(\''+p.id+'\')">Make Admin</button>'
-        :'')
     +'</div>';
   }).join('');
 
@@ -7770,6 +7767,7 @@ async function makeAdmin(partnerId){
       if(res.error){showToast('Error: '+res.error.message,'err');return;}
       p.is_admin=true;
       renderPartnerCards();
+      loadPartnersList(); // refresh Settings → Team list
       showToast(escHtml(p.name)+' is now an Admin','success');
     },
     {okLabel:'Make Admin'}
@@ -7999,18 +7997,24 @@ async function loadPartnersList(){
     var otherTotal=_partnersSplitTotal-(active?p.split_pct||0:0);
     var isAdminPartner=currentUser&&p.user_id===currentUser.id&&currentRole==='admin';
     var canRemove=isAdmin&&!isAdminPartner;
+    // Check if this partner is already an admin (cross-ref with PARTNERS array)
+    var globalP=PARTNERS.find(function(x){return x.id===p.id;});
+    var isAlreadyAdmin=globalP?!!globalP.is_admin:false;
+    var canMakeAdmin=isAdmin&&!isAdminPartner&&!isAlreadyAdmin&&active&&p.user_id;
     var nameDisplay=escHtml(p.name)+(isAdminPartner
       ?'<span style="font-size:11px;color:var(--text3);font-weight:400;margin-left:6px">You · Admin</span>'
-      :'');
+      :isAlreadyAdmin
+        ?'<span style="font-size:11px;color:var(--text3);font-weight:400;margin-left:6px">Admin</span>'
+        :'');
     return '<div class="partner-list-row">'
       +'<div class="partner-avatar '+avatarColor+'">'+initials+'</div>'
       +'<div class="partner-list-info">'
       +'<div class="partner-list-name">'+nameDisplay+'</div>'
       +(p.invited_email?'<div class="partner-list-email">'+p.invited_email+'</div>':'')
-      +''
       +'</div>'
       +'<div class="partner-list-actions">'
       +statusBadge
+      +(canMakeAdmin?'<button class="btn" style="font-size:11px;padding:3px 10px;height:auto;margin-left:6px" onclick="makeAdmin(\''+p.id+'\')">Make Admin</button>':'')
       +(canRemove?'<button class="btn-del" title="Remove" onclick="removePartner(\''+p.id+'\',\''+p.status+'\',\''+p.name+'\')">&times;</button>':'')
       +'</div>'
       +'</div>';

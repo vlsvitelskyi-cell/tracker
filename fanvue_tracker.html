@@ -6279,7 +6279,7 @@ body.demo-active { padding-top: 36px; }
       </div>
       <!-- Tax reserve card — static, shown/hidden by renderTaxCard() -->
       <div class="srl-item srl-hidden" id="taxReserveCard">
-        <span class="srl-label">Your tax reserve</span>
+        <span class="srl-label">Set aside for tax</span>
         <span class="srl-value warn" id="taxReserveVal">$0</span>
         <span class="srl-sub" id="taxReserveRate">based on your share</span>
       </div>
@@ -7299,7 +7299,7 @@ async function forgotPassword(){
 
 async function logout(){
   await db.auth.signOut();
-  PARTNERS=[];ALL_MODELS=[];ACTIVE_MODEL_ID='';MODEL_SPLITS={};SPLIT_HISTORY=[];PARTNER_SPLITS={};FANVUE_CONNECTION=null;TAX_RATE_PCT=null;TAX_ENABLED=false;
+  PARTNERS=[];ALL_MODELS=[];ACTIVE_MODEL_ID='';MODEL_SPLITS={};SPLIT_HISTORY=[];PARTNER_SPLITS={};FANVUE_CONNECTION=null;TAX_RATE_PCT=null;TAX_ENABLED=false;TAX_PAYMENTS=[];
   showLogin();
   S={months:[],ws:[],txs:[],exps:[],am:0,platforms:DEFAULT_PLATFORMS.slice()};
   renderAll();
@@ -7312,6 +7312,7 @@ var MODEL_SPLITS={};
 var SPLIT_HISTORY=[]; // flat array: [{model_id,partner_id,split_pct,effective_from}]
 var TAX_RATE_PCT=parseFloat(localStorage.getItem('taxRate')||'')||null; // initialise from cache; overwritten by DB
 var TAX_ENABLED=localStorage.getItem('taxTrackingEnabled')==='1';
+var TAX_PAYMENTS=[]; // [{id,agency_id,user_id,amount,paid_date,period,notes,created_at}]
 
 async function loadModels(){
   if(DEMO_MODE)return;
@@ -8854,7 +8855,7 @@ function enterDemoMode(){
 function exitDemoMode(){
   DEMO_MODE=false;
   hideDemoBanner();
-  ALL_MODELS=[];ACTIVE_MODEL_ID='';PARTNERS=[];MODEL_SPLITS={};SPLIT_HISTORY=[];PARTNER_SPLITS={};_agencyId='';TAX_RATE_PCT=null;TAX_ENABLED=false;
+  ALL_MODELS=[];ACTIVE_MODEL_ID='';PARTNERS=[];MODEL_SPLITS={};SPLIT_HISTORY=[];PARTNER_SPLITS={};_agencyId='';TAX_RATE_PCT=null;TAX_ENABLED=false;TAX_PAYMENTS=[];
   S={months:[],ws:[],txs:[],exps:[],am:0,platforms:DEFAULT_PLATFORMS.slice()};
   currentUser=null;currentRole=null;currentPartnerId='';
   showLogin();
@@ -9663,6 +9664,23 @@ async function loadWithdrawals(){
   renderAll();
 }
 
+/* ---- Tax payments ---- */
+async function loadTaxPayments(){
+  if(DEMO_MODE)return;
+  if(!currentUser||!currentUser.id)return;
+  var res=await db.from('tax_payments')
+    .select('*')
+    .eq('user_id',currentUser.id)
+    .order('paid_date',{ascending:false});
+  if(res.error){console.error('[loadTaxPayments]',res.error);return;}
+  TAX_PAYMENTS=(res.data||[]).map(function(r){
+    return{id:r.id,agency_id:r.agency_id,user_id:r.user_id,
+      amount:parseFloat(r.amount)||0,paid_date:r.paid_date,
+      period:r.period||'',notes:r.notes||'',created_at:r.created_at};
+  });
+  renderTaxSummary();
+}
+
 /* ---- Real-time ---- */
 function setupRealtime(){
   if(DEMO_MODE)return;
@@ -10337,8 +10355,54 @@ function loadTaxSettings(){
   renderTaxSummary();
 }
 
-function showRecordTaxPaymentModal(){
-  showToast('Tax payment recording coming soon','info');
+function showRecordTaxPaymentModal(){openTaxPaymentModal();}
+
+function openTaxPaymentModal(){
+  var modal=g('taxPaymentModal');
+  if(!modal)return;
+  var inp=g('taxPaymentDate');
+  if(inp)inp.value=new Date().toISOString().split('T')[0];
+  var amtInp=g('taxPaymentAmount');if(amtInp)amtInp.value='';
+  var perInp=g('taxPaymentPeriod');if(perInp)perInp.value='';
+  var notInp=g('taxPaymentNotes');if(notInp)notInp.value='';
+  modal.style.display='flex';
+  if(amtInp)setTimeout(function(){amtInp.focus();},80);
+}
+
+function closeTaxPaymentModal(){
+  var modal=g('taxPaymentModal');
+  if(modal)modal.style.display='none';
+}
+
+async function saveTaxPayment(){
+  if(DEMO_MODE){showToast('Cannot save in demo mode','warn');return;}
+  if(!currentUser||!currentUser.id){showToast('Not authenticated','error');return;}
+  var amtVal=parseFloat((g('taxPaymentAmount')||{}).value||'');
+  if(isNaN(amtVal)||amtVal<=0){showToast('Enter a valid amount','error');return;}
+  var dateVal=((g('taxPaymentDate')||{}).value||'').trim();
+  if(!dateVal){showToast('Select a payment date','error');return;}
+  var periodVal=((g('taxPaymentPeriod')||{}).value||'').trim();
+  var notesVal=((g('taxPaymentNotes')||{}).value||'').trim();
+
+  var saveBtn=g('taxPaymentSaveBtn');
+  if(saveBtn){saveBtn.disabled=true;saveBtn.textContent='Saving…';}
+
+  var row={agency_id:_agencyId,user_id:currentUser.id,
+    amount:amtVal,paid_date:dateVal,
+    period:periodVal||null,notes:notesVal||null};
+  var res=await db.from('tax_payments').insert(row).select().single();
+  if(res.error){
+    console.error('[saveTaxPayment]',res.error);
+    showToast('Save failed: '+res.error.message,'error');
+  }else{
+    TAX_PAYMENTS.unshift({id:res.data.id,agency_id:res.data.agency_id,user_id:res.data.user_id,
+      amount:parseFloat(res.data.amount)||0,paid_date:res.data.paid_date,
+      period:res.data.period||'',notes:res.data.notes||'',created_at:res.data.created_at});
+    closeTaxPaymentModal();
+    renderTaxSummary();
+    showToast('Payment recorded — '+fc(amtVal),'success');
+  }
+  if(saveBtn){saveBtn.disabled=false;saveBtn.textContent='Record payment';}
 }
 
 /* ---- Tax reserve card (dashboard summary rail) ---- */
@@ -10386,7 +10450,7 @@ function renderTaxSummary(){
   if(!container)return;
   if(!TAX_ENABLED||!TAX_RATE_PCT||!S.months||!S.months.length){container.style.display='none';return;}
 
-  // Re-use same identity + share logic as renderTaxCard()
+  // ── Resolve personal share (same logic as renderTaxCard) ────────────────
   var myPartnerId=null;
   if(currentRole==='partner'&&currentPartnerId){
     myPartnerId=currentPartnerId;
@@ -10404,12 +10468,43 @@ function renderTaxSummary(){
   }
   var taxReserve=r2(Math.max(0,myShare)*TAX_RATE_PCT/100);
 
+  // ── Payments this calendar year ─────────────────────────────────────────
+  var curYear=new Date().getFullYear();
+  var paidThisYear=r2(TAX_PAYMENTS.reduce(function(s,p){
+    var y=p.paid_date?parseInt(p.paid_date.slice(0,4)):0;
+    return y===curYear?s+p.amount:s;
+  },0));
+  var remaining=r2(Math.max(0,taxReserve-paidThisYear));
+
+  // ── Payment history (last 5) ─────────────────────────────────────────────
+  var recentPayments=TAX_PAYMENTS.slice(0,5);
+  var historyHtml='';
+  if(recentPayments.length){
+    historyHtml='<div style="margin-top:14px">'
+      +'<div class="sec-label" style="font-size:10px;margin-bottom:8px">Recent payments</div>';
+    recentPayments.forEach(function(p){
+      var label=p.period?p.period+' · '+p.paid_date:p.paid_date;
+      historyHtml+='<div class="tax-summary-row" style="font-size:12px">'
+        +'<span style="color:var(--t3)">'+label+(p.notes?' <span style="color:var(--t4);font-style:italic">'+p.notes+'</span>':'')+'</span>'
+        +'<span style="color:var(--pos-txt);font-weight:600">'+fc(p.amount)+'</span>'
+        +'</div>';
+    });
+    historyHtml+='</div>';
+  }else{
+    historyHtml='<div class="tax-summary-note" style="margin-top:10px">No payments recorded yet.</div>';
+  }
+
   container.style.display='block';
   container.innerHTML='<div class="tax-summary-card">'
-    +'<div class="sec-label" style="margin-bottom:12px">Your tax reserve (YTD)</div>'
+    +'<div class="sec-label" style="margin-bottom:12px">Tax reserve (YTD)</div>'
     +'<div class="tax-summary-row"><span>Your net share</span><span>'+fc(myShare)+'</span></div>'
     +'<div class="tax-summary-row"><span>Set aside ('+TAX_RATE_PCT+'%)</span>'
     +'<span class="tax-summary-total" style="color:var(--warn-txt)">'+fc(taxReserve)+'</span></div>'
+    +'<div class="tax-summary-row"><span>Already paid ('+curYear+')</span>'
+    +'<span style="color:var(--pos-txt);font-weight:600">'+fc(paidThisYear)+'</span></div>'
+    +'<div class="tax-summary-row" style="border-bottom:none"><span>Remaining estimate</span>'
+    +'<span style="font-weight:600;color:'+(remaining>0?'var(--warn-txt)':'var(--pos-txt)')+'">'+fc(remaining)+'</span></div>'
+    +historyHtml
     +'<div class="tax-summary-note">Estimate only — consult a tax professional for accuracy.</div>'
     +'</div>';
 }
@@ -11425,7 +11520,7 @@ async function init(){
   requestAnimationFrame(function(){requestAnimationFrame(function(){renderChart();});});
   fetchWiseRate();
 
-  await Promise.all([loadRevenueData(),loadWithdrawals(),loadAllModelsSplits(),loadFxRates()]);
+  await Promise.all([loadRevenueData(),loadWithdrawals(),loadAllModelsSplits(),loadFxRates(),loadTaxPayments()]);
   renderModelSwitcher();
   renderModelSplitSection();
   renderAll();
@@ -11684,6 +11779,39 @@ async function syncFullHistory(){
     <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px">
       <button class="btn" onclick="closeEditDescModal()">Cancel</button>
       <button class="btn-primary" onclick="saveEditDesc()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Tax Payment Modal ──────────────────────────────────── -->
+<div id="taxPaymentModal" style="display:none;position:fixed;inset:0;z-index:700;background:rgba(0,0,0,.65);align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--surface-2);border:1px solid var(--line-3);border-radius:var(--r5);padding:28px 32px;max-width:400px;width:100%;box-shadow:var(--shadow-overlay)">
+    <div style="font-size:15px;font-weight:600;color:var(--t1);margin-bottom:4px">Record tax payment</div>
+    <div style="font-size:12px;color:var(--t3);margin-bottom:20px">Log a tax payment you've already made.</div>
+
+    <div class="field" style="margin-bottom:14px">
+      <label style="font-size:11px;font-weight:500;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:6px">Amount</label>
+      <input type="number" id="taxPaymentAmount" class="auth-input" min="0.01" step="0.01" placeholder="0.00" style="width:100%;box-sizing:border-box;font-size:13px">
+    </div>
+
+    <div class="field" style="margin-bottom:14px">
+      <label style="font-size:11px;font-weight:500;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:6px">Payment date</label>
+      <input type="date" id="taxPaymentDate" class="auth-input" style="width:100%;box-sizing:border-box;font-size:13px">
+    </div>
+
+    <div class="field" style="margin-bottom:14px">
+      <label style="font-size:11px;font-weight:500;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:6px">Period <span style="color:var(--t4);font-weight:400;text-transform:none">(optional)</span></label>
+      <input type="text" id="taxPaymentPeriod" class="auth-input" placeholder="e.g. Q1 2026" style="width:100%;box-sizing:border-box;font-size:13px">
+    </div>
+
+    <div class="field" style="margin-bottom:22px">
+      <label style="font-size:11px;font-weight:500;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:6px">Notes <span style="color:var(--t4);font-weight:400;text-transform:none">(optional)</span></label>
+      <input type="text" id="taxPaymentNotes" class="auth-input" placeholder="e.g. HMRC self-assessment" style="width:100%;box-sizing:border-box;font-size:13px">
+    </div>
+
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn" onclick="closeTaxPaymentModal()">Cancel</button>
+      <button id="taxPaymentSaveBtn" class="btn btn-primary" onclick="saveTaxPayment()">Record payment</button>
     </div>
   </div>
 </div>

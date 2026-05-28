@@ -9598,10 +9598,17 @@ function setupRealtime(){
       lbl.textContent='live · '+relTime(_liveTs);
     }
   },30000);
-  // Frontend auto-sync fallback: call fanvue-sync incrementally every 15 min.
-  // Ensures new transactions appear even if cron-job.org is not running.
-  setTimeout(function(){autoSyncIncremental();},8000);
+  // Frontend auto-sync: run immediately on open, then every 15 min.
+  // Throttle: skip if last sync was <2 min ago (prevents rapid-refresh spam).
+  setTimeout(function(){autoSyncIncremental();},1000);
   setInterval(function(){autoSyncIncremental();},15*60*1000);
+  // Also sync when user returns to the tab after being away
+  document.addEventListener('visibilitychange',function(){
+    if(document.visibilityState==='visible'){
+      var last=parseInt(localStorage.getItem('lastAutoSync')||'0',10);
+      if(Date.now()-last>2*60*1000) autoSyncIncremental();
+    }
+  });
 }
 
 /* ---- CRUD: withdrawals ---- */
@@ -11242,6 +11249,10 @@ async function init(){
 /* ---- Sync full history ---- */
 async function autoSyncIncremental(){
   if(DEMO_MODE||!ACTIVE_MODEL_ID)return;
+  // Throttle: skip if last sync was <2 min ago
+  var _last=parseInt(localStorage.getItem('lastAutoSync')||'0',10);
+  if(Date.now()-_last<2*60*1000)return;
+  localStorage.setItem('lastAutoSync',String(Date.now()));
   try{
     var sessionRes=await db.auth.getSession();
     var jwt=sessionRes.data&&sessionRes.data.session&&sessionRes.data.session.access_token;

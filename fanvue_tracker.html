@@ -11893,6 +11893,7 @@ function renderList(){
         ?'<span class="wd-badge model-b">'+(wMObj?escHtml(wMObj.name):'Agency')+'</span>'
         :'';
       var plCls2=platformCssClass(w.pl);
+      var plColor2=getPlatformColor(w.pl);
       var descHtmlPend=w.description?'<div class="wd-description">'+escHtml(w.description)+'</div>':'';
       h+='<div class="wd-row pending-row">'
         +'<div class="wd-left">'
@@ -11901,7 +11902,7 @@ function renderList(){
             +(WISE_RATE?' &nbsp;·&nbsp; <span class="fx-rate">est. @ '+WISE_RATE.toFixed(4)+'</span>':'')
           +'</div>'
           +'<div class="wd-meta-row">'
-            +'<span class="wd-badge platform '+plCls2+'">'+escHtml(w.pl)+'</span>'
+            +'<span class="wd-badge platform '+plCls2+'" style="background:'+plColor2+'1f;color:'+plColor2+'">'+escHtml(w.pl)+'</span>'
             +'<span class="wd-badge pending">Pending</span>'
             +mBadge
           +'</div>'
@@ -11971,6 +11972,7 @@ function renderList(){
       }).join('');
       var descHtmlDone=w.description?'<div class="wd-description">'+escHtml(w.description)+'</div>':'';
       var plClsDone=platformCssClass(w.pl);
+      var plColorDone=getPlatformColor(w.pl);
       h+='<div class="wd-row confirmed-row" data-wd-id="'+w.id+'">'
         +'<div class="wd-left">'
           +'<div class="wd-amount confirmed">'+fe(w.eur)+'</div>'
@@ -11980,7 +11982,7 @@ function renderList(){
             +(loss>0?' &nbsp;·&nbsp; <span class="fx-loss">FX −'+fe(loss)+'</span>':'')
           +'</div>'
           +'<div class="wd-meta-row">'
-            +'<span class="wd-badge platform '+plClsDone+'">'+escHtml(w.pl)+'</span>'
+            +'<span class="wd-badge platform '+plClsDone+'" style="background:'+plColorDone+'1f;color:'+plColorDone+'">'+escHtml(w.pl)+'</span>'
             +'<span class="wd-badge confirmed">Confirmed</span>'
             +mBadge2
           +'</div>'

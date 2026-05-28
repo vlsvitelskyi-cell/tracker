@@ -10405,6 +10405,22 @@ async function saveTaxPayment(){
   if(saveBtn){saveBtn.disabled=false;saveBtn.textContent='Record payment';}
 }
 
+async function deleteTaxPayment(id){
+  showConfirmModal(
+    'Delete tax payment?',
+    'This payment record will be permanently removed.',
+    async function(){
+      var res=await db.from('tax_payments').delete().eq('id',id);
+      if(res.error){showToast(friendlyError(res.error),'error');return;}
+      TAX_PAYMENTS=TAX_PAYMENTS.filter(function(p){return p.id!==id;});
+      renderTaxSummary();
+      renderTaxCard();
+      showToast('Payment removed','success');
+    },
+    {danger:true,okLabel:'Delete'}
+  );
+}
+
 /* ---- Tax reserve card (dashboard summary rail) ---- */
 function renderTaxCard(){
   var card=g('taxReserveCard');
@@ -10484,9 +10500,20 @@ function renderTaxSummary(){
       +'<div class="sec-label" style="font-size:10px;margin-bottom:8px">Recent payments</div>';
     recentPayments.forEach(function(p){
       var label=p.period?p.period+' · '+p.paid_date:p.paid_date;
-      historyHtml+='<div class="tax-summary-row" style="font-size:12px">'
-        +'<span style="color:var(--t3)">'+label+(p.notes?' <span style="color:var(--t4);font-style:italic">'+p.notes+'</span>':'')+'</span>'
+      historyHtml+='<div class="tax-summary-row" style="font-size:12px;align-items:center">'
+        +'<span style="color:var(--t3)">'+label+'</span>'
+        +'<span style="display:flex;align-items:center;gap:10px">'
         +'<span style="color:var(--pos-txt);font-weight:600">'+fc(p.amount)+'</span>'
+        +(p.notes?'<span style="color:var(--t3);font-size:11px">('+p.notes+')</span>':'')
+        +'<button onclick="deleteTaxPayment(\''+p.id+'\')" '
+        +'style="background:none;border:none;cursor:pointer;color:var(--t3);'
+        +'font-size:11px;padding:2px 6px;border-radius:4px;line-height:1;'
+        +'transition:color .15s,background .15s" '
+        +'onmouseover="this.style.color=\'var(--neg)\';this.style.background=\'var(--neg-muted)\'" '
+        +'onmouseout="this.style.color=\'var(--t3)\';this.style.background=\'none\'">'
+        +'✕'
+        +'</button>'
+        +'</span>'
         +'</div>';
     });
     historyHtml+='</div>';

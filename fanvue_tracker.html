@@ -5555,6 +5555,70 @@ html { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
 }
 .expense-row:hover .expense-actions { opacity: 1; pointer-events: auto; }
 
+/* ── Receipt attachments ──────────────────────────────────────── */
+.receipt-attach-area {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+.receipt-attach-btn {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border: 1px dashed var(--line-2);
+  border-radius: 5px;
+  font-size: 11px;
+  color: var(--t3);
+  background: transparent;
+  transition: color 150ms, border-color 150ms;
+  user-select: none;
+}
+.receipt-attach-btn:hover { color: var(--t1); border-color: var(--line-3); }
+.receipt-attach-btn.has-file { color: var(--cta); border-color: rgba(16,185,129,.35); }
+.receipt-file-name {
+  font-size: 11px;
+  color: var(--t3);
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.receipt-view-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--t3);
+  font-size: 11px;
+  text-decoration: none;
+  padding: 2px 7px;
+  border-radius: 3px;
+  border: 1px solid var(--line-1);
+  background: transparent;
+  cursor: pointer;
+  transition: color 100ms, border-color 100ms;
+  white-space: nowrap;
+}
+.receipt-view-btn:hover { color: var(--cta); border-color: rgba(16,185,129,.35); }
+.receipt-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  color: var(--cta);
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: rgba(16,185,129,.1);
+  border: 1px solid rgba(16,185,129,.2);
+  white-space: nowrap;
+  cursor: pointer;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+.receipt-badge:hover { background: rgba(16,185,129,.18); }
+
 /* ── Part D: Model Performance rows — 4-column grid ── */
 .model-perf-row {
   display: grid;
@@ -6948,6 +7012,19 @@ button, a,
               <div class="field">
                 <label>Description (optional)</label>
                 <input id="expDesc" placeholder="Ads, content, tools…">
+              </div>
+            </div>
+            <div class="form-grid">
+              <div class="field" style="grid-column:1/-1">
+                <label>Receipt (optional)</label>
+                <div class="receipt-attach-area">
+                  <input type="file" id="expReceipt" accept="image/*,.pdf" style="display:none" onchange="expReceiptSelected()">
+                  <label for="expReceipt" class="receipt-attach-btn" id="expReceiptLabel">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+                    Attach receipt
+                  </label>
+                  <span class="receipt-file-name" id="expReceiptName" style="display:none"></span>
+                </div>
               </div>
             </div>
             <div class="form-actions">
@@ -9990,7 +10067,7 @@ async function loadRevenueData(){
   var results=await Promise.all([
     txQuery,
     db.from('expenses')
-      .select('id,amount_usd,partner_id,date,description,model_id')
+      .select('id,amount_usd,partner_id,date,description,model_id,receipt_url')
       .order('date',{ascending:true})
   ]);
 
@@ -10004,7 +10081,7 @@ async function loadRevenueData(){
   });
 
   var allExps=(expRes.data||[]).map(function(exp){
-    return{id:exp.id,amount:parseFloat(exp.amount_usd)||0,partner_id:exp.partner_id,date:exp.date,description:exp.description||'',model_id:exp.model_id||null};
+    return{id:exp.id,amount:parseFloat(exp.amount_usd)||0,partner_id:exp.partner_id,date:exp.date,description:exp.description||'',model_id:exp.model_id||null,receipt_url:exp.receipt_url||null};
   });
   /* Filter expenses: show all if All-models view, else model-specific + agency (null) */
   S.exps=ACTIVE_MODEL_ID
@@ -10476,6 +10553,34 @@ function renderWModelSelect(){
   sel.innerHTML=agencyOpt+modelOpts;
 }
 
+/* ---- Receipt file selection helpers ---- */
+function expReceiptSelected(){
+  var input=g('expReceipt');
+  var label=g('expReceiptLabel');
+  var nameEl=g('expReceiptName');
+  var file=input&&input.files&&input.files[0]?input.files[0]:null;
+  if(file){
+    if(label){label.classList.add('has-file');}
+    if(nameEl){nameEl.textContent=file.name;nameEl.style.display='inline';}
+  }else{
+    if(label){label.classList.remove('has-file');}
+    if(nameEl){nameEl.textContent='';nameEl.style.display='none';}
+  }
+}
+function eeReceiptSelected(id){
+  var input=g('ee_receipt_'+id);
+  var label=g('ee_receipt_label_'+id);
+  var nameEl=g('ee_receipt_name_'+id);
+  var file=input&&input.files&&input.files[0]?input.files[0]:null;
+  if(file){
+    if(label){label.classList.add('has-file');}
+    if(nameEl){nameEl.textContent=file.name;nameEl.style.display='inline';}
+  }else{
+    if(label){label.classList.remove('has-file');}
+    if(nameEl){nameEl.textContent='';nameEl.style.display='none';}
+  }
+}
+
 async function addExpense(){
   if(demoGuard())return;
   var amt=pn(g('expAmt').value);
@@ -10491,11 +10596,31 @@ async function addExpense(){
   setBtnLoading(btn,true);
   clearStatus(statusEl);
 
+  // Upload receipt file if selected
+  var receiptUrl=null;
+  var receiptInput=g('expReceipt');
+  var receiptFile=receiptInput&&receiptInput.files&&receiptInput.files[0]?receiptInput.files[0]:null;
+  if(receiptFile){
+    if(statusEl)statusEl.textContent='Uploading receipt…';
+    var safeName=receiptFile.name.replace(/[^a-zA-Z0-9._-]/g,'_').slice(0,80);
+    var rPath=(_agencyId||'agency')+'/'+Date.now()+'-'+safeName;
+    var upRes=await db.storage.from('expense-receipts').upload(rPath,receiptFile,{upsert:true,contentType:receiptFile.type});
+    if(!upRes.error){
+      var pubData=db.storage.from('expense-receipts').getPublicUrl(rPath);
+      receiptUrl=(pubData.data&&pubData.data.publicUrl)||null;
+    }else{
+      console.warn('[receipt] upload failed:',upRes.error.message);
+      showToast('Receipt upload failed — saving without receipt','warn');
+    }
+    if(statusEl)statusEl.textContent='';
+  }
+
   var expModelId=(g('expModel')&&g('expModel').value)||null;
   var res=await db.from('expenses').insert({
     agency_id:_agencyId,
     partner_id:partnerId,amount_usd:r2(amt),date:date,description:desc,
-    model_id:expModelId||null
+    model_id:expModelId||null,
+    receipt_url:receiptUrl
   });
 
   if(res.error){
@@ -10504,6 +10629,7 @@ async function addExpense(){
     var pName=(PARTNERS.find(function(p){return p.id===partnerId;})||{name:'partner'}).name;
     g('expAmt').value='';g('expDesc').value='';
     if(g('expCat'))g('expCat').value='';
+    if(receiptInput){receiptInput.value='';expReceiptSelected();}
     showToast('Expense recorded · '+fu(amt)+(cat?' ['+cat+']':'')+' for '+pName,'success');
     await loadRevenueData();renderAll();
   }
@@ -10534,9 +10660,24 @@ async function expSave(id){
   if(!date)return;
   var btn=g('ee_save_'+id);
   if(btn){btn.disabled=true;btn.textContent='Saving…';}
-  var res=await db.from('expenses').update({
-    amount_usd:r2(amt),date:date,description:desc||null
-  }).eq('id',id);
+
+  // Upload new receipt if selected in edit form
+  var eeReceiptInput=g('ee_receipt_'+id);
+  var eeReceiptFile=eeReceiptInput&&eeReceiptInput.files&&eeReceiptInput.files[0]?eeReceiptInput.files[0]:null;
+  var updatePayload={amount_usd:r2(amt),date:date,description:desc||null};
+  if(eeReceiptFile){
+    var safeName2=eeReceiptFile.name.replace(/[^a-zA-Z0-9._-]/g,'_').slice(0,80);
+    var rPath2=(_agencyId||'agency')+'/'+Date.now()+'-'+safeName2;
+    var upRes2=await db.storage.from('expense-receipts').upload(rPath2,eeReceiptFile,{upsert:true,contentType:eeReceiptFile.type});
+    if(!upRes2.error){
+      var pubData2=db.storage.from('expense-receipts').getPublicUrl(rPath2);
+      updatePayload.receipt_url=(pubData2.data&&pubData2.data.publicUrl)||null;
+    }else{
+      console.warn('[receipt] edit upload failed:',upRes2.error.message);
+    }
+  }
+
+  var res=await db.from('expenses').update(updatePayload).eq('id',id);
   if(res.error){showToast(friendlyError(res.error),'error');if(btn){btn.disabled=false;btn.textContent='Save';}return;}
   EXP_EDIT[id]=false;
   await loadRevenueData();renderAll();
@@ -10625,6 +10766,22 @@ function renderExpenses(){
         +'<input type="date" id="ee_date_'+exp.id+'" value="'+exp.date+'"></div>'
         +'<div class="field"><label>Description</label>'
         +'<input id="ee_desc_'+exp.id+'" value="'+(exp.description||'')+'" placeholder="Optional"></div>'
+        +'<div class="field" style="grid-column:1/-1">'
+          +'<label>Receipt</label>'
+          +'<div class="receipt-attach-area">'
+            +(exp.receipt_url
+              ?'<a href="'+escHtml(exp.receipt_url)+'" target="_blank" rel="noopener" class="receipt-view-btn">'
+                +'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>'
+                +'View current</a> '
+              :'')
+            +'<input type="file" id="ee_receipt_'+exp.id+'" accept="image/*,.pdf" style="display:none" onchange="eeReceiptSelected(\''+exp.id+'\')">'
+            +'<label for="ee_receipt_'+exp.id+'" class="receipt-attach-btn" id="ee_receipt_label_'+exp.id+'">'
+              +'<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>'
+              +(exp.receipt_url?'Replace':'Attach')
+            +'</label>'
+            +'<span class="receipt-file-name" id="ee_receipt_name_'+exp.id+'" style="display:none"></span>'
+          +'</div>'
+        +'</div>'
         +'<button class="btn-save" id="ee_save_'+exp.id+'" onclick="expSave(\''+exp.id+'\')">Save</button>'
         +'<button class="btn-cancel" onclick="expEditCancel(\''+exp.id+'\')">Cancel</button>'
         +'</div>'
@@ -10636,13 +10793,22 @@ function renderExpenses(){
     var modelBadge=(!ACTIVE_MODEL_ID&&ALL_MODELS.length>1)
       ?'<span style="font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;border:1px solid var(--line-1);color:var(--t4)">'+(mObj?escHtml(mObj.name):'Agency')+'</span>'
       :'';
+    var receiptBadge=exp.receipt_url
+      ?'<a href="'+escHtml(exp.receipt_url)+'" target="_blank" rel="noopener" class="receipt-badge" title="View receipt">'
+        +'<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>'
+        +'receipt'
+        +'</a>'
+      :'';
     var catCls=(parsed.cat||'other').toLowerCase();
     html+='<div class="expense-row">'
       +'<span class="expense-cat-pill '+catCls+'">'+escHtml(parsed.cat||'Other')+'</span>'
       +'<div class="expense-info">'
         +'<span class="expense-partner">'+escHtml(p.name||'Agency')+'</span>'
-        +(parsed.text?'<span class="expense-desc">'+escHtml(parsed.text)+'</span>':'')
-        +modelBadge
+        +'<div style="display:flex;align-items:center;gap:5px;min-width:0">'
+          +(parsed.text?'<span class="expense-desc">'+escHtml(parsed.text)+'</span>':'')
+          +modelBadge
+          +receiptBadge
+        +'</div>'
       +'</div>'
       +'<span class="expense-amount">−'+fu(exp.amount)+'</span>'
       +'<div class="expense-actions">'

@@ -10370,8 +10370,13 @@ async function loadWithdrawals(){
   // Scope to the CURRENT agency's models so withdrawals never bleed across
   // agencies (a partner/admin may have access to other agencies via RLS).
   var _agModelIds=ALL_MODELS.map(function(m){return m.id;});
+  // Empty agency (no models) → show nothing, so other agencies' payouts never leak in.
   if(!_agModelIds.length){S.ws=[];renderAll();return;}
-  var wQuery=db.from('withdrawals').select('*').in('model_id',_agModelIds).order('request_date',{ascending:false});
+  // Include this agency's model-tied withdrawals PLUS agency-level ones (model_id IS NULL,
+  // recorded via "Record withdrawal" without a specific model). The null-model rows were
+  // being dropped by a plain .in() filter, which hid legitimate payouts.
+  var _orExpr='model_id.in.('+_agModelIds.join(',')+'),model_id.is.null';
+  var wQuery=db.from('withdrawals').select('*').or(_orExpr).order('request_date',{ascending:false});
   var results=await Promise.all([wQuery,db.from('withdrawal_splits').select('*')]);
 
   var wRes=results[0],splitsRes=results[1];

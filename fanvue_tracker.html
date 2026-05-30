@@ -7785,9 +7785,11 @@ function showApp(user,roleData){
 }
 function applyRoleUI(){
   var isAdmin=currentRole==='admin'||currentRole==='owner';
-  /* Revenue: hide "Add manually" button for partners */
-  var amBtn=document.querySelector('[onclick="toggleAddTxForm()"]');
-  if(amBtn)amBtn.style.display=isAdmin?'':'none';
+  /* Revenue: hide ALL "Add manually" / tx-form buttons for partners & chatters
+     (querySelectorAll — multiple elements share this onclick: Cancel + Add manually) */
+  Array.prototype.forEach.call(document.querySelectorAll('[onclick="toggleAddTxForm()"]'),function(b){b.style.display=isAdmin?'':'none';});
+  /* Expenses: hide ALL "Add expense" buttons for partners & chatters */
+  Array.prototype.forEach.call(document.querySelectorAll('[onclick="toggleAddExpenseForm()"]'),function(b){b.style.display=isAdmin?'':'none';});
   /* Withdrawals: hide "Record withdrawal" button for partners */
   var rwBtn=document.querySelector('[onclick="toggleAddWithdrawalForm()"]');
   if(rwBtn)rwBtn.style.display=isAdmin?'':'none';

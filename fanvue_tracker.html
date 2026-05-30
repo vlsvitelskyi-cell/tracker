@@ -18,8 +18,8 @@
 <meta name="twitter:title"       content="Payout Manager">
 <meta name="twitter:description" content="Track creator earnings, split payouts, and handle FX — automatically.">
 <meta name="twitter:image"       content="https://payoutmanager.app/og-image.png">
-<link rel="icon" type="image/svg+xml" href="/favicon.svg">
-<link rel="apple-touch-icon"          href="/apple-touch-icon.png">
+<link rel="icon" type="image/svg+xml" href="./logo.svg">
+<link rel="apple-touch-icon" type="image/svg+xml" href="./logo.svg">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -6582,7 +6582,7 @@ button, a,
 </div>
 
 <!-- INVITE OVERLAY -->
-<div id="inviteOverlay" style="display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;padding:1.5rem">
+<div id="inviteOverlay" style="display:none;position:fixed;inset:0;z-index:1100;background:rgba(0,0,0,.85);align-items:center;justify-content:center;padding:1.5rem">
   <div class="auth-box">
     <div class="auth-logo">
       <div class="auth-logo-icon">
@@ -8783,9 +8783,15 @@ function renderSubBanners(){
 
 /* ---- Accept invite ---- */
 var _inviteToken='';
+var _inviteAgencyId=''; // stored from invite lookup for targeted role query
 
 async function showInviteOverlay(token){
+  // Hide auth overlay so invite overlay is visible above it
+  var authOv=g('authOverlay');
+  if(authOv){authOv.style.display='none';authOv.classList.add('hidden');}
+
   _inviteToken=token;
+  _inviteAgencyId='';
   g('inviteOverlay').style.display='flex';
   g('invConfirmField').style.display='flex';
   g('invSubmitBtn').textContent='Join Agency';
@@ -8795,6 +8801,7 @@ async function showInviteOverlay(token){
   setInvTab('new');
   var invRes=await db.from('partner_invites').select('email,agency_id').eq('token',token).single();
   if(!invRes.error&&invRes.data){
+    _inviteAgencyId=invRes.data.agency_id||'';
     var ef=g('invEmail');
     if(ef){ef.value=invRes.data.email;ef.readOnly=true;ef.style.opacity='.7';}
     if(invRes.data.agency_id){
@@ -8868,19 +8875,55 @@ async function submitInviteAccept(){
 
   // Success — clean URL and boot app
   history.replaceState({},'',window.location.pathname);
-  g('inviteOverlay').style.display='none';
-  var roleData=await loadUserRole(signInRes.data.user.id);
+
+  // Load role — use agency-specific query to handle users who belong to multiple agencies
+  var roleData=null;
+  if(_inviteAgencyId){
+    var _rr=await db.from('user_roles')
+      .select('role,partner_id,operator_id')
+      .eq('user_id',signInRes.data.user.id)
+      .eq('agency_id',_inviteAgencyId)
+      .maybeSingle();
+    roleData=_rr.data||null;
+  }
   if(!roleData){
-    err.textContent='Joined successfully! Reload the page to continue.';
-    btn.disabled=false;
+    roleData=await loadUserRole(signInRes.data.user.id);
+  }
+
+  if(!roleData){
+    // Role not ready yet — reload; startup() will pick up the live session
+    window.location.reload();
     return;
   }
+
+  g('inviteOverlay').style.display='none';
+
+  // Suppress onboarding — invited users are joining an existing agency, not creating one
+  localStorage.setItem('onboarding_skipped_'+signInRes.data.user.id,'1');
+
   showApp(signInRes.data.user,roleData);
-  if(currentRole==='admin')await loadAgencySettings();
+
+  if(currentRole==='admin'){
+    await loadAgencySettings();
+  } else {
+    // Partner: resolve agency context the same way startup() does
+    var _agRpc=await db.rpc('get_my_agency_id');
+    if(!_agRpc.error&&_agRpc.data){
+      _agencyId=_agRpc.data;
+      var _agName=await db.from('agencies').select('name').eq('id',_agRpc.data).single();
+      if(!_agName.error&&_agName.data&&_agName.data.name){
+        _agencyName=_agName.data.name;
+        var _nm=g('sidebarAgencyName');if(_nm)_nm.textContent=_agencyName;
+      }
+    }
+  }
+
   await Promise.all([loadPartners(),loadModels()]);
+  if(currentRole!=='admin')await loadPlatformsForPartner();
   handleCallbackParams();
   init();
   loadFanvueConnection();
+  showTab('dashboard',document.querySelector('[data-tab="dashboard"]'));
 }
 
 /* ---- Onboarding ---- */
@@ -10672,8 +10715,10 @@ async function expSave(id){
     if(!upRes2.error){
       var pubData2=db.storage.from('expense-receipts').getPublicUrl(rPath2);
       updatePayload.receipt_url=(pubData2.data&&pubData2.data.publicUrl)||null;
+      console.log('[receipt] uploaded ok, url=',updatePayload.receipt_url);
     }else{
-      console.warn('[receipt] edit upload failed:',upRes2.error.message);
+      console.error('[receipt] edit upload failed:',upRes2.error.message,upRes2.error);
+      showToast('Receipt upload failed: '+upRes2.error.message,'error');
     }
   }
 
@@ -12308,12 +12353,36 @@ async function init(){
           body:JSON.stringify({token:_invToken,user_id:_preSession.user.id})
         });
         history.replaceState({},'',window.location.pathname);
-        var _rd=await loadUserRole(_preSession.user.id);
+        // Suppress onboarding — this user is joining an existing agency
+        localStorage.setItem('onboarding_skipped_'+_preSession.user.id,'1');
+        // Use agency-specific role query to handle multi-agency users correctly
+        var _invAgId=_invInfo.data.agency_id||'';
+        var _rd=null;
+        if(_invAgId){
+          var _rr2=await db.from('user_roles')
+            .select('role,partner_id,operator_id')
+            .eq('user_id',_preSession.user.id)
+            .eq('agency_id',_invAgId)
+            .maybeSingle();
+          _rd=_rr2.data||null;
+        }
+        if(!_rd)_rd=await loadUserRole(_preSession.user.id);
         if(_rd){
           showApp(_preSession.user,_rd);
-          if(currentRole==='admin')await loadAgencySettings();
+          if(currentRole==='admin'){
+            await loadAgencySettings();
+          } else {
+            var _agRpc2=await db.rpc('get_my_agency_id');
+            if(!_agRpc2.error&&_agRpc2.data){
+              _agencyId=_agRpc2.data;
+              var _agN2=await db.from('agencies').select('name').eq('id',_agRpc2.data).single();
+              if(!_agN2.error&&_agN2.data&&_agN2.data.name){_agencyName=_agN2.data.name;var _nm2=g('sidebarAgencyName');if(_nm2)_nm2.textContent=_agencyName;}
+            }
+          }
           await Promise.all([loadPartners(),loadModels()]);
+          if(currentRole!=='admin')await loadPlatformsForPartner();
           handleCallbackParams();init();loadFanvueConnection();
+          showTab('dashboard',document.querySelector('[data-tab="dashboard"]'));
         }
         return;
       } else {

@@ -7574,9 +7574,20 @@ var currentRole=null;
 var currentPartnerId='';
 
 async function loadUserRole(userId){
-  var res=await db.from('user_roles').select('role,partner_id,operator_id').eq('user_id',userId).single();
-  if(res.error||!res.data)return null;
-  return res.data;
+  // Users may belong to multiple agencies (own agency + partner invites),
+  // so fetch ALL role rows instead of .single() which errors on >1 row.
+  var res=await db.from('user_roles').select('role,partner_id,operator_id,agency_id').eq('user_id',userId);
+  if(res.error||!res.data||!res.data.length)return null;
+  var rows=res.data;
+  if(rows.length===1)return rows[0];
+  // Default login prefers the user's own agency (admin/owner) over partner roles.
+  var admin=rows.find(function(r){return r.role==='admin';});
+  if(admin)return admin;
+  var owner=rows.find(function(r){return r.role==='owner';});
+  if(owner)return owner;
+  var partner=rows.find(function(r){return r.role==='partner';});
+  if(partner)return partner;
+  return rows[0];
 }
 
 function showApp(user,roleData){

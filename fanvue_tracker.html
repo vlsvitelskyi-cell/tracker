@@ -9038,10 +9038,12 @@ async function submitInviteAccept(){
   // Guard with _inviteAccepted so we don't re-call after the token is consumed (e.g. the
   // first attempt succeeds but sign-in fails on a wrong password and the user retries).
   if(!_inviteAccepted){
-    // Call accept-invite Edge Function
+    // Call accept-invite Edge Function. The invited user has no session yet, so send the
+    // anon key as the gateway JWT — without it Supabase rejects the call with 401 before
+    // the function runs (verify_jwt), and the partner role is never created.
     var res=await fetch(EDGE_URL+'/accept-invite',{
       method:'POST',
-      headers:{'Content-Type':'application/json'},
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPA_KEY,'apikey':SUPA_KEY},
       body:JSON.stringify({token:_inviteToken,email:email,password:pass})
     });
     var data=await res.json();
@@ -12563,7 +12565,7 @@ async function init(){
       if(!_invInfo.error&&_invInfo.data&&_preSession.user.email===_invInfo.data.email){
         await fetch(EDGE_URL+'/accept-invite',{
           method:'POST',
-          headers:{'Content-Type':'application/json'},
+          headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPA_KEY,'apikey':SUPA_KEY},
           body:JSON.stringify({token:_invToken,user_id:_preSession.user.id})
         });
         history.replaceState({},'',window.location.pathname);

@@ -7226,15 +7226,15 @@ button, a,
                 </div>
               </div>
               <div class="field">
-                <label>Revenue Split %</label>
+                <label id="inviteSplitLabel">Revenue Split %</label>
                 <input type="number" id="inviteSplitPct" min="1" max="100" value="50" placeholder="50">
-                <div class="sub-hint">Partner's % cut of model revenue.</div>
+                <div class="sub-hint" id="inviteSplitHint">Partner's % cut of model revenue.</div>
               </div>
               <div class="invite-role-group">
                 <div class="settings-row-title" style="margin-bottom:10px">Role</div>
                 <div class="role-options">
                   <label class="role-option">
-                    <input type="radio" name="inviteRole" value="partner" checked>
+                    <input type="radio" name="inviteRole" value="partner" checked onchange="updateInviteRoleUI()">
                     <div class="role-option-body">
                       <div class="role-option-title">Partner</div>
                       <div class="role-option-desc">Can view their own splits and withdrawal history only</div>
@@ -7242,7 +7242,7 @@ button, a,
                     <div class="role-option-check">✓</div>
                   </label>
                   <label class="role-option">
-                    <input type="radio" name="inviteRole" value="admin">
+                    <input type="radio" name="inviteRole" value="admin" onchange="updateInviteRoleUI()">
                     <div class="role-option-body">
                       <div class="role-option-title">Admin</div>
                       <div class="role-option-desc">Full access — same rights as account owner</div>
@@ -7250,7 +7250,7 @@ button, a,
                     <div class="role-option-check">✓</div>
                   </label>
                   <label class="role-option">
-                    <input type="radio" name="inviteRole" value="chatter">
+                    <input type="radio" name="inviteRole" value="chatter" onchange="updateInviteRoleUI()">
                     <div class="role-option-body">
                       <div class="role-option-title">Chatter</div>
                       <div class="role-option-desc">Earns % only on transactions manually assigned to them</div>
@@ -8924,6 +8924,16 @@ function checkSubscriptionGate(){
   return false;
 }
 
+function updateInviteRoleUI(){
+  var roleEl=document.querySelector('input[name="inviteRole"]:checked');
+  var role=roleEl?roleEl.value:'partner';
+  var lbl=g('inviteSplitLabel'),hint=g('inviteSplitHint');
+  if(lbl)lbl.textContent=role==='chatter'?'Chatter Split %':'Revenue Split %';
+  if(hint)hint.textContent=role==='chatter'
+    ?"Chatter's % cut of each transaction assigned to them."
+    :"Partner's % cut of model revenue.";
+}
+
 async function invitePartner(){
   if(demoGuard())return;
   var name=(g('inviteName').value||'').trim();
@@ -8943,18 +8953,27 @@ async function invitePartner(){
     return;
   }
   if(!models.length){setStatus(st,'err','No active model found.');return;}
-  if(models.some(function(m){return m.split_pct<=0;})){
-    setStatus(st,'err','Set split % > 0.');return;
-  }
-  setBtnLoading(btn,true);
   var roleEl=document.querySelector('input[name="inviteRole"]:checked');
   var inviteRole=roleEl?roleEl.value:'partner';
+  var isChatter=inviteRole==='chatter';
+  if(!isChatter&&models.some(function(m){return m.split_pct<=0;})){
+    setStatus(st,'err','Set split % > 0.');return;
+  }
+  /* For chatters: zero out model-level splits so they don't affect the budget.
+     Their personal split % is sent separately as top-level split_pct. */
+  var chatterPct=parseFloat((g('inviteSplitPct')&&g('inviteSplitPct').value)||0)||15;
+  var sendModels=isChatter
+    ?models.map(function(m){return Object.assign({},m,{split_pct:0});})
+    :models;
+  setBtnLoading(btn,true);
   var sessionRes=await db.auth.getSession();
   var jwt=sessionRes.data&&sessionRes.data.session&&sessionRes.data.session.access_token;
+  var body={email:email,name:name,models:sendModels,role:inviteRole};
+  if(isChatter)body.split_pct=chatterPct;
   var res=await fetch(EDGE_URL+'/invite-partner',{
     method:'POST',
     headers:{'Content-Type':'application/json','Authorization':'Bearer '+jwt},
-    body:JSON.stringify({email:email,name:name,models:models,role:inviteRole})
+    body:JSON.stringify(body)
   });
   var data=await res.json();
   if(!res.ok||data.error){

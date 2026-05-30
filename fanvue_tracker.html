@@ -8957,6 +8957,7 @@ function renderSubBanners(){
 /* ---- Accept invite ---- */
 var _inviteToken='';
 var _inviteAgencyId=''; // stored from invite lookup for targeted role query
+var _inviteAccepted=false; // true once accept-invite has consumed the token this session
 
 async function showInviteOverlay(token){
   // Hide auth overlay so invite overlay is visible above it
@@ -8965,6 +8966,7 @@ async function showInviteOverlay(token){
 
   _inviteToken=token;
   _inviteAgencyId='';
+  _inviteAccepted=false;
   g('inviteOverlay').style.display='flex';
   g('invConfirmField').style.display='flex';
   g('invSubmitBtn').textContent='Join Agency';
@@ -9012,7 +9014,14 @@ async function submitInviteAccept(){
 
   btn.disabled=true;btn.textContent='Joining…';
 
-  if(!existingUserMode){
+  // Run accept-invite for BOTH new AND existing users so the partner role is always
+  // created. (Previously this was skipped in "existing user" mode, so an invited person
+  // who already had an account never got the partner role and fell back to their own
+  // agency as admin.) The accept-invite function resolves new-vs-existing server-side via
+  // get_user_id_by_email, so passing email+password is safe in either case.
+  // Guard with _inviteAccepted so we don't re-call after the token is consumed (e.g. the
+  // first attempt succeeds but sign-in fails on a wrong password and the user retries).
+  if(!_inviteAccepted){
     // Call accept-invite Edge Function
     var res=await fetch(EDGE_URL+'/accept-invite',{
       method:'POST',
@@ -9029,6 +9038,7 @@ async function submitInviteAccept(){
       btn.disabled=false;btn.textContent='Join Agency';
       return;
     }
+    _inviteAccepted=true;
   }
 
   // Sign in

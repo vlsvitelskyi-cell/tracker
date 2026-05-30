@@ -426,6 +426,43 @@ button { font-family: var(--sans); }
   letter-spacing: -.01em;
 }
 .topbar-right { display: flex; align-items: center; gap: var(--s2); }
+/* ── Agency switcher (header) ── */
+.agency-switcher { position: relative; }
+.agency-switcher-btn {
+  display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
+  height: 30px; padding: 0 10px;
+  background: var(--surface-2, #141417);
+  border: 1px solid var(--line-2, rgba(255,255,255,.13));
+  border-radius: 7px;
+  color: var(--t2, #c7c7d1); font-size: 12px; font-weight: 600;
+  transition: border-color 150ms, color 150ms, background 150ms;
+}
+.agency-switcher-btn:hover { color: var(--t1, #fff); border-color: var(--line-3, rgba(255,255,255,.22)); }
+.agency-switcher-name { max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.agency-switcher-caret { opacity: .6; flex-shrink: 0; }
+.agency-switcher-menu {
+  position: absolute; top: calc(100% + 6px); right: 0; z-index: 1200;
+  min-width: 220px; padding: 5px;
+  background: var(--surface-3, #1A1A1E);
+  border: 1px solid var(--line-2, rgba(255,255,255,.13));
+  border-radius: 9px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.45);
+}
+.agency-switcher-item {
+  display: flex; align-items: center; gap: 8px; width: 100%; cursor: pointer;
+  padding: 8px 9px; border: none; background: transparent; border-radius: 6px;
+  color: var(--t2, #c7c7d1); font-size: 12.5px; text-align: left;
+  transition: background 120ms, color 120ms;
+}
+.agency-switcher-item:hover { background: var(--surface-4, #232329); color: var(--t1, #fff); }
+.agency-switcher-item.act { color: var(--t1, #fff); }
+.agency-switcher-item-name { flex: 1; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.agency-switcher-item-role {
+  flex-shrink: 0; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em;
+  padding: 1px 6px; border-radius: 4px;
+  color: var(--t3, #747480); border: 1px solid var(--line-1, rgba(255,255,255,.08));
+}
+.agency-switcher-item-check { flex-shrink: 0; width: 12px; color: var(--cta, #10B981); font-weight: 700; }
 .user-chip {
   display: flex;
   align-items: center;
@@ -6715,6 +6752,14 @@ button, a,
       <div class="topbar-actions">
       </div>
       <div class="topbar-right">
+        <div class="agency-switcher" id="agencySwitcher" style="display:none">
+          <button class="agency-switcher-btn" id="agencySwitcherBtn" onclick="toggleAgencyMenu(event)" title="Switch agency">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><path d="M9 9v.01"/><path d="M9 12v.01"/><path d="M9 15v.01"/></svg>
+            <span class="agency-switcher-name" id="agencySwitcherName">—</span>
+            <svg class="agency-switcher-caret" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="agency-switcher-menu" id="agencySwitcherMenu" style="display:none"></div>
+        </div>
         <div class="user-chip" id="userChip" style="display:none">
           <span id="userEmail" style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
           <span class="user-role-badge" id="userRoleBadge"></span>
@@ -7590,6 +7635,116 @@ async function loadUserRole(userId){
   return rows[0];
 }
 
+/* ---- Multi-agency support (agency switcher) ---- */
+var USER_AGENCIES=[]; // [{agency_id, role, partner_id, name}]
+
+// Fetch every agency this user belongs to (own agency + partner invites).
+async function loadUserAgencies(userId){
+  USER_AGENCIES=[];
+  var r=await db.from('user_roles').select('role,partner_id,agency_id').eq('user_id',userId);
+  if(r.error||!r.data||!r.data.length)return;
+  var ids=r.data.map(function(x){return x.agency_id;}).filter(Boolean);
+  var names={};
+  if(ids.length){
+    var ag=await db.from('agencies').select('id,name').in('id',ids);
+    if(!ag.error&&ag.data)ag.data.forEach(function(a){names[a.id]=a.name;});
+  }
+  USER_AGENCIES=r.data.filter(function(x){return x.agency_id;}).map(function(x){
+    return{agency_id:x.agency_id,role:x.role,partner_id:x.partner_id||'',name:names[x.agency_id]||'Agency'};
+  });
+  // Own agency (admin/owner) first, partner agencies after.
+  USER_AGENCIES.sort(function(a,b){
+    var ar=(a.role==='admin'||a.role==='owner')?0:1;
+    var br=(b.role==='admin'||b.role==='owner')?0:1;
+    return ar-br;
+  });
+}
+
+// Choose which agency to open on login: last-used (persisted), else own agency.
+function pickActiveAgency(userId){
+  if(!USER_AGENCIES.length)return null;
+  var saved=null;
+  try{saved=localStorage.getItem('pm_active_agency_'+userId);}catch(e){}
+  if(saved){var m=USER_AGENCIES.find(function(a){return a.agency_id===saved;});if(m)return m;}
+  var own=USER_AGENCIES.find(function(a){return a.role==='admin'||a.role==='owner';});
+  return own||USER_AGENCIES[0];
+}
+
+// Apply an agency entry as the active context (role, partner, agency id/name + chrome).
+function setAgencyContext(ag){
+  if(!ag)return;
+  currentRole=ag.role;
+  currentPartnerId=ag.partner_id||'';
+  _agencyId=ag.agency_id;
+  _agencyName=ag.name||'';
+  var isAdmin=currentRole==='admin'||currentRole==='owner';
+  var badge=document.querySelector('#userChip .user-role-badge');
+  if(badge){badge.textContent=currentRole;badge.className='user-role-badge role-'+currentRole;}
+  var sb=g('sidebarAgencyName');if(sb)sb.textContent=_agencyName||'—';
+  var asn=g('agencySwitcherName');if(asn)asn.textContent=_agencyName||'—';
+  var reportBtn=g('reportBtn');if(reportBtn)reportBtn.style.display=isAdmin?'flex':'none';
+  applyRoleUI();
+}
+
+// Render / show the header agency switcher (only when the user has >1 agency).
+function renderAgencySwitcher(){
+  var wrap=g('agencySwitcher'),menu=g('agencySwitcherMenu'),nameEl=g('agencySwitcherName');
+  if(!wrap)return;
+  if(!USER_AGENCIES||USER_AGENCIES.length<2){wrap.style.display='none';return;}
+  wrap.style.display='inline-flex';
+  if(nameEl)nameEl.textContent=_agencyName||'—';
+  if(menu){
+    menu.innerHTML=USER_AGENCIES.map(function(a){
+      var active=a.agency_id===_agencyId;
+      var roleLabel=(a.role==='admin'||a.role==='owner')?'Owner':(a.role==='partner'?'Partner':a.role);
+      return '<button class="agency-switcher-item'+(active?' act':'')+'" onclick="switchAgency(\''+a.agency_id+'\')">'
+        +'<span class="agency-switcher-item-name">'+escHtml(a.name||'Agency')+'</span>'
+        +'<span class="agency-switcher-item-role">'+roleLabel+'</span>'
+        +'<span class="agency-switcher-item-check">'+(active?'✓':'')+'</span>'
+        +'</button>';
+    }).join('');
+  }
+}
+
+function toggleAgencyMenu(e){
+  if(e)e.stopPropagation();
+  var menu=g('agencySwitcherMenu');if(!menu)return;
+  var open=menu.style.display==='block';
+  menu.style.display=open?'none':'block';
+  if(!open)setTimeout(function(){document.addEventListener('click',closeAgencyMenu);},0);
+}
+function closeAgencyMenu(){
+  var menu=g('agencySwitcherMenu');if(menu)menu.style.display='none';
+  document.removeEventListener('click',closeAgencyMenu);
+}
+
+// Re-load all agency-scoped data for the current context (used by the switcher).
+async function refreshAgencyData(){
+  if(currentRole==='admin'||currentRole==='owner')await loadAgencySettings();
+  else await loadPlatformsForPartner();
+  await Promise.all([loadPartners(),loadModels()]);
+  await Promise.all([loadRevenueData(),loadWithdrawals(),loadAllModelsSplits(),loadFxRates(),loadTaxPayments()]);
+  renderModelSwitcher();renderModelSplitSection();renderInviteModelRows();renderAll();
+}
+
+// Switch the active agency: reset scoped state, reload, land on dashboard.
+async function switchAgency(agencyId){
+  var ag=USER_AGENCIES.find(function(a){return a.agency_id===agencyId;});
+  if(!ag||agencyId===_agencyId){closeAgencyMenu();return;}
+  if(currentUser){try{localStorage.setItem('pm_active_agency_'+currentUser.id,agencyId);}catch(e){}}
+  closeAgencyMenu();
+  setAgencyContext(ag);
+  renderAgencySwitcher();
+  // Reset agency-scoped state so nothing bleeds across agencies.
+  ACTIVE_MODEL_ID='';ALL_MODELS=[];PARTNERS=[];MODEL_SPLITS={};PARTNER_SPLITS={};SPLIT_HISTORY=[];
+  S.txs=[];S.exps=[];S.ws=[];S.months=[];
+  var ob=g('onboardingOverlay');if(ob)ob.style.display='none';
+  await refreshAgencyData();
+  loadFanvueConnection();
+  var _nm=g('sidebarAgencyName');if(_nm)_nm.textContent=_agencyName||'—';
+  showTab('dashboard',document.querySelector('[data-tab="dashboard"]'));
+}
+
 function showApp(user,roleData){
   currentUser=user;
   currentRole=roleData?roleData.role:'partner';
@@ -7668,27 +7823,31 @@ async function login(){
     return;
   }
 
-  var roleData=await loadUserRole(res.data.user.id);
-  if(!roleData){
+  await loadUserAgencies(res.data.user.id);
+  var _active=pickActiveAgency(res.data.user.id);
+  if(!_active){
     await db.auth.signOut();
     err.textContent='Your account has no role assigned. Contact admin.';
     btn.disabled=false;btn.textContent='Sign in';
     return;
   }
+  setAgencyContext(_active);
 
   btn.disabled=false;btn.textContent='Sign in';
   /* Clear form fields and navigate to dashboard after login */
   var authEmailEl=g('authEmail');if(authEmailEl)authEmailEl.value='';
   var authPassEl=g('authPass');if(authPassEl)authPassEl.value='';
-  showApp(res.data.user,roleData);
+  showApp(res.data.user,{role:_active.role,partner_id:_active.partner_id});
+  renderAgencySwitcher();
   showTab('dashboard',document.querySelector('[data-tab="dashboard"]'));
   // Сначала загружаем agency чтобы _agencyId был установлен для RLS
-  if(currentRole==='admin')await loadAgencySettings();
+  if(currentRole==='admin'||currentRole==='owner')await loadAgencySettings();
   await Promise.all([loadPartners(),loadModels()]);
+  if(currentRole!=='admin'&&currentRole!=='owner')await loadPlatformsForPartner();
   handleCallbackParams();
   init();
   loadFanvueConnection();
-  if(ALL_MODELS.length===0&&currentRole==='admin'&&!localStorage.getItem('onboarding_skipped_'+res.data.user.id)){
+  if(ALL_MODELS.length===0&&(currentRole==='admin'||currentRole==='owner')&&!localStorage.getItem('onboarding_skipped_'+res.data.user.id)){
     showOnboardingOverlay();
   }
 }
@@ -8454,9 +8613,12 @@ async function loadAgencySettings(){
   /* Demo mode: render demo partners list, skip all Supabase calls */
   if(DEMO_MODE){await loadPartnersList();return;}
 
-  var agRes=await db.rpc('get_my_agency_id');
-  if(agRes.error||!agRes.data)return;
-  _agencyId=agRes.data;
+  // Respect an agency already selected via the switcher; only fall back to RPC.
+  if(!_agencyId){
+    var agRes=await db.rpc('get_my_agency_id');
+    if(agRes.error||!agRes.data)return;
+    _agencyId=agRes.data;
+  }
 
   var agData=await db.from('agencies').select('name,trial_ends_at,withdrawal_currency,platforms,tax_rate_pct').eq('id',_agencyId).single();
   if(!agData.error&&agData.data){
@@ -8913,6 +9075,11 @@ async function submitInviteAccept(){
   localStorage.setItem('onboarding_skipped_'+signInRes.data.user.id,'1');
 
   showApp(signInRes.data.user,roleData);
+
+  // Populate the agency switcher; remember the invited agency as last-used.
+  await loadUserAgencies(signInRes.data.user.id);
+  if(_inviteAgencyId){try{localStorage.setItem('pm_active_agency_'+signInRes.data.user.id,_inviteAgencyId);}catch(e){}}
+  renderAgencySwitcher();
 
   if(currentRole==='admin'){
     await loadAgencySettings();
@@ -10043,10 +10210,10 @@ async function requestDataDeletion(){
 
 /* ---- Platform management ---- */
 async function loadPlatformsForPartner(){
-  if(currentRole==='admin')return;
-  var agRes=await db.rpc('get_my_agency_id');
-  if(agRes.error||!agRes.data)return;
-  var agData=await db.from('agencies').select('platforms').eq('id',agRes.data).single();
+  if(currentRole==='admin'||currentRole==='owner')return;
+  var agId=_agencyId;
+  if(!agId){var agRes=await db.rpc('get_my_agency_id');if(agRes.error||!agRes.data)return;agId=agRes.data;}
+  var agData=await db.from('agencies').select('platforms').eq('id',agId).single();
   if(!agData.error&&agData.data&&Array.isArray(agData.data.platforms)&&agData.data.platforms.length){
     S.platforms=agData.data.platforms;
     renderPlatformSelect();
@@ -10122,6 +10289,7 @@ async function loadRevenueData(){
     txQuery,
     db.from('expenses')
       .select('id,amount_usd,partner_id,date,description,model_id,receipt_url')
+      .eq('agency_id',_agencyId)
       .order('date',{ascending:true})
   ]);
 
@@ -10199,7 +10367,11 @@ async function loadRevenueData(){
 /* ---- Load withdrawals ---- */
 async function loadWithdrawals(){
   if(DEMO_MODE)return;
-  var wQuery=db.from('withdrawals').select('*').order('request_date',{ascending:false});
+  // Scope to the CURRENT agency's models so withdrawals never bleed across
+  // agencies (a partner/admin may have access to other agencies via RLS).
+  var _agModelIds=ALL_MODELS.map(function(m){return m.id;});
+  if(!_agModelIds.length){S.ws=[];renderAll();return;}
+  var wQuery=db.from('withdrawals').select('*').in('model_id',_agModelIds).order('request_date',{ascending:false});
   var results=await Promise.all([wQuery,db.from('withdrawal_splits').select('*')]);
 
   var wRes=results[0],splitsRes=results[1];
@@ -12380,6 +12552,10 @@ async function init(){
         if(!_rd)_rd=await loadUserRole(_preSession.user.id);
         if(_rd){
           showApp(_preSession.user,_rd);
+          // Populate the agency switcher; remember the invited agency as last-used.
+          await loadUserAgencies(_preSession.user.id);
+          if(_invAgId){try{localStorage.setItem('pm_active_agency_'+_preSession.user.id,_invAgId);}catch(e){}}
+          renderAgencySwitcher();
           if(currentRole==='admin'){
             await loadAgencySettings();
           } else {
@@ -12410,28 +12586,21 @@ async function init(){
   var session=sessionRes.data&&sessionRes.data.session;
 
   if(session&&session.user){
-    var roleData=await loadUserRole(session.user.id);
-    if(roleData){
-      showApp(session.user,roleData);
-      if(currentRole==='admin')await loadAgencySettings();
+    await loadUserAgencies(session.user.id);
+    var _active=pickActiveAgency(session.user.id);
+    if(_active){
+      setAgencyContext(_active);
+      showApp(session.user,{role:_active.role,partner_id:_active.partner_id});
+      renderAgencySwitcher();
+      if(currentRole==='admin'||currentRole==='owner')await loadAgencySettings();
       await Promise.all([loadPartners(),loadModels()]);
-      if(currentRole!=='admin')await loadPlatformsForPartner();
-      if(currentRole==='partner'){
-        var agIdRes=await db.rpc('get_my_agency_id');
-        if(!agIdRes.error&&agIdRes.data){
-          _agencyId=agIdRes.data;
-          var agNameRes=await db.from('agencies').select('name').eq('id',agIdRes.data).single();
-          if(!agNameRes.error&&agNameRes.data&&agNameRes.data.name){
-            _agencyName=agNameRes.data.name;
-          }
-        }
-      }
+      if(currentRole!=='admin'&&currentRole!=='owner')await loadPlatformsForPartner();
       var _nm=g('sidebarAgencyName');
       if(_nm&&_agencyName)_nm.textContent=_agencyName;
       handleCallbackParams();
       init();
       loadFanvueConnection();
-      if(ALL_MODELS.length===0&&currentRole==='admin'&&!localStorage.getItem('onboarding_skipped_'+session.user.id)){
+      if(ALL_MODELS.length===0&&(currentRole==='admin'||currentRole==='owner')&&!localStorage.getItem('onboarding_skipped_'+session.user.id)){
         showOnboardingOverlay();
       }
       return;

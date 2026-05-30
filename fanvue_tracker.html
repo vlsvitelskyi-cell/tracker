@@ -8045,10 +8045,13 @@ function getCurrentSplit(modelId,partnerId){
 // Returns the split % that was effective on a given date (YYYY-MM-DD).
 // Falls back to getCurrentSplit if no history exists.
 function getSplitForDate(modelId,partnerId,dateStr){
-  var relevant=SPLIT_HISTORY.filter(function(r){
-    return r.model_id===modelId&&r.partner_id===partnerId&&(r.effective_from||'').slice(0,10)<=dateStr;
-  });
-  if(!relevant.length)return getCurrentSplit(modelId,partnerId);
+  var all=SPLIT_HISTORY.filter(function(r){return r.model_id===modelId&&r.partner_id===partnerId;});
+  // No split history at all for this partner+model → legacy fallback to current split.
+  if(!all.length)return getCurrentSplit(modelId,partnerId);
+  var relevant=all.filter(function(r){return (r.effective_from||'').slice(0,10)<=dateStr;});
+  // Partner HAS split history, but none of it is effective yet on this date → they had not
+  // joined / had no split for this period, so they earn 0% of it (no retroactive share).
+  if(!relevant.length)return 0;
   relevant.sort(function(a,b){return a.effective_from<b.effective_from?-1:1;});
   return relevant[relevant.length-1].split_pct;
 }
@@ -8307,33 +8310,29 @@ async function saveModelSplits(){
 async function _doSaveModelSplits(effectiveDate){
   var btn=g('saveSplitsBtn');if(btn){btn.disabled=true;btn.textContent='Saving…';}
   var activePartners=PARTNERS.filter(function(p){return p.status==='active';});
+  var effFull=effectiveDate+'T00:00:00.000Z';
   var rows=activePartners.map(function(p){
-    return{model_id:ACTIVE_MODEL_ID,partner_id:p.id,split_pct:_splitDraft[p.id]||0,effective_from:effectiveDate+'T00:00:00.000Z'};
+    return{model_id:ACTIVE_MODEL_ID,partner_id:p.id,split_pct:_splitDraft[p.id]||0,effective_from:effFull};
   });
-  // The model_splits unique constraint is on (model_id, partner_id) — one split row per
-  // partner per model — so a re-save must UPDATE that row, not insert a duplicate (which
-  // returned 409 Conflict and made splits impossible to fix). Upsert on that key.
-  var res=await db.from('model_splits').upsert(rows,{onConflict:'model_id,partner_id'});
+  // Temporal splits: each save adds ONE row per partner for THIS effective date and KEEPS
+  // all prior dated rows, so historical months keep the split that was in effect then
+  // (getSplitForDate resolves by date). Unique key is (model_id, partner_id, effective_from)
+  // — re-saving the same date updates that row instead of duplicating it.
+  var res=await db.from('model_splits').upsert(rows,{onConflict:'model_id,partner_id,effective_from'});
   if(res.error){
-    // Fallback if the on-conflict target doesn't match the live constraint: replace the
-    // rows for exactly these partners on this model, then insert fresh. Guarantees the
-    // save succeeds regardless of the exact unique index.
+    // The (model_id,partner_id,effective_from) unique index isn't present yet (DB migration
+    // migration_model_splits_temporal.sql not applied). Fall back to legacy one-row-per-
+    // partner behaviour so saving still works; history won't accumulate until the migration
+    // is run, but splits remain editable.
     var _pids=rows.map(function(r){return r.partner_id;});
     var _del=await db.from('model_splits').delete().eq('model_id',ACTIVE_MODEL_ID).in('partner_id',_pids);
     if(!_del.error)res=await db.from('model_splits').insert(rows);
   }
   if(res.error){showToast(friendlyError(res.error),'error');}
   else{
-    MODEL_SPLITS[ACTIVE_MODEL_ID]={};
-    rows.forEach(function(r){
-      MODEL_SPLITS[ACTIVE_MODEL_ID][r.partner_id]=r.split_pct;
-      // Replace any existing in-memory entry for this partner so an updated split
-      // doesn't show as a duplicate row in Split History (one row per model+partner).
-      SPLIT_HISTORY=SPLIT_HISTORY.filter(function(h){
-        return !(h.model_id===ACTIVE_MODEL_ID&&h.partner_id===r.partner_id);
-      });
-      SPLIT_HISTORY.push({model_id:ACTIVE_MODEL_ID,partner_id:r.partner_id,split_pct:r.split_pct,effective_from:r.effective_from});
-    });
+    // Rebuild in-memory splits from the DB so SPLIT_HISTORY/MODEL_SPLITS exactly mirror
+    // stored rows (all dated history, no drift).
+    await loadAllModelsSplits();
     _editingSplits=false;_splitDraft={};
     renderModelSplitSection();
     renderBal();
@@ -8468,7 +8467,7 @@ function renderPartnerCards(){
     var initials=(p.name||'U').split(' ').map(function(w){return w[0]||'';}).join('').slice(0,2).toUpperCase()||'?';
     var share=totalPartnerShare(p.id);
     var wEUR=totalPartnerWithdrawnEUR(p.id);
-    var rem=Math.max(0,partnerRemaining(p.id));
+    var rem=partnerRemaining(p.id); // may be negative when the partner is over-withdrawn
     var splitPct=getCurrentSplit(ACTIVE_MODEL_ID,p.id);
     totalOutstanding+=rem;
     return '<div class="partner-card" style="--pc-color:'+pc.color+';--pc-bg:'+pc.bg+';--pc-border:'+pc.border+'">'
@@ -8489,7 +8488,7 @@ function renderPartnerCards(){
         +'</div>'
         +'<div class="partner-stat-cell">'
           +'<div class="partner-stat-label">Remaining</div>'
-          +'<div class="partner-stat-value outstanding">'+fc(rem)+'</div>'
+          +'<div class="partner-stat-value outstanding"'+(rem<-0.005?' style="color:var(--neg-txt)"':'')+'>'+(rem<-0.005?'-':'')+fc(rem)+'</div>'
         +'</div>'
       +'</div>'
     +'</div>';
@@ -8500,11 +8499,11 @@ function renderPartnerCards(){
   /* Update footer */
   var footer=g('dashPayoutFooter');
   if(footer){
-    var hasAny=totalOutstanding>0.01;
+    var hasAny=Math.abs(totalOutstanding)>0.01;
     var valEl=footer.querySelector('.partner-cards-total-value');
     if(valEl){
-      valEl.textContent=hasAny?fc(totalOutstanding):'Fully settled';
-      valEl.style.color=hasAny?'var(--pos-txt)':'var(--t3)';
+      valEl.textContent=hasAny?((totalOutstanding<-0.005?'-':'')+fc(totalOutstanding)):'Fully settled';
+      valEl.style.color=!hasAny?'var(--t3)':(totalOutstanding<-0.005?'var(--neg-txt)':'var(--pos-txt)');
     }
   }
 
@@ -11705,7 +11704,7 @@ function renderBal(){
 
   /* Total outstanding across all active partners */
   var activePs=PARTNERS.filter(function(p){return p.status==='active';});
-  var totalOutstanding=r2(activePs.reduce(function(s,p){return s+Math.max(0,partnerRemaining(p.id));},0));
+  var totalOutstanding=r2(activePs.reduce(function(s,p){return s+partnerRemaining(p.id);},0)); // true net (over-withdrawals offset)
 
   /* Model label in Partner Payouts — hidden (single model, no need to label) */
   var ml=g('dashModelLabel');
@@ -11727,7 +11726,7 @@ function renderBal(){
     var dk=g('dashKpis');if(dk)dk.innerHTML=
       mkSrl('This month (all)',fc(curRev),'',trendHtml)
       +mkSrl('Total revenue',fc(totalRev))
-      +(totalOutstanding>0.01?mkSrl('Outstanding',fc(totalOutstanding),'warn'):'')
+      +(Math.abs(totalOutstanding)>0.01?mkSrl('Outstanding',(totalOutstanding<-0.005?'-':'')+fc(totalOutstanding),totalOutstanding<-0.005?'neg':'warn'):'')
       +mkSrl('FX Loss',tLoss>0?'−'+fe(tLoss):'—',tLoss>0?'neg':'dim');
     g('dashStats')&&g('dashStats').querySelectorAll('.srl-value').forEach(function(el){animateCountUp(el,el.textContent,500);});
     renderTaxCard();
@@ -11738,7 +11737,7 @@ function renderBal(){
   var dk=g('dashKpis');if(dk)dk.innerHTML=
     mkSrl('This month',fc(curRev),'',trendHtml)
     +mkSrl('Total revenue',fc(totalRev))
-    +(totalOutstanding>0.01?mkSrl('Outstanding',fc(totalOutstanding),'warn'):'')
+    +(Math.abs(totalOutstanding)>0.01?mkSrl('Outstanding',(totalOutstanding<-0.005?'-':'')+fc(totalOutstanding),totalOutstanding<-0.005?'neg':'warn'):'')
     +mkSrl('FX Loss',tLoss>0?'−'+fe(tLoss):'—',tLoss>0?'neg':'dim');
   renderTaxCard();
   g('dashStats')&&g('dashStats').querySelectorAll('.srl-value').forEach(function(el){animateCountUp(el,el.textContent,500);});
@@ -11997,13 +11996,17 @@ function renderSplitList(){
     var pc=PARTNER_COLORS[i%PARTNER_COLORS.length];
     var splitPct=getCurrentSplit(ACTIVE_MODEL_ID,p.id)||0;
     var earned=totalPartnerShare(p.id);
-    var outstanding=Math.max(0,partnerRemaining(p.id));
+    var outstanding=partnerRemaining(p.id); // negative = over-withdrawn
+    var outHtml,outStyle='';
+    if(outstanding<-0.01){outHtml=fc(outstanding)+' over';outStyle=' style="color:var(--neg-txt)"';}
+    else if(outstanding>0.01){outHtml=fc(outstanding)+' left';}
+    else{outHtml='✓';}
     return '<div class="split-list-row">'
       +'<div class="split-list-dot" style="background:'+pc.color+'"></div>'
       +'<div class="split-list-name">'+escHtml(p.name)+'</div>'
       +'<div class="split-list-pct">'+splitPct+'%</div>'
       +'<div class="split-list-earned">'+fc(earned)+'</div>'
-      +'<div class="split-list-outstanding">'+(outstanding>0.01?fc(outstanding)+' left':'✓')+'</div>'
+      +'<div class="split-list-outstanding"'+outStyle+'>'+outHtml+'</div>'
     +'</div>';
   }).join('');
 }

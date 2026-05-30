@@ -8310,20 +8310,27 @@ async function _doSaveModelSplits(effectiveDate){
   var rows=activePartners.map(function(p){
     return{model_id:ACTIVE_MODEL_ID,partner_id:p.id,split_pct:_splitDraft[p.id]||0,effective_from:effectiveDate+'T00:00:00.000Z'};
   });
-  // Upsert (not insert): a same-day correction reuses the same key
-  // (model_id, partner_id, effective_from), which previously hit the unique
-  // constraint and returned 409 Conflict — making splits impossible to fix.
-  // On conflict we now update split_pct instead of failing.
-  var res=await db.from('model_splits').upsert(rows,{onConflict:'model_id,partner_id,effective_from'});
+  // The model_splits unique constraint is on (model_id, partner_id) — one split row per
+  // partner per model — so a re-save must UPDATE that row, not insert a duplicate (which
+  // returned 409 Conflict and made splits impossible to fix). Upsert on that key.
+  var res=await db.from('model_splits').upsert(rows,{onConflict:'model_id,partner_id'});
+  if(res.error){
+    // Fallback if the on-conflict target doesn't match the live constraint: replace the
+    // rows for exactly these partners on this model, then insert fresh. Guarantees the
+    // save succeeds regardless of the exact unique index.
+    var _pids=rows.map(function(r){return r.partner_id;});
+    var _del=await db.from('model_splits').delete().eq('model_id',ACTIVE_MODEL_ID).in('partner_id',_pids);
+    if(!_del.error)res=await db.from('model_splits').insert(rows);
+  }
   if(res.error){showToast(friendlyError(res.error),'error');}
   else{
     MODEL_SPLITS[ACTIVE_MODEL_ID]={};
     rows.forEach(function(r){
       MODEL_SPLITS[ACTIVE_MODEL_ID][r.partner_id]=r.split_pct;
-      // Replace any existing in-memory entry with the same key so an updated
-      // same-day split doesn't show as a duplicate row in Split History.
+      // Replace any existing in-memory entry for this partner so an updated split
+      // doesn't show as a duplicate row in Split History (one row per model+partner).
       SPLIT_HISTORY=SPLIT_HISTORY.filter(function(h){
-        return !(h.model_id===ACTIVE_MODEL_ID&&h.partner_id===r.partner_id&&h.effective_from===r.effective_from);
+        return !(h.model_id===ACTIVE_MODEL_ID&&h.partner_id===r.partner_id);
       });
       SPLIT_HISTORY.push({model_id:ACTIVE_MODEL_ID,partner_id:r.partner_id,split_pct:r.split_pct,effective_from:r.effective_from});
     });

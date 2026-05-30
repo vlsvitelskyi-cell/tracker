@@ -6071,6 +6071,7 @@ button, a,
 #reportModal,
 #editDescModal,
 #taxPaymentModal,
+#chatterAssignModal,
 .w-confirm-modal {
   overscroll-behavior: contain;
 }
@@ -6088,7 +6089,8 @@ button, a,
   #confirmModal,
   #reportModal,
   #editDescModal,
-  #taxPaymentModal {
+  #taxPaymentModal,
+  #chatterAssignModal {
     align-items: flex-end !important;
     justify-content: flex-start !important;
     padding: 0 !important;
@@ -6099,7 +6101,8 @@ button, a,
   #confirmModal > div,
   #reportModal > div,
   #editDescModal > div,
-  #taxPaymentModal > div {
+  #taxPaymentModal > div,
+  #chatterAssignModal > div {
     border-radius: 20px 20px 0 0 !important;
     max-width: 100% !important;
     width: 100% !important;
@@ -6897,6 +6900,7 @@ button, a,
               <div class="partner-cards-total-label">Total Outstanding</div>
               <div class="partner-cards-total-value">—</div>
             </div>
+            <div id="chatterSection" style="display:none;margin-top:16px"></div>
           </div>
         </div>
 
@@ -7242,6 +7246,14 @@ button, a,
                     <div class="role-option-body">
                       <div class="role-option-title">Admin</div>
                       <div class="role-option-desc">Full access — same rights as account owner</div>
+                    </div>
+                    <div class="role-option-check">✓</div>
+                  </label>
+                  <label class="role-option">
+                    <input type="radio" name="inviteRole" value="chatter">
+                    <div class="role-option-body">
+                      <div class="role-option-title">Chatter</div>
+                      <div class="role-option-desc">Earns % only on transactions manually assigned to them</div>
                     </div>
                     <div class="role-option-check">✓</div>
                   </label>
@@ -7736,7 +7748,7 @@ async function switchAgency(agencyId){
   setAgencyContext(ag);
   renderAgencySwitcher();
   // Reset agency-scoped state so nothing bleeds across agencies.
-  ACTIVE_MODEL_ID='';ALL_MODELS=[];PARTNERS=[];MODEL_SPLITS={};PARTNER_SPLITS={};SPLIT_HISTORY=[];
+  ACTIVE_MODEL_ID='';ALL_MODELS=[];PARTNERS=[];CHATTERS=[];MODEL_SPLITS={};PARTNER_SPLITS={};SPLIT_HISTORY=[];
   S.txs=[];S.exps=[];S.ws=[];S.months=[];
   var ob=g('onboardingOverlay');if(ob)ob.style.display='none';
   await refreshAgencyData();
@@ -8344,6 +8356,7 @@ async function _doSaveModelSplits(effectiveDate){
 
 /* ---- Partners ---- */
 var PARTNERS=[];
+var CHATTERS=[];
 var PARTNER_SPLITS={};
 var PARTNER_COLORS=[
   {color:'#8B5CF6',bg:'rgba(139,92,246,.12)',border:'rgba(139,92,246,.25)'},
@@ -8387,12 +8400,13 @@ function partnerRemaining(partnerId){
 async function loadPartners(){
   if(DEMO_MODE)return;
   var res=await db.from('partners')
-    .select('id,name,status,invited_email,user_id,split_pct')
+    .select('id,name,status,invited_email,user_id,split_pct,role')
     .eq('agency_id',_agencyId||'00000000-0000-0000-0000-000000000001')
     .order('created_at',{ascending:true});
   if(res.error){console.error('loadPartners:',res.error);return;}
   if(!res.data||!res.data.length){console.warn('loadPartners: no partners found');return;}
-  PARTNERS=res.data.map(function(p){return{id:p.id,name:p.name,status:p.status||'active',invited_email:p.invited_email||null,user_id:p.user_id||null,split_pct:p.split_pct||0};});
+  PARTNERS=res.data.map(function(p){return{id:p.id,name:p.name,status:p.status||'active',invited_email:p.invited_email||null,user_id:p.user_id||null,split_pct:p.split_pct||0,role:p.role||'partner'};});
+  CHATTERS=PARTNERS.filter(function(p){return p.role==='chatter'&&p.status==='active';});
   /* Try to load admin user_ids (used for role labels on partner cards) */
   try{
     var rRes=await db.from('user_roles').select('user_id,role').eq('operator_id',_agencyId);
@@ -8405,6 +8419,7 @@ async function loadPartners(){
   await loadPartnerSplits();
   renderPartnerCards();
   renderPartnerSelect();
+  renderChatterSection();
 }
 
 async function loadPartnerSplits(){
@@ -8446,7 +8461,7 @@ function renderPartnerCards(){
     return;
   }
 
-  var activePartners=PARTNERS.filter(function(p){return p.status==='active';});
+  var activePartners=PARTNERS.filter(function(p){return p.status==='active'&&p.role!=='chatter';});
   if(!activePartners.length){
     grid.className='partner-cards-grid count-1';
     grid.innerHTML='<div class="partner-card" style="--pc-color:var(--t3);--pc-bg:var(--surface-3);--pc-border:var(--line-2)">'
@@ -9505,8 +9520,9 @@ var DEMO_MODE=false;
 var DEMO_PID1='demo-p1',DEMO_PID2='demo-p2',DEMO_MID1='demo-m1',DEMO_MID2='demo-m2',DEMO_AID='demo-agency';
 var DEMO_STATE={
   partners:[
-    {id:DEMO_PID1,name:'Alex Rivera',status:'active',invited_email:'alex@demo.test',user_id:null,split_pct:35},
-    {id:DEMO_PID2,name:'Jamie Lee',status:'active',invited_email:'jamie@demo.test',user_id:null,split_pct:40}
+    {id:DEMO_PID1,name:'Alex Rivera',status:'active',invited_email:'alex@demo.test',user_id:null,split_pct:35,role:'partner'},
+    {id:DEMO_PID2,name:'Jamie Lee',status:'active',invited_email:'jamie@demo.test',user_id:null,split_pct:40,role:'partner'},
+    {id:'demo-chatter-1',name:'Sam Turner',status:'active',invited_email:'sam@demo.test',user_id:null,split_pct:15,role:'chatter'}
   ],
   modelSplits:{
     'demo-m1':{'demo-p1':35,'demo-p2':40},
@@ -9536,13 +9552,13 @@ var DEMO_STATE={
     ],
     txs:[
       {id:'dt1',amount:1420,platform:'fanvue',date:'2026-03-10',source:'sync',model_id:'demo-m1',description:'Subscription'},
-      {id:'dt2',amount:890,platform:'fanvue',date:'2026-03-18',source:'sync',model_id:'demo-m1',description:'Tip'},
+      {id:'dt2',amount:890,platform:'fanvue',date:'2026-03-18',source:'sync',model_id:'demo-m1',description:'Tip',chatter_id:'demo-chatter-1'},
       {id:'dt3',amount:1900,platform:'fanvue',date:'2026-03-25',source:'sync',model_id:'demo-m2',description:'Subscription'},
       {id:'dt4',amount:2240,platform:'fanvue',date:'2026-04-08',source:'sync',model_id:'demo-m1',description:'Subscription renewal'},
-      {id:'dt5',amount:1640,platform:'fanvue',date:'2026-04-15',source:'sync',model_id:'demo-m1',description:'Post unlock'},
+      {id:'dt5',amount:1640,platform:'fanvue',date:'2026-04-15',source:'sync',model_id:'demo-m1',description:'Post unlock',chatter_id:'demo-chatter-1'},
       {id:'dt6',amount:2000,platform:'fanvue',date:'2026-04-22',source:'sync',model_id:'demo-m2',description:'Subscription'},
       {id:'dt7',amount:1890,platform:'fanvue',date:'2026-05-05',source:'sync',model_id:'demo-m1',description:'Subscription'},
-      {id:'dt8',amount:1650,platform:'fanvue',date:'2026-05-18',source:'sync',model_id:'demo-m2',description:'Tip'}
+      {id:'dt8',amount:1650,platform:'fanvue',date:'2026-05-18',source:'sync',model_id:'demo-m2',description:'Tip',chatter_id:'demo-chatter-1'}
     ],
     exps:[
       {id:'de1',amount:120,partner_id:'demo-p1',date:'2026-03-31',description:'[equipment] Lighting kit',model_id:null},
@@ -9579,6 +9595,7 @@ function enterDemoMode(){
   ALL_MODELS=DEMO_STATE.models.slice();
   ACTIVE_MODEL_ID=DEMO_MID1;
   PARTNERS=DEMO_STATE.partners.map(function(p){return Object.assign({},p);});
+  CHATTERS=PARTNERS.filter(function(p){return p.role==='chatter'&&p.status==='active';});
   MODEL_SPLITS=JSON.parse(JSON.stringify(DEMO_STATE.modelSplits));
   SPLIT_HISTORY=(DEMO_STATE.splitHistory||[]).slice();
   TAX_RATE_PCT=20;
@@ -9611,7 +9628,7 @@ function enterDemoMode(){
 function exitDemoMode(){
   DEMO_MODE=false;
   hideDemoBanner();
-  ALL_MODELS=[];ACTIVE_MODEL_ID='';PARTNERS=[];MODEL_SPLITS={};SPLIT_HISTORY=[];PARTNER_SPLITS={};_agencyId='';TAX_RATE_PCT=null;TAX_ENABLED=false;TAX_PAYMENTS=[];
+  ALL_MODELS=[];ACTIVE_MODEL_ID='';PARTNERS=[];CHATTERS=[];MODEL_SPLITS={};SPLIT_HISTORY=[];PARTNER_SPLITS={};_agencyId='';TAX_RATE_PCT=null;TAX_ENABLED=false;TAX_PAYMENTS=[];
   S={months:[],ws:[],txs:[],exps:[],am:0,platforms:DEFAULT_PLATFORMS.slice()};
   currentUser=null;currentRole=null;currentPartnerId='';
   showLogin();
@@ -10307,7 +10324,7 @@ async function loadRevenueData(){
   if(statusEl)statusEl.innerHTML=mkLoadingIndicator('Syncing');
 
   var txQuery=db.from('transactions')
-    .select('id,amount_usd,platform,date,source,model_id,description')
+    .select('id,amount_usd,platform,date,source,model_id,description,chatter_id')
     .order('date',{ascending:true});
   if(ACTIVE_MODEL_ID){txQuery=txQuery.eq('model_id',ACTIVE_MODEL_ID);}
   else{var ids=ALL_MODELS.map(function(m){return m.id;});txQuery=txQuery.in('model_id',ids);}
@@ -10326,7 +10343,7 @@ async function loadRevenueData(){
   if(expRes.error)console.error('expenses error:',expRes.error);
 
   S.txs=(txRes.data||[]).map(function(tx){
-    return{id:tx.id,amount:parseFloat(tx.amount_usd)||0,platform:tx.platform,date:tx.date,source:tx.source||'manual',model_id:tx.model_id||'',description:tx.description||null};
+    return{id:tx.id,amount:parseFloat(tx.amount_usd)||0,platform:tx.platform,date:tx.date,source:tx.source||'manual',model_id:tx.model_id||'',description:tx.description||null,chatter_id:tx.chatter_id||null};
   });
 
   var allExps=(expRes.data||[]).map(function(exp){
@@ -12031,7 +12048,7 @@ function renderMonths(){
   if(!m){g('mView').innerHTML='';return;}
 
   var tot=r2(mTot(m));
-  var activePartners=PARTNERS.filter(function(p){return p.status==='active';});
+  var activePartners=PARTNERS.filter(function(p){return p.status==='active'&&p.role!=='chatter';});
 
   var pColorVars=['var(--p0)','var(--p1)','var(--p2)','var(--p3)','var(--p4)'];  /* legacy — kept for partner rows only */
 
@@ -12259,6 +12276,7 @@ function renderMonths(){
           +'<span class="tx-spacer">'
             +(tx.description?'<span class="tx-note-inline">'+escHtml(tx.description)+'</span>':'')
             +(tx.source==='scraper'?'<span class="tx-source">auto</span>':'')
+            +((isAdmin||currentRole==='owner')?mkChatterBtn(tx):'')
           +'</span>'
           /* col 3: date */
           +'<span class="tx-date">'+fdate(tx.date)+'</span>'
@@ -12494,10 +12512,134 @@ function downloadCSV(rows,filename){
   document.body.removeChild(a);URL.revokeObjectURL(url);
 }
 
+/* ── Chatter: assignment button ──────────────────────────────────────────── */
+function mkChatterBtn(tx){
+  if(!CHATTERS||CHATTERS.length===0)return'';
+  var assigned=tx.chatter_id?CHATTERS.find(function(c){return c.id===tx.chatter_id;}):null;
+  var label=assigned
+    ?'<span style="color:var(--green);font-size:10px;font-weight:600">👤 '+escHtml(assigned.name||'Chatter')+'</span>'
+    :'<span style="color:var(--t3);font-size:10px">👤</span>';
+  return '<button class="chatter-assign-btn"'
+    +' onclick="event.stopPropagation();openChatterAssign(\''+tx.id+'\',\''+(tx.chatter_id||'')+'\')"'
+    +' style="background:none;border:none;cursor:pointer;padding:3px 6px;border-radius:4px;transition:background .15s;vertical-align:middle"'
+    +' title="Assign to chatter">'+label+'</button>';
+}
+
+var _chatterAssignTxId=null;
+function openChatterAssign(txId,currentChatterId){
+  _chatterAssignTxId=txId;
+  var list=g('chatterAssignList');
+  if(!list)return;
+  var html='';
+  /* None option */
+  html+='<button onclick="assignChatter(\''+txId+'\',null)"'
+    +' style="width:100%;text-align:left;padding:10px 12px;margin-bottom:6px;'
+    +'background:'+(!currentChatterId?'var(--surface-3)':'var(--surface-2)')+';'
+    +'border:1px solid '+(!currentChatterId?'var(--line-3)':'var(--line-1)')+';'
+    +'border-radius:8px;cursor:pointer;font-size:13px;color:var(--t2)">'
+    +'<span style="color:var(--t3)">✕</span> Not a chatter transaction'
+    +'</button>';
+  CHATTERS.forEach(function(c){
+    var isSel=c.id===currentChatterId;
+    html+='<button onclick="assignChatter(\''+txId+'\',\''+c.id+'\')"'
+      +' style="width:100%;text-align:left;padding:10px 12px;margin-bottom:6px;'
+      +'background:'+(isSel?'rgba(168,247,64,.12)':'var(--surface-2)')+';'
+      +'border:1px solid '+(isSel?'rgba(168,247,64,.3)':'var(--line-1)')+';'
+      +'border-radius:8px;cursor:pointer;font-size:13px;color:var(--t1)">'
+      +'<span style="font-weight:500">'+escHtml(c.name||c.invited_email)+'</span>'
+      +'<span style="color:var(--t3);font-size:11px;margin-left:8px">'+c.split_pct+'%</span>'
+      +(isSel?'<span style="float:right;color:var(--green);font-size:11px">✓ assigned</span>':'')
+      +'</button>';
+  });
+  list.innerHTML=html;
+  g('chatterAssignModal').style.display='flex';
+}
+function closeChatterAssignModal(){
+  g('chatterAssignModal').style.display='none';
+  _chatterAssignTxId=null;
+}
+async function assignChatter(txId,chatterId){
+  closeChatterAssignModal();
+  if(DEMO_MODE){
+    S.txs.forEach(function(tx){if(tx.id===txId)tx.chatter_id=chatterId||null;});
+    renderAll();
+    var chatter=chatterId?CHATTERS.find(function(c){return c.id===chatterId;}):null;
+    showToast(chatter?'Assigned to '+chatter.name:'Assignment removed','success');
+    return;
+  }
+  var upd={chatter_id:chatterId||null};
+  var res=await db.from('transactions').update(upd).eq('id',txId);
+  if(res.error){showToast(friendlyError(res.error),'error');return;}
+  S.txs.forEach(function(tx){if(tx.id===txId)tx.chatter_id=chatterId||null;});
+  renderAll();
+  var chatter=chatterId?CHATTERS.find(function(c){return c.id===chatterId;}):null;
+  showToast(chatter?'Assigned to '+chatter.name:'Assignment removed','success');
+}
+
+/* ── Chatter: earnings calculation ──────────────────────────────────────── */
+function calcChatterEarnings(){
+  if(!CHATTERS||CHATTERS.length===0)return{};
+  var result={};
+  CHATTERS.forEach(function(c){result[c.id]=0;});
+  var m=S.months[S.am];
+  if(!m)return result;
+  var monthKey=m.id;
+  S.txs.forEach(function(tx){
+    if(!tx.chatter_id||!result.hasOwnProperty(tx.chatter_id))return;
+    if(!tx.date||tx.date.slice(0,7)!==monthKey)return;
+    var chatter=CHATTERS.find(function(c){return c.id===tx.chatter_id;});
+    if(chatter)result[tx.chatter_id]=r2(result[tx.chatter_id]+(tx.amount||0)*chatter.split_pct/100);
+  });
+  return result;
+}
+
+/* ── Chatter: section render (Overview) ──────────────────────────────────── */
+function renderChatterSection(){
+  var container=g('chatterSection');
+  if(!container)return;
+  if(!CHATTERS||CHATTERS.length===0){container.style.display='none';return;}
+  var earnings=calcChatterEarnings();
+  container.style.display='block';
+  var n=Math.min(CHATTERS.length,5);
+  var html='<div class="sec-label" style="margin-bottom:12px">CHATTER PAYOUTS</div>'
+    +'<div class="partner-cards-grid count-'+n+'">';
+  CHATTERS.forEach(function(c){
+    var earned=r2(earnings[c.id]||0);
+    var withdrawn=r2(okWs().reduce(function(sum,w){
+      return sum+((w.splitsByPartner&&w.splitsByPartner[c.id])||0);
+    },0));
+    var remaining=r2(earned-withdrawn);
+    var initials=(c.name||'C').split(' ').map(function(w){return w[0]||'';}).join('').slice(0,2).toUpperCase()||'?';
+    html+='<div class="partner-card" style="--pc-color:var(--green);--pc-bg:rgba(168,247,64,.10);--pc-border:rgba(168,247,64,.22)">'
+      +'<div class="partner-card-head">'
+        +'<div class="partner-avatar" style="background:rgba(168,247,64,.15);color:var(--green)">'+initials+'</div>'
+        +'<div class="partner-card-info">'
+          +'<div class="partner-card-name">'+escHtml(c.name||c.invited_email)+'</div>'
+          +'<div class="partner-card-role">Chatter · '+c.split_pct+'%</div>'
+        +'</div>'
+      +'</div>'
+      +'<div class="partner-card-total-label">CHATTER EARNINGS</div>'
+      +'<div class="partner-card-total">'+fu(earned)+'</div>'
+      +'<div class="partner-card-stats">'
+        +'<div class="partner-stat-cell">'
+          +'<div class="partner-stat-label">Withdrawn</div>'
+          +'<div class="partner-stat-value">€'+withdrawn.toFixed(2)+'</div>'
+        +'</div>'
+        +'<div class="partner-stat-cell">'
+          +'<div class="partner-stat-label">Remaining</div>'
+          +'<div class="partner-stat-value outstanding">'+fu(Math.max(0,remaining))+'</div>'
+        +'</div>'
+      +'</div>'
+    +'</div>';
+  });
+  html+='</div>';
+  container.innerHTML=html;
+}
+
 function renderAll(){
   renderBal();renderChartLegend();renderMonths();renderList();
   renderPlatformSettings();renderPlatformSelect();renderExpenses();renderRecentTx();
-  renderModelProfitSection();updateSidebarStats();renderTaxCard();
+  renderModelProfitSection();updateSidebarStats();renderTaxCard();renderChatterSection();
 }
 
 /* ---- Numeric input filter ---- */
@@ -12851,6 +12993,18 @@ async function syncFullHistory(){
     <div style="display:flex;gap:10px;justify-content:flex-end">
       <button class="btn" onclick="closeTaxPaymentModal()">Cancel</button>
       <button id="taxPaymentSaveBtn" class="btn btn-primary" onclick="saveTaxPayment()">Record payment</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Chatter Assign Modal ──────────────────────────────────────────── -->
+<div id="chatterAssignModal" style="display:none;position:fixed;inset:0;z-index:700;background:rgba(0,0,0,.7);align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--surface);border:1px solid var(--line-3);border-radius:var(--r5);padding:24px 28px;max-width:360px;width:100%">
+    <div style="font-size:15px;font-weight:600;color:var(--t1);margin-bottom:6px">Assign to chatter</div>
+    <div style="font-size:13px;color:var(--t3);margin-bottom:18px">Select which chatter generated this transaction.</div>
+    <div id="chatterAssignList" style="margin-bottom:16px"></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn" onclick="closeChatterAssignModal()">Cancel</button>
     </div>
   </div>
 </div>

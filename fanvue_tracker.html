@@ -6573,7 +6573,7 @@ button, a,
             </div>
           </div>
           <div id="resetErr" class="auth-err"></div>
-          <button class="auth-btn" onclick="submitNewPassword()">Set password</button>
+          <button class="auth-btn" onclick="submitNewPassword(this)">Set password</button>
         </div>
       </div>
     </div>
@@ -7950,14 +7950,13 @@ async function resendConfirmation(){
   },1000);
 }
 
-async function submitNewPassword(){
+async function submitNewPassword(btn){
   var pwd=(g('newPassword').value||'').trim();
   var confirm=(g('newPasswordConfirm').value||'').trim();
   var err=g('resetErr');
   err.textContent='';
   if(pwd.length<6){err.textContent='Password must be at least 6 characters.';return;}
   if(pwd!==confirm){err.textContent='Passwords do not match.';return;}
-  var btn=event.target;
   btn.disabled=true;btn.textContent='Saving…';
   var res=await db.auth.updateUser({password:pwd});
   if(res.error){
@@ -9765,6 +9764,7 @@ function _getLogoDataUrl(){
 }
 
 async function _buildPDF(dateFrom,dateTo){
+  if(!window.jspdf){showToast('PDF library failed to load — check your connection','error');return;}
   var logoDataUrl=await _getLogoDataUrl();
   var includeTx=g('reportIncludeTx').checked;
   var includeExp=g('reportIncludeExp').checked;
@@ -10309,7 +10309,7 @@ async function requestDataDeletion(){
   if(btn){btn.disabled=true;btn.textContent='Deleting…';}
   var sess=await db.auth.getSession();
   var jwt=sess.data&&sess.data.session&&sess.data.session.access_token;
-  if(!jwt){showToast('Session expired. Please log in again.','error');return;}
+  if(!jwt){showToast('Session expired. Please log in again.','error');if(btn){btn.disabled=false;btn.textContent='Delete account';}return;}
   var res=await fetch(EDGE_URL+'/delete-account',{
     method:'POST',
     headers:{'Authorization':'Bearer '+jwt,'Content-Type':'application/json'}

@@ -5455,6 +5455,9 @@ html { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
 .tx-item:hover .tx-row .tx-actions { opacity: 1; pointer-events: auto; }
 /* tx-row needs relative positioning for the absolute actions */
 .tx-row { position: relative; }
+/* chatter-assign button — sits at right edge of spacer col, hover feedback */
+.chatter-assign-btn:hover { background: rgba(255,255,255,.08) !important; }
+.chatter-assign-btn:hover svg { stroke: var(--green); }
 
 /* Date separators in Dashboard ledger */
 .tx-date-sep {
@@ -12537,12 +12540,13 @@ function downloadCSV(rows,filename){
 function mkChatterBtn(tx){
   if(!CHATTERS||CHATTERS.length===0)return'';
   var assigned=tx.chatter_id?CHATTERS.find(function(c){return c.id===tx.chatter_id;}):null;
+  var ico='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
   var label=assigned
-    ?'<span style="color:var(--green);font-size:10px;font-weight:600">👤 '+escHtml(assigned.name||'Chatter')+'</span>'
-    :'<span style="color:var(--t3);font-size:10px">👤</span>';
+    ?'<span style="display:inline-flex;align-items:center;gap:4px;color:var(--green);font-size:10px;font-weight:600">'+ico+escHtml(assigned.name||'Chatter')+'</span>'
+    :'<span style="display:inline-flex;align-items:center;color:var(--t3)">'+ico+'</span>';
   return '<button class="chatter-assign-btn"'
     +' onclick="event.stopPropagation();openChatterAssign(\''+tx.id+'\',\''+(tx.chatter_id||'')+'\')"'
-    +' style="background:none;border:none;cursor:pointer;padding:3px 6px;border-radius:4px;transition:background .15s;vertical-align:middle"'
+    +' style="margin-left:auto;background:none;border:none;cursor:pointer;padding:3px 6px;border-radius:4px;transition:background .15s;display:inline-flex;align-items:center;line-height:0;flex-shrink:0"'
     +' title="Assign to chatter">'+label+'</button>';
 }
 

@@ -7632,6 +7632,10 @@ var db=supabase.createClient(SUPA_URL,SUPA_KEY);
 var currentUser=null;
 var currentRole=null;
 var currentPartnerId='';
+/* Diagnostic logging — off in prod so ids/rates aren't leaked to the console.
+   Set DEBUG=true (or window.DEBUG) to surface them while developing. */
+var DEBUG=(typeof window!=='undefined'&&window.DEBUG)||false;
+function dbg(){ if(DEBUG){ try{ console.log.apply(console,arguments); }catch(e){} } }
 
 async function loadUserRole(userId){
   // Users may belong to multiple agencies (own agency + partner invites),
@@ -8701,7 +8705,7 @@ async function loadAgencySettings(){
       if(!isNaN(_lsRate)&&_lsRate>0){
         TAX_RATE_PCT=_lsRate;
         db.from('agencies').update({tax_rate_pct:_lsRate}).eq('id',_agencyId).then(function(r){
-          if(!r.error)console.log('[loadAgencySettings] backfilled tax_rate_pct='+_lsRate+' from localStorage');
+          if(!r.error)dbg('[loadAgencySettings] backfilled tax_rate_pct='+_lsRate+' from localStorage');
         });
       }
     }
@@ -8871,25 +8875,27 @@ async function saveSplit(partnerId,otherTotal){
 function removePartnerEl(el){ removePartner(el.dataset.pid, el.dataset.pst, el.dataset.pnm); }
 async function removePartner(partnerId,status,name){
   if(currentRole!=='admin')return;
+  if(demoGuard())return;
   var msg=status==='active'
     ?'Remove '+name+' from the agency? Their account will be deactivated.'
     :'Cancel invite for '+name+'?';
-  if(!confirm(msg))return;
-  if(status==='pending'){
-    await db.from('partner_invites').delete().eq('partner_id',partnerId);
-    await db.from('partners').update({status:'removed'}).eq('id',partnerId);
-  }else{
-    await db.from('model_splits').delete().eq('partner_id',partnerId);
-    var pRes=await db.from('partners').select('user_id').eq('id',partnerId).single();
-    if(pRes.data&&pRes.data.user_id&&_agencyId){
-      await db.from('user_roles').delete()
-        .eq('user_id',pRes.data.user_id)
-        .eq('agency_id',_agencyId);
+  showConfirmModal(status==='active'?'Remove partner?':'Cancel invite?',msg,async function(){
+    if(status==='pending'){
+      await db.from('partner_invites').delete().eq('partner_id',partnerId);
+      await db.from('partners').update({status:'removed'}).eq('id',partnerId);
+    }else{
+      await db.from('model_splits').delete().eq('partner_id',partnerId);
+      var pRes=await db.from('partners').select('user_id').eq('id',partnerId).single();
+      if(pRes.data&&pRes.data.user_id&&_agencyId){
+        await db.from('user_roles').delete()
+          .eq('user_id',pRes.data.user_id)
+          .eq('agency_id',_agencyId);
+      }
+      await db.from('partners').update({status:'inactive',split_pct:0}).eq('id',partnerId);
     }
-    await db.from('partners').update({status:'inactive',split_pct:0}).eq('id',partnerId);
-  }
-  showToast('Partner removed','success');
-  await loadPartnersList();
+    showToast('Partner removed','success');
+    await loadPartnersList();
+  },{danger:true,okLabel:'Remove'});
 }
 
 function updateSplitRemaining(){
@@ -9386,10 +9392,10 @@ function disconnectFanvue(){
 async function disconnectFanvueConfirmed(){
   if(demoGuard())return;
   var modelId=ACTIVE_MODEL_ID;
-  console.log('[disconnect] model_id:',modelId);
+  dbg('[disconnect] model_id:',modelId);
   if(!modelId){showToast('Select a model first.','error');return;}
   var res=await db.from('fanvue_connections').delete().eq('model_id',modelId);
-  console.log('[disconnect] result:',res);
+  dbg('[disconnect] result:',res);
   if(res.error){
     console.error('[disconnect] error:',res.error);
     showToast('Failed to disconnect. Try again.','error');
@@ -10123,13 +10129,14 @@ async function deleteBulkTx(){
   if(demoGuard())return;
   if(!_selectedTxs.size)return;
   var n=_selectedTxs.size;
-  if(!confirm('Delete '+n+' transaction'+(n>1?'s':'')+'?'))return;
-  var ids=Array.from(_selectedTxs);
-  var delRes=await db.from('transactions').delete().in('id',ids);
-  if(delRes.error){showToast(friendlyError(delRes.error),'error');return;}
-  _selectedTxs.clear();
-  updateBulkBar();
-  await loadRevenueData();renderAll();
+  showConfirmModal('Delete transactions?','Delete '+n+' transaction'+(n>1?'s':'')+'?',async function(){
+    var ids=Array.from(_selectedTxs);
+    var delRes=await db.from('transactions').delete().in('id',ids);
+    if(delRes.error){showToast(friendlyError(delRes.error),'error');return;}
+    _selectedTxs.clear();
+    updateBulkBar();
+    await loadRevenueData();renderAll();
+  },{danger:true,okLabel:'Delete'});
 }
 
 /* ---- Sort ---- */
@@ -10304,18 +10311,19 @@ async function fetchWiseRate(){
 }
 
 async function requestDataDeletion(){
-  if(!confirm('This will permanently delete your account and all data. This cannot be undone.'))return;
-  var btn=document.querySelector('[onclick="requestDataDeletion()"]');
-  if(btn){btn.disabled=true;btn.textContent='Deleting…';}
-  var sess=await db.auth.getSession();
-  var jwt=sess.data&&sess.data.session&&sess.data.session.access_token;
-  if(!jwt){showToast('Session expired. Please log in again.','error');if(btn){btn.disabled=false;btn.textContent='Delete account';}return;}
-  var res=await fetch(EDGE_URL+'/delete-account',{
-    method:'POST',
-    headers:{'Authorization':'Bearer '+jwt,'Content-Type':'application/json'}
-  });
-  if(res.ok){await db.auth.signOut();location.reload();}
-  else{showToast('Failed to delete. Contact support@payoutmanager.app','error');if(btn){btn.disabled=false;btn.textContent='Delete account';}}
+  showConfirmModal('Delete account?','This will permanently delete your account and all data. This cannot be undone.',async function(){
+    var btn=document.querySelector('[onclick="requestDataDeletion()"]');
+    if(btn){btn.disabled=true;btn.textContent='Deleting…';}
+    var sess=await db.auth.getSession();
+    var jwt=sess.data&&sess.data.session&&sess.data.session.access_token;
+    if(!jwt){showToast('Session expired. Please log in again.','error');if(btn){btn.disabled=false;btn.textContent='Delete account';}return;}
+    var res=await fetch(EDGE_URL+'/delete-account',{
+      method:'POST',
+      headers:{'Authorization':'Bearer '+jwt,'Content-Type':'application/json'}
+    });
+    if(res.ok){await db.auth.signOut();location.reload();}
+    else{showToast('Failed to delete. Contact support@payoutmanager.app','error');if(btn){btn.disabled=false;btn.textContent='Delete account';}}
+  },{danger:true,okLabel:'Delete account'});
 }
 
 /* ---- Platform management ---- */
@@ -10685,7 +10693,7 @@ async function confirmW(id){
   });
   var totalSpl=splits.reduce(function(s,x){return s+x.eur_amount;},0);
   if((partners.length>0||(CHATTERS&&CHATTERS.length>0))&&Math.abs(totalSpl-eur)>0.02){
-    alert('Split total ('+fe(totalSpl)+') must equal '+fe(eur));return;
+    showToast('Split total ('+fe(totalSpl)+') must equal '+fe(eur),'error');return;
   }
   var today=new Date().toISOString().slice(0,10);
 
@@ -10871,10 +10879,11 @@ async function txDelete(id,source){
   var msg=source==='scraper'
     ?'Delete this Fanvue transaction? (written by scraper)'
     :'Delete this transaction?';
-  if(!confirm(msg))return;
-  var res=await db.from('transactions').delete().eq('id',id);
-  if(res.error){showToast(friendlyError(res.error),'error');return;}
-  await loadRevenueData();renderAll();
+  showConfirmModal('Delete transaction?',msg,async function(){
+    var res=await db.from('transactions').delete().eq('id',id);
+    if(res.error){showToast(friendlyError(res.error),'error');return;}
+    await loadRevenueData();renderAll();
+  },{danger:true,okLabel:'Delete'});
 }
 
 async function txSave(id){
@@ -11018,10 +11027,11 @@ async function addExpense(){
 
 async function deleteExpense(id){
   if(demoGuard())return;
-  if(!confirm('Delete this expense?'))return;
-  var res=await db.from('expenses').delete().eq('id',id);
-  if(res.error){showToast(friendlyError(res.error),'error');return;}
-  await loadRevenueData();renderAll();
+  showConfirmModal('Delete expense?','Delete this expense?',async function(){
+    var res=await db.from('expenses').delete().eq('id',id);
+    if(res.error){showToast(friendlyError(res.error),'error');return;}
+    await loadRevenueData();renderAll();
+  },{danger:true,okLabel:'Delete'});
 }
 
 function expEditStart(id){
@@ -11054,7 +11064,7 @@ async function expSave(id){
     if(!upRes2.error){
       var pubData2=db.storage.from('expense-receipts').getPublicUrl(rPath2);
       updatePayload.receipt_url=(pubData2.data&&pubData2.data.publicUrl)||null;
-      console.log('[receipt] uploaded ok, url=',updatePayload.receipt_url);
+      dbg('[receipt] uploaded ok, url=',updatePayload.receipt_url);
     }else{
       console.error('[receipt] edit upload failed:',upRes2.error.message,upRes2.error);
       showToast(friendlyError(upRes2.error),'error');
@@ -11329,7 +11339,7 @@ function handleTaxToggle(enabled){
 
 async function saveTaxRate(value){
   var rate=parseFloat(value);
-  console.log('[saveTaxRate] saving:',rate,'agency:',_agencyId);
+  dbg('[saveTaxRate] saving:',rate,'agency:',_agencyId);
   if(isNaN(rate)||rate<0||rate>100){showToast('Enter a tax rate between 0 and 100','error');return;}
   // Update global + localStorage immediately so renderTaxCard works even before DB responds
   TAX_RATE_PCT=rate;
@@ -11342,7 +11352,7 @@ async function saveTaxRate(value){
     console.error('[saveTaxRate] DB error:',res.error);
     showToast('Saved locally — '+friendlyError(res.error),'warn');
   }else{
-    console.log('[saveTaxRate] saved tax_rate_pct='+rate+' to DB');
+    dbg('[saveTaxRate] saved tax_rate_pct='+rate+' to DB');
     showToast('Tax rate saved — '+rate+'%','success');
   }
 }
@@ -12028,17 +12038,15 @@ function renderChart(){
       return{x:cx,barTopY:barTopY};
     })
   };
-  if(!_chartListenerAttached){
-    _chartListenerAttached=true;
-    container.addEventListener('pointermove',onChartPointerMove);
-    container.addEventListener('pointerleave',hideChartTooltip);
-  }
+  /* addEventListener with the same fn ref is idempotent — safe to call every
+     render, and (unlike a sticky flag) survives chartContainer re-creation. */
+  container.addEventListener('pointermove',onChartPointerMove);
+  container.addEventListener('pointerleave',hideChartTooltip);
 }
 
 /* ---- Chart tooltip helpers ---- */
 var _chartMonths=[];
 var _chartGeom={};
-var _chartListenerAttached=false;
 
 function onChartPointerMove(e){
   var container=g('chartContainer');

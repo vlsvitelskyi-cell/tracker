@@ -7776,7 +7776,7 @@ function showApp(user,roleData){
   var chip=g('userChip'),logBtn=g('logoutBtn');
   var initials=(currentUser.email||'?')[0].toUpperCase();
   var displayName=(currentUser.email||'').split('@')[0];
-  chip.innerHTML='<div class="user-avatar">'+initials+'</div>'
+  chip.innerHTML='<div class="user-avatar">'+escHtml(initials)+'</div>'
     +'<span style="font-size:12px;color:var(--text2);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+escHtml(displayName)+'</span>'
     +'<span class="user-role-badge role-'+currentRole+'">'+currentRole+'</span>';
   chip.style.display='flex';logBtn.style.display='flex';
@@ -7961,7 +7961,7 @@ async function submitNewPassword(){
   btn.disabled=true;btn.textContent='Saving…';
   var res=await db.auth.updateUser({password:pwd});
   if(res.error){
-    err.textContent=res.error.message||'Something went wrong. Try again.';
+    err.textContent=friendlyError(res.error);
     btn.disabled=false;btn.textContent='Set password';
     return;
   }
@@ -7988,6 +7988,7 @@ async function forgotPassword(){
 }
 
 async function logout(){
+  teardownRealtime();
   await db.auth.signOut();
   PARTNERS=[];ALL_MODELS=[];ACTIVE_MODEL_ID='';MODEL_SPLITS={};SPLIT_HISTORY=[];PARTNER_SPLITS={};FANVUE_CONNECTION=null;TAX_RATE_PCT=null;TAX_ENABLED=false;TAX_PAYMENTS=[];
   showLogin();
@@ -8506,7 +8507,7 @@ function renderPartnerCards(){
     totalOutstanding+=rem;
     return '<div class="partner-card" style="--pc-color:'+pc.color+';--pc-bg:'+pc.bg+';--pc-border:'+pc.border+'">'
       +'<div class="partner-card-head">'
-        +'<div class="partner-avatar">'+initials+'</div>'
+        +'<div class="partner-avatar">'+escHtml(initials)+'</div>'
         +'<div class="partner-card-info">'
           +'<div class="partner-card-name">'+escHtml(p.name)+(isMe?' <span style="font-size:10px;color:var(--t3);font-weight:400">you</span>':'')+'</div>'
           +'<div class="partner-card-role">'+(p.is_admin?'Admin':'Partner')+'</div>'
@@ -8564,11 +8565,11 @@ async function makeAdmin(partnerId){
         .update({role:'admin'})
         .eq('user_id',p.user_id)
         .eq('operator_id',_agencyId);
-      if(res.error){showToast('Error: '+res.error.message,'err');return;}
+      if(res.error){showToast(friendlyError(res.error),'error');return;}
       p.is_admin=true;
       renderPartnerCards();
       loadPartnersList(); // refresh Settings → Team list
-      showToast(escHtml(p.name)+' is now an Admin','success');
+      showToast(p.name+' is now an Admin','success');
     },
     {okLabel:'Make Admin'}
   );
@@ -8780,7 +8781,7 @@ async function loadPartnersList(){
       var ac=i===0?'blue':i===1?'green':'gray';
       var ini=p.name.split(' ').map(function(w){return w[0]||'';}).join('').toUpperCase().slice(0,2)||'?';
       return '<div class="partner-list-row">'
-        +'<div class="partner-avatar '+ac+'">'+ini+'</div>'
+        +'<div class="partner-avatar '+ac+'">'+escHtml(ini)+'</div>'
         +'<div class="partner-list-info">'
         +'<div class="partner-list-name">'+escHtml(p.name)+'</div>'
         +(p.invited_email?'<div class="partner-list-email">'+escHtml(p.invited_email)+'</div>':'')
@@ -8821,15 +8822,15 @@ async function loadPartnersList(){
         ?'<span style="font-size:11px;color:var(--text3);font-weight:400;margin-left:6px">Admin</span>'
         :'');
     return '<div class="partner-list-row">'
-      +'<div class="partner-avatar '+avatarColor+'">'+initials+'</div>'
+      +'<div class="partner-avatar '+avatarColor+'">'+escHtml(initials)+'</div>'
       +'<div class="partner-list-info">'
       +'<div class="partner-list-name">'+nameDisplay+'</div>'
-      +(p.invited_email?'<div class="partner-list-email">'+p.invited_email+'</div>':'')
+      +(p.invited_email?'<div class="partner-list-email">'+escHtml(p.invited_email)+'</div>':'')
       +'</div>'
       +'<div class="partner-list-actions">'
       +statusBadge
       +(canMakeAdmin?'<button class="btn" style="font-size:11px;padding:3px 10px;height:auto;margin-left:6px" onclick="makeAdmin(\''+p.id+'\')">Make Admin</button>':'')
-      +(canRemove?'<button class="btn-del" title="Remove" onclick="removePartner(\''+p.id+'\',\''+p.status+'\',\''+p.name+'\')">&times;</button>':'')
+      +(canRemove?'<button class="btn-del" title="Remove" data-pid="'+escHtml(p.id)+'" data-pst="'+escHtml(p.status)+'" data-pnm="'+escHtml(p.name)+'" onclick="removePartnerEl(this)">&times;</button>':'')
       +'</div>'
       +'</div>';
   }).join('');
@@ -8863,6 +8864,7 @@ async function saveSplit(partnerId,otherTotal){
   await loadPartnersList();
 }
 
+function removePartnerEl(el){ removePartner(el.dataset.pid, el.dataset.pst, el.dataset.pnm); }
 async function removePartner(partnerId,status,name){
   if(currentRole!=='admin')return;
   var msg=status==='active'
@@ -9437,7 +9439,9 @@ function showToast(msg,type){
   type=type||'info';
   var el=g('toast');
   var icon=type==='success'?'✓':type==='error'?'✕':type==='warn'?'!':'·';
-  el.innerHTML='<div class="toast-icon">'+icon+'</div>'+msg;
+  el.innerHTML='<div class="toast-icon"></div>';
+  el.firstChild.textContent=icon;
+  el.insertAdjacentText('beforeend', String(msg==null?'':msg));
   el.className='toast '+type+' show';
   clearTimeout(el._t);
   el._t=setTimeout(function(){el.className='toast '+type;},type==='warn'?4500:3200);
@@ -10521,37 +10525,50 @@ async function loadTaxPayments(){
 }
 
 /* ---- Real-time ---- */
+var _rtChannel=null,_rtTimers=[],_rtVisHandler=null,_rtDebounce=null;
+/* Debounced reload — a batch sync of N rows fires N realtime events; coalesce them
+   into a single loader+render instead of N full reloads. */
+function scheduleReload(loader){
+  clearTimeout(_rtDebounce);
+  _rtDebounce=setTimeout(function(){loader().then(function(){renderAll();});},400);
+}
+function teardownRealtime(){
+  if(_rtChannel){db.removeChannel(_rtChannel);_rtChannel=null;}
+  _rtTimers.forEach(clearInterval);_rtTimers=[];
+  if(_rtVisHandler){document.removeEventListener('visibilitychange',_rtVisHandler);_rtVisHandler=null;}
+}
 function setupRealtime(){
   if(DEMO_MODE)return;
-  db.channel('db-changes')
+  if(_rtChannel)return; // already subscribed — don't stack channels on re-login
+  _rtChannel=db.channel('db-changes')
     .on('postgres_changes',
       {event:'INSERT',schema:'public',table:'transactions'},
       function(payload){
-        loadRevenueData().then(function(){renderAll();});
+        scheduleReload(loadRevenueData);
       }
     )
     .on('postgres_changes',
       {event:'UPDATE',schema:'public',table:'transactions'},
       function(payload){
-        loadRevenueData().then(function(){renderAll();});
+        scheduleReload(loadRevenueData);
       }
     )
     .on('postgres_changes',
       {event:'INSERT',schema:'public',table:'withdrawals'},
       function(payload){
-        loadWithdrawals().then(function(){renderAll();});
+        scheduleReload(loadWithdrawals);
       }
     )
     .on('postgres_changes',
       {event:'UPDATE',schema:'public',table:'withdrawals'},
       function(payload){
-        loadWithdrawals().then(function(){renderAll();});
+        scheduleReload(loadWithdrawals);
       }
     )
     .on('postgres_changes',
       {event:'INSERT',schema:'public',table:'expenses'},
       function(payload){
-        loadRevenueData().then(function(){renderAll();});
+        scheduleReload(loadRevenueData);
       }
     )
     .subscribe(function(status){
@@ -10570,7 +10587,7 @@ function setupRealtime(){
       }
     });
   // Periodically refresh relative timestamps in sidebar
-  setInterval(function(){
+  _rtTimers.push(setInterval(function(){
     var lrl=g('lastRefreshLabel');
     var ts=parseInt(localStorage.getItem('lastRevRefresh')||'0',10);
     if(lrl&&ts)lrl.textContent=relTime(ts);
@@ -10578,18 +10595,19 @@ function setupRealtime(){
     if(lbl&&_liveTs&&g('liveDot')&&g('liveDot').className.indexOf(' on')>-1){
       lbl.textContent='live · '+relTime(_liveTs);
     }
-  },30000);
+  },30000));
   // Frontend auto-sync: run immediately on open, then every 15 min.
   // Throttle: skip if last sync was <2 min ago (prevents rapid-refresh spam).
   setTimeout(function(){autoSyncIncremental();},1000);
-  setInterval(function(){autoSyncIncremental();},15*60*1000);
+  _rtTimers.push(setInterval(function(){autoSyncIncremental();},15*60*1000));
   // Also sync when user returns to the tab after being away
-  document.addEventListener('visibilitychange',function(){
+  _rtVisHandler=function(){
     if(document.visibilityState==='visible'){
       var last=parseInt(localStorage.getItem('lastAutoSync')||'0',10);
       if(Date.now()-last>2*60*1000) autoSyncIncremental();
     }
-  });
+  };
+  document.addEventListener('visibilitychange',_rtVisHandler);
 }
 
 /* ---- CRUD: withdrawals ---- */
@@ -11020,7 +11038,7 @@ async function expSave(id){
       console.log('[receipt] uploaded ok, url=',updatePayload.receipt_url);
     }else{
       console.error('[receipt] edit upload failed:',upRes2.error.message,upRes2.error);
-      showToast('Receipt upload failed: '+upRes2.error.message,'error');
+      showToast(friendlyError(upRes2.error),'error');
     }
   }
 
@@ -11112,7 +11130,7 @@ function renderExpenses(){
         +'<div class="field"><label>Date</label>'
         +'<input type="date" id="ee_date_'+exp.id+'" value="'+exp.date+'"></div>'
         +'<div class="field"><label>Description</label>'
-        +'<input id="ee_desc_'+exp.id+'" value="'+(exp.description||'')+'" placeholder="Optional"></div>'
+        +'<input id="ee_desc_'+exp.id+'" value="'+escHtml(exp.description||'')+'" placeholder="Optional"></div>'
         +'<div class="field" style="grid-column:1/-1">'
           +'<label>Receipt</label>'
           +'<div class="receipt-attach-area">'
@@ -11303,7 +11321,7 @@ async function saveTaxRate(value){
   var res=await db.from('agencies').update({tax_rate_pct:rate}).eq('id',_agencyId);
   if(res.error){
     console.error('[saveTaxRate] DB error:',res.error);
-    showToast('Saved locally — DB write failed: '+res.error.message,'warn');
+    showToast('Saved locally — '+friendlyError(res.error),'warn');
   }else{
     console.log('[saveTaxRate] saved tax_rate_pct='+rate+' to DB');
     showToast('Tax rate saved — '+rate+'%','success');
@@ -11363,7 +11381,7 @@ async function saveTaxPayment(){
   var res=await db.from('tax_payments').insert(row).select().single();
   if(res.error){
     console.error('[saveTaxPayment]',res.error);
-    showToast('Save failed: '+res.error.message,'error');
+    showToast(friendlyError(res.error),'error');
   }else{
     TAX_PAYMENTS.unshift({id:res.data.id,agency_id:res.data.agency_id,user_id:res.data.user_id,
       amount:parseFloat(res.data.amount)||0,paid_date:res.data.paid_date,
@@ -11510,7 +11528,7 @@ function renderTaxPage(){
     histBody='<div class="rev-stmt" style="margin-bottom:0">';
     TAX_PAYMENTS.forEach(function(p){
       var lbl=p.paid_date+(p.period?' · <span style="color:var(--t4)">'+p.period+'</span>':'');
-      if(p.notes)lbl+=' <span style="color:var(--t4);font-style:italic;font-size:11px">'+p.notes+'</span>';
+      if(p.notes)lbl+=' <span style="color:var(--t4);font-style:italic;font-size:11px">'+escHtml(p.notes)+'</span>';
       histBody+='<div class="rev-stmt-row" style="gap:12px">'
         +'<span class="rev-stmt-label" style="font-family:var(--mono)">'+lbl+'</span>'
         +'<span class="rev-stmt-fill"></span>'
@@ -11581,7 +11599,7 @@ function renderTaxSummary(){
         +'<span style="color:var(--t3)">'+label+'</span>'
         +'<span style="display:flex;align-items:center;gap:10px">'
         +'<span style="color:var(--pos-txt);font-weight:600">'+fc(p.amount)+'</span>'
-        +(p.notes?'<span style="color:var(--t3);font-size:11px">('+p.notes+')</span>':'')
+        +(p.notes?'<span style="color:var(--t3);font-size:11px">('+escHtml(p.notes)+')</span>':'')
         +'<button onclick="deleteTaxPayment(\''+p.id+'\')" '
         +'style="background:none;border:none;cursor:pointer;color:var(--t3);'
         +'font-size:11px;padding:2px 6px;border-radius:4px;line-height:1;'
@@ -12712,7 +12730,7 @@ function renderChatterSection(){
     var initials=(c.name||'C').split(' ').map(function(w){return w[0]||'';}).join('').slice(0,2).toUpperCase()||'?';
     html+='<div class="partner-card" style="--pc-color:var(--green);--pc-bg:rgba(168,247,64,.10);--pc-border:rgba(168,247,64,.22)">'
       +'<div class="partner-card-head">'
-        +'<div class="partner-avatar" style="background:rgba(168,247,64,.15);color:var(--green)">'+initials+'</div>'
+        +'<div class="partner-avatar" style="background:rgba(168,247,64,.15);color:var(--green)">'+escHtml(initials)+'</div>'
         +'<div class="partner-card-info">'
           +'<div class="partner-card-name">'+escHtml(c.name||c.invited_email)+'</div>'
           +'<div class="partner-card-role">Chatter · '+c.split_pct+'%</div>'
@@ -13007,7 +13025,7 @@ async function syncFullHistory(){
       setStatus(st,'warn','Fanvue session expired — reconnect in Settings → Integrations.');
       showToast('Reconnect Fanvue in Settings to resume auto-sync','warn');
     }else{
-      setStatus(st,'err','Sync error: '+(data.error||res.statusText));
+      setStatus(st,'err','Sync failed — please try again');
     }
   }catch(e){
     setStatus(st,'err','Connection error — check network and try again.');

@@ -10646,8 +10646,13 @@ async function confirmW(id){
     var inp=g('sp_'+id+'_'+p.id);
     return{withdrawal_id:id,partner_id:p.id,eur_amount:r2(pn(inp?inp.value:'0'))};
   });
+  /* Chatter cuts are recipients of this withdrawal too (their id is a valid partners.id). */
+  (CHATTERS||[]).forEach(function(c){
+    var inp=g('sp_'+id+'_'+c.id);var v=r2(pn(inp?inp.value:'0'));
+    if(v>0)splits.push({withdrawal_id:id,partner_id:c.id,eur_amount:v});
+  });
   var totalSpl=splits.reduce(function(s,x){return s+x.eur_amount;},0);
-  if(partners.length>0&&Math.abs(totalSpl-eur)>0.02){
+  if((partners.length>0||(CHATTERS&&CHATTERS.length>0))&&Math.abs(totalSpl-eur)>0.02){
     alert('Split total ('+fe(totalSpl)+') must equal '+fe(eur));return;
   }
   var today=new Date().toISOString().slice(0,10);
@@ -10709,6 +10714,16 @@ async function editWdSplits(wId){
         +'<span style="font-size:12px;color:var(--text3);flex-shrink:0">EUR</span>'
         +'</div>';
     }).join('')
+    +((CHATTERS&&CHATTERS.length)?CHATTERS.map(function(c){
+      var cval=r2(currentSplits[c.id]||0);
+      return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">'
+        +'<span style="font-size:13px;font-weight:500;color:var(--green);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+escHtml(c.name)+' · chatter</span>'
+        +'<input id="wdSplit_'+wId+'_'+c.id+'" type="number" min="0" step="0.01"'
+        +' style="width:90px;padding:6px 8px;font-size:13px;background:var(--card2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:inherit;outline:none"'
+        +' placeholder="0.00" value="'+(cval>0?cval.toFixed(2):'')+'">'
+        +'<span style="font-size:12px;color:var(--text3);flex-shrink:0">EUR</span>'
+        +'</div>';
+    }).join(''):'')
     +'<div style="display:flex;gap:8px;margin-top:10px">'
     +'<button class="btn btn-primary" onclick="saveWdSplits(\''+wId+'\')">Save splits</button>'
     +'<button class="btn btn-ghost" onclick="cancelWdSplits(\''+wId+'\')">Cancel</button>'
@@ -10725,6 +10740,11 @@ async function saveWdSplits(wId){
     var inp=document.getElementById('wdSplit_'+wId+'_'+p.id);
     var val=parseFloat((inp&&inp.value)||0)||0;
     if(val>0)splits.push({withdrawal_id:wId,partner_id:p.id,eur_amount:r2(val)});
+  });
+  (CHATTERS||[]).forEach(function(c){
+    var inp=document.getElementById('wdSplit_'+wId+'_'+c.id);
+    var val=parseFloat((inp&&inp.value)||0)||0;
+    if(val>0)splits.push({withdrawal_id:wId,partner_id:c.id,eur_amount:r2(val)});
   });
   var delRes=await db.from('withdrawal_splits').delete().eq('withdrawal_id',wId);
   if(delRes.error){showToast('Failed to save splits','error');return;}
@@ -11195,13 +11215,18 @@ function onWithdrawalSplitInput(wId){
   if(!eur)return;
   var partners=PARTNERS.filter(function(p){return p.status==='active'&&p.role!=='chatter';});
   var totalSplit=partners.reduce(function(s,p){return s+getCurrentSplit(ACTIVE_MODEL_ID,p.id);},0)||100;
-  var remaining=eur;
+  /* Chatter cut(s) come off the top first; partners split only the remainder. */
+  var chatterTotal=0;
+  (CHATTERS||[]).forEach(function(c){var ci=g('sp_'+wId+'_'+c.id);if(ci)chatterTotal+=pn(ci.value)||0;});
+  var remaining=r2(eur-chatterTotal);
+  if(remaining<0)remaining=0;
+  var distributable=remaining;
   partners.forEach(function(p,i){
     var inp=g('sp_'+wId+'_'+p.id);if(!inp)return;
     if(i===partners.length-1){
       inp.value=r2(remaining).toFixed(2);
     }else{
-      var portion=r2(eur*getCurrentSplit(ACTIVE_MODEL_ID,p.id)/totalSplit);
+      var portion=r2(distributable*getCurrentSplit(ACTIVE_MODEL_ID,p.id)/totalSplit);
       inp.value=portion.toFixed(2);
       remaining-=portion;
     }
@@ -11812,9 +11837,10 @@ function renderBal(){
   /* Partner cards */
   renderPartnerCards();
 
-  /* Split bar: N segments by actual EUR withdrawn */
+  /* Split bar: N segments by actual EUR withdrawn (PARTNER portions only —
+     chatter cuts/payouts are excluded so partner fractions sum to 100%) */
   var activePartners=PARTNERS.filter(function(p){return p.status==='active'&&p.role!=='chatter';});
-  var totalEURwithdrawn=okWs().reduce(function(s,w){return s+w.eur;},0);
+  var totalEURwithdrawn=activePartners.reduce(function(s,p){return s+totalPartnerWithdrawnEUR(p.id);},0);
   var splitBarEl=g('splitBar'),splitLabelsEl=g('splitLabels');
   if(splitBarEl&&activePartners.length>0){
     if(totalEURwithdrawn>0.01){
@@ -12429,8 +12455,12 @@ function renderList(){
             return '<div class="field"><label style="color:var(--'+colorClass+'-text)">'+escHtml(p.name)+' (EUR)</label>'
               +'<input class="num" id="sp_'+w.id+'_'+p.id+'" placeholder="0.00" oninput="onWithdrawalSplitInput(\''+w.id+'\')" data-partner="'+p.id+'"></div>';
           }).join('')
+          +((CHATTERS&&CHATTERS.length)?CHATTERS.map(function(c){
+            return '<div class="field"><label style="color:var(--green)">'+escHtml(c.name)+' · chatter (EUR)</label>'
+              +'<input class="num" id="sp_'+w.id+'_'+c.id+'" placeholder="0.00" oninput="onWithdrawalSplitInput(\''+w.id+'\')" data-chatter="'+c.id+'"></div>';
+          }).join(''):'')
           +'</div>'
-          +'<p class="hint" style="margin-bottom:.75rem">Enter EUR received — split fills automatically. Adjust if needed.</p>'
+          +'<p class="hint" style="margin-bottom:.75rem">Enter EUR received — chatter cut comes off the top, the rest splits between partners. Adjust if needed.</p>'
           +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'
           +'<button class="btn btn-primary" onclick="confirmW(\''+w.id+'\')">Confirm receipt</button>'
           +'<span style="font-size:11px;color:var(--text3)">— click when funds arrive</span>'
@@ -12666,6 +12696,7 @@ function renderChatterSection(){
   if(!container)return;
   if(!CHATTERS||CHATTERS.length===0){container.style.display='none';return;}
   var earnings=calcChatterEarnings();
+  var canPay=currentRole==='admin'||currentRole==='owner';
   container.style.display='block';
   var n=Math.min(CHATTERS.length,5);
   var html='<div class="sec-label" style="margin-bottom:12px">CHATTER PAYOUTS</div>'
@@ -12697,10 +12728,53 @@ function renderChatterSection(){
           +'<div class="partner-stat-value outstanding">'+fu(Math.max(0,remaining))+'</div>'
         +'</div>'
       +'</div>'
+      +(canPay?'<button class="btn" style="margin-top:12px;width:100%" onclick="openChatterPayout(\''+c.id+'\')">Record payout</button>':'')
     +'</div>';
   });
   html+='</div>';
   container.innerHTML=html;
+}
+
+/* ── Chatter: standalone payout (paid outside a platform withdrawal) ──────── */
+var _chatterPayoutId=null;
+function openChatterPayout(cid){
+  _chatterPayoutId=cid;
+  var c=(CHATTERS||[]).find(function(x){return x.id===cid;});
+  var today=new Date().toISOString().slice(0,10);
+  var existing=g('chPayoutOverlay');if(existing)existing.remove();
+  var html='<div id="chPayoutOverlay" style="position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:20px">'
+    +'<div style="background:var(--card);border:1px solid var(--border2);border-radius:20px;padding:28px 32px;max-width:400px;width:100%;box-shadow:0 8px 40px rgba(0,0,0,.5)">'
+    +'<div style="font-size:13px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px">Record chatter payout</div>'
+    +'<div style="font-size:13px;color:var(--text3);margin-bottom:18px">'+escHtml((c&&c.name)||'Chatter')+' · paid outside a platform withdrawal</div>'
+    +'<div class="field" style="margin-bottom:14px"><label>Amount paid (EUR)</label><input class="num" id="chPayoutAmt" placeholder="0.00"></div>'
+    +'<div class="field" style="margin-bottom:14px"><label>Date</label><input type="date" id="chPayoutDate" value="'+today+'"></div>'
+    +'<div class="field" style="margin-bottom:20px"><label>Note (optional)</label><input id="chPayoutNote" placeholder="e.g. May payout"></div>'
+    +'<div style="display:flex;gap:10px">'
+    +'<button class="btn" style="flex:1" onclick="closeChatterPayout()">Cancel</button>'
+    +'<button class="btn-primary" style="flex:2" onclick="submitChatterPayout()">Record payout</button>'
+    +'</div></div></div>';
+  document.body.insertAdjacentHTML('beforeend',html);
+  setTimeout(function(){var a=g('chPayoutAmt');if(a)a.focus();},50);
+}
+function closeChatterPayout(){var ov=g('chPayoutOverlay');if(ov)ov.remove();_chatterPayoutId=null;}
+async function submitChatterPayout(){
+  if(demoGuard())return;
+  var cid=_chatterPayoutId;if(!cid)return;
+  var amt=pn(g('chPayoutAmt').value);
+  if(!amt||amt<=0){g('chPayoutAmt').focus();return;}
+  var date=g('chPayoutDate').value||new Date().toISOString().slice(0,10);
+  var c=(CHATTERS||[]).find(function(x){return x.id===cid;});
+  var note=((g('chPayoutNote')&&g('chPayoutNote').value)||'').trim();
+  var desc='Payout: '+((c&&c.name)||'chatter')+(note?(' — '+note):'');
+  /* Recorded as a zero-USD withdrawal (no platform involved) split entirely to the chatter,
+     so it lands in the chatter's "Withdrawn" without affecting partner platform stats. */
+  var wRes=await db.from('withdrawals').insert({platform:'Chatter payout',usd:0,request_date:date,received_date:date,eur:r2(amt),status:'ok',model_id:null,description:desc}).select('id').single();
+  if(wRes.error||!wRes.data){showToast(friendlyError(wRes.error),'error');return;}
+  var sRes=await db.from('withdrawal_splits').insert({withdrawal_id:wRes.data.id,partner_id:cid,eur_amount:r2(amt)});
+  if(sRes.error){showToast('Failed to save payout','error');return;}
+  closeChatterPayout();
+  showToast('Chatter payout recorded · '+fe(amt),'success');
+  await loadWithdrawals();renderAll();
 }
 
 function renderAll(){

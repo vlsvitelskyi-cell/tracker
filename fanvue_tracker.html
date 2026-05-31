@@ -12684,8 +12684,9 @@ function chatterOutstandingTotal(){
   var sum=0;
   CHATTERS.forEach(function(c){
     var earned=r2(earn[c.id]||0);
-    var withdrawn=r2(okWs().reduce(function(s,w){return s+((w.splitsByPartner&&w.splitsByPartner[c.id])||0);},0));
-    sum+=r2(earned-withdrawn);
+    var wEUR=okWs().reduce(function(s,w){return s+((w.splitsByPartner&&w.splitsByPartner[c.id])||0);},0);
+    var wUSD=FX_RATES.EUR>0?wEUR/FX_RATES.EUR:wEUR; // convert like partners so books reconcile
+    sum+=r2(earned-wUSD);
   });
   return r2(sum);
 }
@@ -12706,7 +12707,8 @@ function renderChatterSection(){
     var withdrawn=r2(okWs().reduce(function(sum,w){
       return sum+((w.splitsByPartner&&w.splitsByPartner[c.id])||0);
     },0));
-    var remaining=r2(earned-withdrawn);
+    var withdrawnUSD=FX_RATES.EUR>0?withdrawn/FX_RATES.EUR:withdrawn; // USD, like partner cards
+    var remaining=r2(earned-withdrawnUSD);
     var initials=(c.name||'C').split(' ').map(function(w){return w[0]||'';}).join('').slice(0,2).toUpperCase()||'?';
     html+='<div class="partner-card" style="--pc-color:var(--green);--pc-bg:rgba(168,247,64,.10);--pc-border:rgba(168,247,64,.22)">'
       +'<div class="partner-card-head">'
@@ -12725,7 +12727,7 @@ function renderChatterSection(){
         +'</div>'
         +'<div class="partner-stat-cell">'
           +'<div class="partner-stat-label">Remaining</div>'
-          +'<div class="partner-stat-value outstanding">'+fu(Math.max(0,remaining))+'</div>'
+          +'<div class="partner-stat-value outstanding"'+(remaining<-0.005?' style="color:var(--neg-txt)"':'')+'>'+(remaining<-0.005?'-':'')+fu(Math.abs(remaining))+'</div>'
         +'</div>'
       +'</div>'
       +(canPay?'<button class="btn" style="margin-top:12px;width:100%" onclick="openChatterPayout(\''+c.id+'\')">Record payout</button>':'')
@@ -12740,13 +12742,17 @@ var _chatterPayoutId=null;
 function openChatterPayout(cid){
   _chatterPayoutId=cid;
   var c=(CHATTERS||[]).find(function(x){return x.id===cid;});
+  var payers=PARTNERS.filter(function(p){return p.status==='active'&&p.role!=='chatter';});
+  var meP=currentUser?payers.find(function(p){return p.user_id===currentUser.id;}):null;
+  var meId=meP?meP.id:(payers[0]?payers[0].id:'');
   var today=new Date().toISOString().slice(0,10);
   var existing=g('chPayoutOverlay');if(existing)existing.remove();
   var html='<div id="chPayoutOverlay" style="position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:20px">'
     +'<div style="background:var(--card);border:1px solid var(--border2);border-radius:20px;padding:28px 32px;max-width:400px;width:100%;box-shadow:0 8px 40px rgba(0,0,0,.5)">'
     +'<div style="font-size:13px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px">Record chatter payout</div>'
-    +'<div style="font-size:13px;color:var(--text3);margin-bottom:18px">'+escHtml((c&&c.name)||'Chatter')+' · paid outside a platform withdrawal</div>'
+    +'<div style="font-size:13px;color:var(--text3);margin-bottom:18px">'+escHtml((c&&c.name)||'Chatter')+' · advance paid before a platform withdrawal</div>'
     +'<div class="field" style="margin-bottom:14px"><label>Amount paid (EUR)</label><input class="num" id="chPayoutAmt" placeholder="0.00"></div>'
+    +'<div class="field" style="margin-bottom:14px"><label>Paid by (gets reimbursed)</label><select id="chPayoutPayer">'+payers.map(function(p){return '<option value="'+p.id+'"'+(p.id===meId?' selected':'')+'>'+escHtml(p.name)+'</option>';}).join('')+'</select></div>'
     +'<div class="field" style="margin-bottom:14px"><label>Date</label><input type="date" id="chPayoutDate" value="'+today+'"></div>'
     +'<div class="field" style="margin-bottom:20px"><label>Note (optional)</label><input id="chPayoutNote" placeholder="e.g. May payout"></div>'
     +'<div style="display:flex;gap:10px">'
@@ -12764,16 +12770,23 @@ async function submitChatterPayout(){
   if(!amt||amt<=0){g('chPayoutAmt').focus();return;}
   var date=g('chPayoutDate').value||new Date().toISOString().slice(0,10);
   var c=(CHATTERS||[]).find(function(x){return x.id===cid;});
+  var payerId=(g('chPayoutPayer')&&g('chPayoutPayer').value)||'';
+  var payer=payerId?PARTNERS.find(function(p){return p.id===payerId;}):null;
   var note=((g('chPayoutNote')&&g('chPayoutNote').value)||'').trim();
-  var desc='Payout: '+((c&&c.name)||'chatter')+(note?(' — '+note):'');
-  /* Recorded as a zero-USD withdrawal (no platform involved) split entirely to the chatter,
-     so it lands in the chatter's "Withdrawn" without affecting partner platform stats. */
-  var wRes=await db.from('withdrawals').insert({platform:'Chatter payout',usd:0,request_date:date,received_date:date,eur:r2(amt),status:'ok',model_id:null,description:desc}).select('id').single();
+  var desc='Chatter advance: '+((c&&c.name)||'chatter')+(payer?(' · paid by '+payer.name):'')+(note?(' — '+note):'');
+  /* Advance: a partner fronts the chatter's pay before any platform withdrawal.
+     Double-entry so TOTAL OUTSTANDING is unchanged — only WHO is owed moves:
+       chatter  +amt  (his "received" goes up → owed less)
+       payer    -amt  ("received" goes down → owed the advance back)
+     usd=0 / eur=0 net → no effect on "Total withdrawn" or platform stats. */
+  var wRes=await db.from('withdrawals').insert({platform:'Chatter payout',usd:0,request_date:date,received_date:date,eur:0,status:'ok',model_id:null,description:desc}).select('id').single();
   if(wRes.error||!wRes.data){showToast(friendlyError(wRes.error),'error');return;}
-  var sRes=await db.from('withdrawal_splits').insert({withdrawal_id:wRes.data.id,partner_id:cid,eur_amount:r2(amt)});
+  var splits=[{withdrawal_id:wRes.data.id,partner_id:cid,eur_amount:r2(amt)}];
+  if(payerId)splits.push({withdrawal_id:wRes.data.id,partner_id:payerId,eur_amount:r2(-amt)});
+  var sRes=await db.from('withdrawal_splits').insert(splits);
   if(sRes.error){showToast('Failed to save payout','error');return;}
   closeChatterPayout();
-  showToast('Chatter payout recorded · '+fe(amt),'success');
+  showToast('Chatter advance recorded · '+fe(amt)+(payer?(' · '+payer.name+' reimbursed'):''),'success');
   await loadWithdrawals();renderAll();
 }
 

@@ -8378,6 +8378,18 @@ function P1(){return PARTNERS[1]||{id:'',name:'Partner 2'};}
 function partnerTotalExp(partnerId){
   return S.months.reduce(function(sum,m){return sum+((m.expByPartner||{})[partnerId]||0);},0);
 }
+/* Sum of chatter cuts for a given month (gross of chatter-assigned txs × chatter %).
+   Mirrors calcChatterEarnings but for an arbitrary month and all chatters combined. */
+function chatterCutForMonth(monthId){
+  if(!CHATTERS||CHATTERS.length===0)return 0;
+  var sum=0;
+  S.txs.forEach(function(tx){
+    if(!tx.chatter_id||!tx.date||tx.date.slice(0,7)!==monthId)return;
+    var c=CHATTERS.find(function(x){return x.id===tx.chatter_id;});
+    if(c)sum+=(tx.amount||0)*(c.split_pct||0)/100;
+  });
+  return r2(sum);
+}
 function partnerShareForMonth(partnerId,month){
   // Use last day of the month as representative date for temporal split lookup
   var parts=month.id.split('-');
@@ -8385,7 +8397,9 @@ function partnerShareForMonth(partnerId,month){
   var dateStr=month.id+'-'+String(lastDay).padStart(2,'0');
   var allExp=0;
   Object.values(month.expByPartner||{}).forEach(function(v){allExp+=v;});
-  var netPool=mTot(month)-allExp-(month.agencyExp||0);
+  // Chatter cut is removed from the pool BEFORE partners split it,
+  // so partner shares shrink by the chatter's earnings (chatter reduces pool).
+  var netPool=mTot(month)-allExp-(month.agencyExp||0)-chatterCutForMonth(month.id);
   var split=getSplitForDate(ACTIVE_MODEL_ID,partnerId,dateStr)/100;
   var ownExp=(month.expByPartner||{})[partnerId]||0;
   return netPool*split+ownExp;
@@ -8515,6 +8529,10 @@ function renderPartnerCards(){
   }).join('');
 
   grid.innerHTML=html;
+
+  /* Chatters are real claimants on the pool now (chatter reduces pool),
+     so their outstanding is part of TOTAL OUTSTANDING — keeps cards reconciled. */
+  totalOutstanding+=chatterOutstandingTotal();
 
   /* Update footer */
   var footer=g('dashPayoutFooter');
@@ -9759,13 +9777,21 @@ async function _buildPDF(dateFrom,dateTo){
     byPlatform[p]=(byPlatform[p]||0)+(tx.amount||0);
   });
 
+  // Chatter cut over the range — removed from the pool BEFORE partners split it.
+  var chatterCut=allTxs.reduce(function(s,tx){
+    if(!tx.chatter_id)return s;
+    var c=(CHATTERS||[]).find(function(x){return x.id===tx.chatter_id;});
+    return c?s+(tx.amount||0)*(c.split_pct||0)/100:s;
+  },0);
+  var partnerPool=netRevenue-chatterCut;
+
   // Partner distribution rows — use MODEL_SPLITS for correct per-model %, skip 0%
   var _modelSplits=ACTIVE_MODEL_ID&&MODEL_SPLITS[ACTIVE_MODEL_ID]?MODEL_SPLITS[ACTIVE_MODEL_ID]:null;
   var partnerRows=PARTNERS
     .filter(function(p){return p.status==='active'&&p.role!=='chatter';})
     .map(function(p){
       var splitPct=_modelSplits?(_modelSplits[p.id]||0):(p.split_pct||0);
-      var grossShare=netRevenue*splitPct/100;
+      var grossShare=partnerPool*splitPct/100;
       var withdrawn=(S.ws||[]).reduce(function(sum,w){
         if(!w.splitsByPartner)return sum;
         return sum+(w.splitsByPartner[p.id]||0);
@@ -11743,9 +11769,9 @@ function renderBal(){
     +'</div>';
   }
 
-  /* Total outstanding across all active partners */
+  /* Total outstanding across all active partners + chatters (chatter reduces pool) */
   var activePs=PARTNERS.filter(function(p){return p.status==='active'&&p.role!=='chatter';});
-  var totalOutstanding=r2(activePs.reduce(function(s,p){return s+partnerRemaining(p.id);},0)); // true net (over-withdrawals offset)
+  var totalOutstanding=r2(activePs.reduce(function(s,p){return s+partnerRemaining(p.id);},0)+chatterOutstandingTotal()); // true net (over-withdrawals offset)
 
   /* Model label in Partner Payouts — hidden (single model, no need to label) */
   var ml=g('dashModelLabel');
@@ -12282,7 +12308,13 @@ function renderMonths(){
           var myPtnr=PARTNERS.find(function(p){return currentUser&&p.user_id===currentUser.id;});
           if(myPtnr){
             var txSplit=getCurrentSplit(tx.model_id||ACTIVE_MODEL_ID,myPtnr.id);
-            var myTxShare=r2((tx.amount||tx.amt||0)*txSplit/100);
+            /* chatter cut comes off the top before the partner split on assigned txs */
+            var txGross=(tx.amount||tx.amt||0);
+            if(tx.chatter_id){
+              var _c=(CHATTERS||[]).find(function(x){return x.id===tx.chatter_id;});
+              if(_c)txGross=txGross*(1-(_c.split_pct||0)/100);
+            }
+            var myTxShare=r2(txGross*txSplit/100);
             if(myTxShare>0){
               partnerShareHtml='<span style="font-size:11px;color:var(--text3);margin-left:6px">your share: '+fu(myTxShare)+'</span>';
             }
@@ -12606,16 +12638,26 @@ function calcChatterEarnings(){
   if(!CHATTERS||CHATTERS.length===0)return{};
   var result={};
   CHATTERS.forEach(function(c){result[c.id]=0;});
-  var m=S.months[S.am];
-  if(!m)return result;
-  var monthKey=m.id;
+  // All-time earnings (matches partners' all-time REVENUE SHARE so the
+  // payout cards and TOTAL OUTSTANDING reconcile).
   S.txs.forEach(function(tx){
     if(!tx.chatter_id||!result.hasOwnProperty(tx.chatter_id))return;
-    if(!tx.date||tx.date.slice(0,7)!==monthKey)return;
     var chatter=CHATTERS.find(function(c){return c.id===tx.chatter_id;});
-    if(chatter)result[tx.chatter_id]=r2(result[tx.chatter_id]+(tx.amount||0)*chatter.split_pct/100);
+    if(chatter)result[tx.chatter_id]=r2(result[tx.chatter_id]+(tx.amount||0)*(chatter.split_pct||0)/100);
   });
   return result;
+}
+/* Total still-owed to all chatters (all-time earned − withdrawn). */
+function chatterOutstandingTotal(){
+  if(!CHATTERS||CHATTERS.length===0)return 0;
+  var earn=calcChatterEarnings();
+  var sum=0;
+  CHATTERS.forEach(function(c){
+    var earned=r2(earn[c.id]||0);
+    var withdrawn=r2(okWs().reduce(function(s,w){return s+((w.splitsByPartner&&w.splitsByPartner[c.id])||0);},0));
+    sum+=r2(earned-withdrawn);
+  });
+  return r2(sum);
 }
 
 /* ── Chatter: section render (Overview) ──────────────────────────────────── */

@@ -7827,7 +7827,7 @@ async function login(){
   var email=(g('authEmail').value||'').trim();
   var pass=g('authPass').value||'';
   var err=g('authErr'),btn=g('authBtn');
-  err.textContent='';
+  err.textContent='';err.style.color='var(--red)';
   if(!email||!pass){err.textContent='Enter email and password.';return;}
   btn.disabled=true;btn.textContent='Signing in…';
 
@@ -7894,7 +7894,7 @@ async function signup(){
   var pass=g('authPass').value||'';
   var pass2=g('authPassConfirm').value||'';
   var err=g('authErr'),btn=g('authBtn');
-  err.textContent='';
+  err.textContent='';err.style.color='var(--red)';
   if(!email||!pass){err.textContent='Enter email and password.';return;}
   if(pass.length<6){err.textContent='Password must be at least 6 characters.';return;}
   if(pass!==pass2){err.textContent='Passwords do not match.';return;}
@@ -8153,6 +8153,7 @@ function closeAddModelModal(){
 }
 
 async function createAndConnectModel(){
+  if(demoGuard())return;
   var name=g('addModelName').value.trim();
   var st=g('addModelStatus'),btn=g('addModelBtn');
   if(!name){g('addModelName').focus();return;}
@@ -8326,6 +8327,7 @@ async function saveModelSplits(){
 }
 
 async function _doSaveModelSplits(effectiveDate){
+  if(demoGuard())return;
   var btn=g('saveSplitsBtn');if(btn){btn.disabled=true;btn.textContent='Saving…';}
   var activePartners=PARTNERS.filter(function(p){return p.status==='active'&&p.role!=='chatter';});
   var effFull=effectiveDate+'T00:00:00.000Z';
@@ -8553,6 +8555,7 @@ function renderPartnerCards(){
 }
 
 async function makeAdmin(partnerId){
+  if(demoGuard())return;
   if(currentRole!=='admin'&&currentRole!=='owner')return;
   var p=PARTNERS.find(function(x){return x.id===partnerId;});
   if(!p||p.is_admin)return;
@@ -8750,6 +8753,7 @@ async function ensureAdminPartnerExists(){
 }
 
 async function saveAgencyName(){
+  if(demoGuard())return;
   if(currentRole!=='admin')return;
   var name=(g('agencyNameInput').value||'').trim();
   var st=g('agencyNameStatus'),btn=g('saveAgencyBtn');
@@ -8849,6 +8853,7 @@ function cancelSplitEdit(partnerId){
 }
 
 async function saveSplit(partnerId,otherTotal){
+  if(demoGuard())return;
   var inp=g('split_inp_'+partnerId);
   if(!inp)return;
   var val=parseInt(inp.value)||0;
@@ -9516,9 +9521,10 @@ var DISPLAY_CURRENCY=localStorage.getItem('displayCurrency')||'USD';
 var FX_RATES={USD:1,EUR:0.855,GBP:0.73};
 var CURRENCY_SYMBOLS={USD:'$',EUR:'€',GBP:'£'};
 function fc(usdAmount){
+  var v=Number(usdAmount); if(!isFinite(v))v=0;
   var rate=FX_RATES[DISPLAY_CURRENCY]||1;
   var sym=CURRENCY_SYMBOLS[DISPLAY_CURRENCY]||'$';
-  return sym+(Math.abs(usdAmount)*rate).toFixed(2);
+  return sym+(Math.abs(v)*rate).toFixed(2);
 }
 function setDisplayCurrency(cur){
   DISPLAY_CURRENCY=cur;
@@ -9969,7 +9975,13 @@ async function _buildPDF(dateFrom,dateTo){
 }
 
 /* ---- Utils ---- */
-function pn(v){var s=String(v==null?0:v).replace(/[$€£\s]/g,'').replace(/[,]/,'.');if(s==='-'||s==='')return 0;return parseFloat(s)||0;}
+function pn(v){
+  var s=String(v==null?0:v).replace(/[$€£\s]/g,'');
+  if(s.indexOf(',')>-1 && s.indexOf('.')>-1){ s=s.replace(/,/g,''); } // 1,000.50 → 1000.50
+  else { s=s.replace(',','.'); }                                       // 1,5 → 1.5 (decimal comma)
+  if(s==='-'||s==='')return 0;
+  return parseFloat(s)||0;
+}
 function r2(n){return Math.round(n*100)/100;}
 function animateCountUp(element,targetText,duration){
   duration=duration||600;
@@ -10108,13 +10120,13 @@ function toggleSelectMode(){
   }
 }
 async function deleteBulkTx(){
+  if(demoGuard())return;
   if(!_selectedTxs.size)return;
   var n=_selectedTxs.size;
   if(!confirm('Delete '+n+' transaction'+(n>1?'s':'')+'?'))return;
   var ids=Array.from(_selectedTxs);
-  for(var i=0;i<ids.length;i++){
-    await db.from('transactions').delete().eq('id',ids[i]);
-  }
+  var delRes=await db.from('transactions').delete().in('id',ids);
+  if(delRes.error){showToast(friendlyError(delRes.error),'error');return;}
   _selectedTxs.clear();
   updateBulkBar();
   await loadRevenueData();renderAll();
@@ -10319,6 +10331,7 @@ async function loadPlatformsForPartner(){
 }
 
 async function savePlatforms(){
+  if(demoGuard())return;
   try{localStorage.setItem('ft6_platforms',JSON.stringify(S.platforms));}catch(e){}
   if(_agencyId){
     await db.from('agencies').update({platforms:S.platforms}).eq('id',_agencyId);
@@ -10630,7 +10643,7 @@ async function addW(){
 
   // B7: styled confirm dialog with withdrawal currency
   var sym={EUR:'€',GBP:'£',USD:'$'}[WD_CURRENCY]||'€';
-  var wdRate=WD_CURRENCY==='GBP'?0.79:WD_CURRENCY==='USD'?1.0:WISE_RATE;
+  var wdRate=WD_CURRENCY==='GBP'?(FX_RATES.GBP||0.73):WD_CURRENCY==='USD'?1.0:WISE_RATE;
   var received=(usd*wdRate).toFixed(2);
   var existing=g('wdConfirmOverlay');if(existing)existing.remove();
   var html='<div id="wdConfirmOverlay" style="position:fixed;inset:0;z-index:500;'
@@ -10657,6 +10670,7 @@ async function addW(){
 }
 
 async function confirmW(id){
+  if(demoGuard())return;
   var eur=pn(g('e_'+id).value);
   if(!eur||eur<=0){g('e_'+id).focus();return;}
   var partners=PARTNERS.filter(function(p){return p.status==='active'&&p.role!=='chatter';});
@@ -10752,6 +10766,7 @@ async function editWdSplits(wId){
 }
 
 async function saveWdSplits(wId){
+  if(demoGuard())return;
   var activePartners=PARTNERS.filter(function(p){return p.status==='active'&&p.role!=='chatter';});
   var splits=[];
   activePartners.forEach(function(p){
@@ -10852,6 +10867,7 @@ function txEditCancel(id){
 }
 
 async function txDelete(id,source){
+  if(demoGuard())return;
   var msg=source==='scraper'
     ?'Delete this Fanvue transaction? (written by scraper)'
     :'Delete this transaction?';
@@ -10862,11 +10878,12 @@ async function txDelete(id,source){
 }
 
 async function txSave(id){
+  if(demoGuard())return;
   var amt=pn(g('te_amt_'+id).value);
   var date=g('te_date_'+id).value;
   var pl=g('te_pl_'+id).value;
-  if(!amt||amt<=0){g('te_amt_'+id).focus();return;}
-  if(!date)return;
+  if(amt===0){var s=g('txStatus');if(s)s.innerHTML='<span style="color:var(--red)">Enter a non-zero amount.</span>';g('te_amt_'+id).focus();return;}
+  if(!date){g('te_date_'+id).focus();return;}
 
   var btn=g('te_save_'+id);
   if(btn){btn.disabled=true;btn.textContent='Saving…';}
@@ -11000,6 +11017,7 @@ async function addExpense(){
 }
 
 async function deleteExpense(id){
+  if(demoGuard())return;
   if(!confirm('Delete this expense?'))return;
   var res=await db.from('expenses').delete().eq('id',id);
   if(res.error){showToast(friendlyError(res.error),'error');return;}
@@ -11016,6 +11034,7 @@ function expEditCancel(id){
   renderExpenses();
 }
 async function expSave(id){
+  if(demoGuard())return;
   var amt=pn(g('ee_amt_'+id).value);
   var date=g('ee_date_'+id).value;
   var desc=(g('ee_desc_'+id).value||'').trim();
@@ -11394,6 +11413,7 @@ async function saveTaxPayment(){
 }
 
 async function deleteTaxPayment(id){
+  if(demoGuard())return;
   showConfirmModal(
     'Delete tax payment?',
     'This payment record will be permanently removed.',

@@ -9060,17 +9060,16 @@ async function showInviteOverlay(token){
   g('invErr').textContent='';
   g('invErr').style.color='var(--red)';
   setInvTab('new');
-  var invRes=await db.from('partner_invites').select('email,agency_id').eq('token',token).single();
-  if(!invRes.error&&invRes.data){
-    _inviteAgencyId=invRes.data.agency_id||'';
-    var ef=g('invEmail');
-    if(ef){ef.value=invRes.data.email;ef.readOnly=true;ef.style.opacity='.7';}
-    if(invRes.data.agency_id){
-      var agRes=await db.from('agencies').select('name').eq('id',invRes.data.agency_id).single();
-      if(!agRes.error&&agRes.data&&agRes.data.name){
-        var sub=g('inviteAgencySub');
-        if(sub)sub.textContent='Create your account to join '+agRes.data.name;
-      }
+  // Token preview via SECURITY DEFINER RPC: returns only the agency name, never
+  // the invitee's email (so a token can't be used to harvest emails). The user
+  // types their own email; the server verifies it against the token on accept.
+  var invRes=await db.rpc('invite_preview',{p_token:token});
+  var invRow=invRes&&invRes.data&&invRes.data[0]?invRes.data[0]:null;
+  if(invRow){
+    _inviteAgencyId=invRow.agency_id||'';
+    if(invRow.agency_name){
+      var sub=g('inviteAgencySub');
+      if(sub)sub.textContent='Create your account to join '+invRow.agency_name;
     }
   }
   setTimeout(function(){var p=g('invPass');if(p)p.focus();},50);
@@ -12918,11 +12917,11 @@ async function init(){
     var _preCheck=await db.auth.getSession();
     var _preSession=_preCheck.data&&_preCheck.data.session;
     if(_preSession&&_preSession.user){
-      var _invInfo=await db.from('partner_invites')
-        .select('email,agency_id')
-        .eq('token',_invToken)
-        .single();
-      if(!_invInfo.error&&_invInfo.data&&_preSession.user.email===_invInfo.data.email){
+      // Preview via RPC (no email exposed). accept-invite verifies, server-side,
+      // that the caller's JWT email matches the invite — so no client email check.
+      var _invPrev=await db.rpc('invite_preview',{p_token:_invToken});
+      var _invRow=_invPrev&&_invPrev.data&&_invPrev.data[0]?_invPrev.data[0]:null;
+      if(_invRow){
         await fetch(EDGE_URL+'/accept-invite',{
           method:'POST',
           // Send the user's real JWT; the function derives identity from it.
@@ -12934,7 +12933,7 @@ async function init(){
         // Suppress onboarding — this user is joining an existing agency
         localStorage.setItem('onboarding_skipped_'+_preSession.user.id,'1');
         // Use agency-specific role query to handle multi-agency users correctly
-        var _invAgId=_invInfo.data.agency_id||'';
+        var _invAgId=_invRow.agency_id||'';
         var _rd=null;
         if(_invAgId){
           var _rr2=await db.from('user_roles')

@@ -9576,7 +9576,17 @@ function platformCssClass(name){
 /* ---- Task G: Demo mode ---- */
 var DEMO_MODE=false;
 var DEMO_PID1='demo-p1',DEMO_PID2='demo-p2',DEMO_MID1='demo-m1',DEMO_MID2='demo-m2',DEMO_AID='demo-agency';
-var DEMO_STATE={
+/* Demo data uses ROLLING dates so the dashboard always looks current: the three
+   demo months end on the actual current calendar month, and current-month dates
+   never go past today. Rebuilt on each enterDemoMode() so "This month" and the
+   charts are never stale. */
+function buildDemoState(){
+  var now=new Date();
+  function mo(off){var d=new Date(now.getFullYear(),now.getMonth()+off,1);return {y:d.getFullYear(),mo:d.getMonth(),id:d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'),name:MONTH_NAMES[d.getMonth()]+' '+d.getFullYear()};}
+  function day(M,dd){var last=new Date(M.y,M.mo+1,0).getDate();var d=Math.min(dd,last);if(M.y===now.getFullYear()&&M.mo===now.getMonth())d=Math.min(d,now.getDate());return M.id+'-'+String(d).padStart(2,'0');}
+  function iso(off){var d=new Date(now.getFullYear(),now.getMonth()+off,1);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-01T00:00:00.000Z';}
+  var m2=mo(-2),m1=mo(-1),m0=mo(0); // oldest .. current
+  return {
   partners:[
     {id:DEMO_PID1,name:'Alex Rivera',status:'active',invited_email:'alex@demo.test',user_id:null,split_pct:35,role:'partner'},
     {id:DEMO_PID2,name:'Jamie Lee',status:'active',invited_email:'jamie@demo.test',user_id:null,split_pct:40,role:'partner'},
@@ -9587,12 +9597,12 @@ var DEMO_STATE={
     'demo-m2':{'demo-p1':35,'demo-p2':40}
   },
   splitHistory:[
-    {model_id:'demo-m1',partner_id:'demo-p1',split_pct:30,effective_from:'2026-01-01T00:00:00.000Z'},
-    {model_id:'demo-m1',partner_id:'demo-p2',split_pct:35,effective_from:'2026-01-01T00:00:00.000Z'},
-    {model_id:'demo-m1',partner_id:'demo-p1',split_pct:35,effective_from:'2026-03-01T00:00:00.000Z'},
-    {model_id:'demo-m1',partner_id:'demo-p2',split_pct:40,effective_from:'2026-03-01T00:00:00.000Z'},
-    {model_id:'demo-m2',partner_id:'demo-p1',split_pct:35,effective_from:'2026-01-01T00:00:00.000Z'},
-    {model_id:'demo-m2',partner_id:'demo-p2',split_pct:40,effective_from:'2026-01-01T00:00:00.000Z'}
+    {model_id:'demo-m1',partner_id:'demo-p1',split_pct:30,effective_from:iso(-5)},
+    {model_id:'demo-m1',partner_id:'demo-p2',split_pct:35,effective_from:iso(-5)},
+    {model_id:'demo-m1',partner_id:'demo-p1',split_pct:35,effective_from:iso(-2)},
+    {model_id:'demo-m1',partner_id:'demo-p2',split_pct:40,effective_from:iso(-2)},
+    {model_id:'demo-m2',partner_id:'demo-p1',split_pct:35,effective_from:iso(-5)},
+    {model_id:'demo-m2',partner_id:'demo-p2',split_pct:40,effective_from:iso(-5)}
   ],
   models:[
     {id:'demo-m1',name:'Aria Blake',connected:true},
@@ -9600,36 +9610,39 @@ var DEMO_STATE={
   ],
   S:{
     months:[
-      {id:'2026-03',name:'March 2026',revenues:{Fanvue:4210},expByPartner:{'demo-p1':120,'demo-p2':80},agencyExp:0},
-      {id:'2026-04',name:'April 2026',revenues:{Fanvue:5880},expByPartner:{'demo-p1':150,'demo-p2':90},agencyExp:0},
-      {id:'2026-05',name:'May 2026',revenues:{Fanvue:3540},expByPartner:{'demo-p1':100,'demo-p2':60},agencyExp:0}
+      {id:m2.id,name:m2.name,revenues:{Fanvue:4210},expByPartner:{'demo-p1':120,'demo-p2':80},agencyExp:0},
+      {id:m1.id,name:m1.name,revenues:{Fanvue:5880},expByPartner:{'demo-p1':150,'demo-p2':90},agencyExp:0},
+      {id:m0.id,name:m0.name,revenues:{Fanvue:3540},expByPartner:{'demo-p1':100,'demo-p2':60},agencyExp:0}
     ],
     ws:[
-      {id:'dw1',pl:'fanvue',usd:3800,eur:3142,splitsByPartner:{'demo-p1':1099.70,'demo-p2':1256.80},date:'2026-04-02',rd:'2026-04-05',st:'ok',model_id:'demo-m1',description:null},
-      {id:'dw2',pl:'fanvue',usd:4200,eur:3591,splitsByPartner:{'demo-p1':1256.85,'demo-p2':1436.40},date:'2026-05-01',rd:null,st:'pend',model_id:'demo-m1',description:null}
+      {id:'dw1',pl:'fanvue',usd:3800,eur:3142,splitsByPartner:{'demo-p1':1099.70,'demo-p2':1256.80},date:day(m1,2),rd:day(m1,5),st:'ok',model_id:'demo-m1',description:null},
+      {id:'dw2',pl:'fanvue',usd:4200,eur:3591,splitsByPartner:{'demo-p1':1256.85,'demo-p2':1436.40},date:day(m0,1),rd:null,st:'pend',model_id:'demo-m1',description:null},
+      {id:'dwc',pl:'Chatter payout',usd:0,eur:0,splitsByPartner:{'demo-chatter-1':120,'demo-p1':-120},date:day(m1,20),rd:day(m1,20),st:'ok',model_id:null,description:'Chatter advance: Sam Turner · paid by Alex Rivera'}
     ],
     txs:[
-      {id:'dt1',amount:1420,platform:'fanvue',date:'2026-03-10',source:'sync',model_id:'demo-m1',description:'Subscription'},
-      {id:'dt2',amount:890,platform:'fanvue',date:'2026-03-18',source:'sync',model_id:'demo-m1',description:'Tip',chatter_id:'demo-chatter-1'},
-      {id:'dt3',amount:1900,platform:'fanvue',date:'2026-03-25',source:'sync',model_id:'demo-m2',description:'Subscription'},
-      {id:'dt4',amount:2240,platform:'fanvue',date:'2026-04-08',source:'sync',model_id:'demo-m1',description:'Subscription renewal'},
-      {id:'dt5',amount:1640,platform:'fanvue',date:'2026-04-15',source:'sync',model_id:'demo-m1',description:'Post unlock',chatter_id:'demo-chatter-1'},
-      {id:'dt6',amount:2000,platform:'fanvue',date:'2026-04-22',source:'sync',model_id:'demo-m2',description:'Subscription'},
-      {id:'dt7',amount:1890,platform:'fanvue',date:'2026-05-05',source:'sync',model_id:'demo-m1',description:'Subscription'},
-      {id:'dt8',amount:1650,platform:'fanvue',date:'2026-05-18',source:'sync',model_id:'demo-m2',description:'Tip',chatter_id:'demo-chatter-1'}
+      {id:'dt1',amount:1420,platform:'fanvue',date:day(m2,10),source:'sync',model_id:'demo-m1',description:'Subscription'},
+      {id:'dt2',amount:890,platform:'fanvue',date:day(m2,18),source:'sync',model_id:'demo-m1',description:'Tip',chatter_id:'demo-chatter-1'},
+      {id:'dt3',amount:1900,platform:'fanvue',date:day(m2,25),source:'sync',model_id:'demo-m2',description:'Subscription'},
+      {id:'dt4',amount:2240,platform:'fanvue',date:day(m1,8),source:'sync',model_id:'demo-m1',description:'Subscription renewal'},
+      {id:'dt5',amount:1640,platform:'fanvue',date:day(m1,15),source:'sync',model_id:'demo-m1',description:'Post unlock',chatter_id:'demo-chatter-1'},
+      {id:'dt6',amount:2000,platform:'fanvue',date:day(m1,22),source:'sync',model_id:'demo-m2',description:'Subscription'},
+      {id:'dt7',amount:1890,platform:'fanvue',date:day(m0,5),source:'sync',model_id:'demo-m1',description:'Subscription'},
+      {id:'dt8',amount:1650,platform:'fanvue',date:day(m0,18),source:'sync',model_id:'demo-m2',description:'Tip',chatter_id:'demo-chatter-1'}
     ],
     exps:[
-      {id:'de1',amount:120,partner_id:'demo-p1',date:'2026-03-31',description:'[equipment] Lighting kit',model_id:null},
-      {id:'de2',amount:80,partner_id:'demo-p2',date:'2026-03-31',description:'[software] Editing tools',model_id:null},
-      {id:'de3',amount:150,partner_id:'demo-p1',date:'2026-04-30',description:'[equipment] Camera upgrade',model_id:null},
-      {id:'de4',amount:90,partner_id:'demo-p2',date:'2026-04-30',description:'[marketing] Promotion',model_id:null},
-      {id:'de5',amount:100,partner_id:'demo-p1',date:'2026-05-15',description:'[software] Subscription',model_id:null},
-      {id:'de6',amount:60,partner_id:'demo-p2',date:'2026-05-15',description:'[equipment] Accessories',model_id:null}
+      {id:'de1',amount:120,partner_id:'demo-p1',date:day(m2,28),description:'[equipment] Lighting kit',model_id:null},
+      {id:'de2',amount:80,partner_id:'demo-p2',date:day(m2,28),description:'[software] Editing tools',model_id:null},
+      {id:'de3',amount:150,partner_id:'demo-p1',date:day(m1,28),description:'[equipment] Camera upgrade',model_id:null},
+      {id:'de4',amount:90,partner_id:'demo-p2',date:day(m1,28),description:'[marketing] Promotion',model_id:null},
+      {id:'de5',amount:100,partner_id:'demo-p1',date:day(m0,15),description:'[software] Subscription',model_id:null},
+      {id:'de6',amount:60,partner_id:'demo-p2',date:day(m0,15),description:'[equipment] Accessories',model_id:null}
     ],
     am:2,
     platforms:['Fanvue']
   }
-};
+  };
+}
+var DEMO_STATE=null;
 
 var DEFAULT_PLATFORMS=['Fanvue'];
 var MONTH_NAMES=['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -9649,6 +9662,7 @@ function hideDemoBanner(){
 }
 function enterDemoMode(){
   DEMO_MODE=true;
+  DEMO_STATE=buildDemoState(); // rebuild with rolling dates anchored to today
   _agencyId=DEMO_AID;
   ALL_MODELS=DEMO_STATE.models.slice();
   ACTIVE_MODEL_ID=DEMO_MID1;

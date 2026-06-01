@@ -2,6 +2,7 @@
 <html lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8">
+<meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Payout Manager</title>
 <meta name="description" content="Revenue sync, partner splits, and FX tracking for Fanvue agencies.">
@@ -8020,7 +8021,7 @@ async function loadModels(){
     .eq('agency_id',_agencyId)
     .order('created_at',{ascending:true});
   if(res.error||!res.data||!res.data.length){
-    console.error('loadModels failed:',res.error);
+    dbg('loadModels failed:',res.error);
     return;
   }
   ALL_MODELS=res.data.map(function(m){return{
@@ -8424,12 +8425,13 @@ function partnerRemaining(partnerId){
 
 async function loadPartners(){
   if(DEMO_MODE)return;
+  if(!_agencyId)return; // never query against a hardcoded fallback agency UUID
   var res=await db.from('partners')
     .select('id,name,status,invited_email,user_id,split_pct,role')
-    .eq('agency_id',_agencyId||'00000000-0000-0000-0000-000000000001')
+    .eq('agency_id',_agencyId)
     .order('created_at',{ascending:true});
-  if(res.error){console.error('loadPartners:',res.error);return;}
-  if(!res.data||!res.data.length){console.warn('loadPartners: no partners found');return;}
+  if(res.error){dbg('loadPartners:',res.error);return;}
+  if(!res.data||!res.data.length){dbg('loadPartners: no partners found');return;}
   PARTNERS=res.data.map(function(p){return{id:p.id,name:p.name,status:p.status||'active',invited_email:p.invited_email||null,user_id:p.user_id||null,split_pct:p.split_pct||0,role:p.role||'partner'};});
   CHATTERS=PARTNERS.filter(function(p){return p.role==='chatter'&&p.status==='active';});
   /* Try to load admin user_ids (used for role labels on partner cards) */
@@ -8588,7 +8590,7 @@ var EDGE_URL=SUPA_URL+'/functions/v1';
 async function loadFanvueConnection(){
   if(!currentUser)return;
   var res=await db.from('fanvue_connection_status').select('*').eq('user_id',currentUser.id).maybeSingle();
-  if(res.error)console.error('loadFanvueConnection error:',res.error);
+  if(res.error)dbg('loadFanvueConnection error:',res.error);
   FANVUE_CONNECTION=(res.data&&res.data.fanvue_creator_id)?res.data:null;
   renderFanvueStatus();
   renderSubBanners();
@@ -8798,7 +8800,7 @@ async function loadPartnersList(){
     }).join('');
     return;
   }
-  var res=await db.from('partners').select('id,name,split_pct,status,invited_email,user_id').in('status',['active','pending']).order('created_at',{ascending:true});
+  var res=await db.from('partners').select('id,name,split_pct,status,invited_email,user_id').eq('agency_id',_agencyId).in('status',['active','pending']).order('created_at',{ascending:true});
   if(res.error||!res.data){el.innerHTML='<div class="empty-state-sm">No partners.</div>';return;}
   var rows=res.data;
   _partnersSplitTotal=0;
@@ -9031,7 +9033,7 @@ async function invitePartner(){
 function renderSubBanners(){
   var html='';
   if(FANVUE_CONNECTION&&!FANVUE_CONNECTION.subscription_active){
-    html='<div class="sub-banner expired">Subscribe via <a href="#" style="color:inherit;font-weight:600">Fanvue App Store</a> to continue using Payout Manager.</div>';
+    html='<div class="sub-banner expired">Subscribe via <a href="https://www.fanvue.com/app-store" target="_blank" rel="noopener" style="color:inherit;font-weight:600">Fanvue App Store</a> to continue using Payout Manager.</div>';
   }
   var ds=g('subBannerDash'),ss=g('subBannerSettings');
   if(ds)ds.innerHTML=html;
@@ -9397,7 +9399,7 @@ async function disconnectFanvueConfirmed(){
   var res=await db.from('fanvue_connections').delete().eq('model_id',modelId);
   dbg('[disconnect] result:',res);
   if(res.error){
-    console.error('[disconnect] error:',res.error);
+    dbg('[disconnect] error:',res.error);
     showToast('Failed to disconnect. Try again.','error');
     return;
   }
@@ -9738,7 +9740,7 @@ async function generateReport(){
     await _buildPDF(dateFrom,dateTo);
     closeReportModal();
   }catch(e){
-    console.error('[report] PDF generation failed:',e);
+    dbg('[report] PDF generation failed:',e);
     errEl.textContent='Failed to generate PDF. Please try again.';
     errEl.style.display='block';
   }finally{
@@ -10414,8 +10416,8 @@ async function loadRevenueData(){
 
   var txRes=results[0],expRes=results[1];
 
-  if(txRes.error)console.error('transactions error:',txRes.error);
-  if(expRes.error)console.error('expenses error:',expRes.error);
+  if(txRes.error)dbg('transactions error:',txRes.error);
+  if(expRes.error)dbg('expenses error:',expRes.error);
 
   S.txs=(txRes.data||[]).map(function(tx){
     return{id:tx.id,amount:parseFloat(tx.amount_usd)||0,platform:tx.platform,date:tx.date,source:tx.source||'manual',model_id:tx.model_id||'',description:tx.description||null,chatter_id:tx.chatter_id||null};
@@ -10494,12 +10496,15 @@ async function loadWithdrawals(){
   // Include this agency's model-tied withdrawals PLUS agency-level ones (model_id IS NULL,
   // recorded via "Record withdrawal" without a specific model). The null-model rows were
   // being dropped by a plain .in() filter, which hid legitimate payouts.
-  var _orExpr='model_id.in.('+_agModelIds.join(',')+'),model_id.is.null';
+  var _orExpr='model_id.in.('+_agModelIds.join(',')+'),and(model_id.is.null,agency_id.eq.'+_agencyId+')';
   var wQuery=db.from('withdrawals').select('*').or(_orExpr).order('request_date',{ascending:false});
-  var results=await Promise.all([wQuery,db.from('withdrawal_splits').select('*')]);
-
-  var wRes=results[0],splitsRes=results[1];
-  if(wRes.error){console.error(wRes.error);return;}
+  var wRes=await wQuery;
+  if(wRes.error){dbg(wRes.error);return;}
+  // Fetch only the splits belonging to THIS agency's withdrawals (don't pull every split via RLS alone).
+  var _wids=(wRes.data||[]).map(function(w){return w.id;});
+  var splitsRes=_wids.length
+    ? await db.from('withdrawal_splits').select('*').in('withdrawal_id',_wids)
+    : {data:[]};
 
   var splitsMap={};
   (splitsRes.data||[]).forEach(function(s){
@@ -10535,7 +10540,7 @@ async function loadTaxPayments(){
     .select('*')
     .eq('user_id',currentUser.id)
     .order('paid_date',{ascending:false});
-  if(res.error){console.error('[loadTaxPayments]',res.error);return;}
+  if(res.error){dbg('[loadTaxPayments]',res.error);return;}
   TAX_PAYMENTS=(res.data||[]).map(function(r){
     return{id:r.id,agency_id:r.agency_id,user_id:r.user_id,
       amount:parseFloat(r.amount)||0,paid_date:r.paid_date,
@@ -10647,7 +10652,7 @@ async function addW(){
 
   var wModelId=(g('wModel')&&g('wModel').value)||null;
   var wdDescVal=(g('wdDesc')&&g('wdDesc').value.trim())||null;
-  _wPending={platform:platform,usd:r2(usd),request_date:date,eur:0,status:'pending',model_id:wModelId||null,description:wdDescVal};
+  _wPending={platform:platform,usd:r2(usd),request_date:date,eur:0,status:'pending',model_id:wModelId||null,description:wdDescVal,agency_id:_agencyId};
 
   // B7: styled confirm dialog with withdrawal currency
   var sym={EUR:'€',GBP:'£',USD:'$'}[WD_CURRENCY]||'€';
@@ -10705,7 +10710,7 @@ async function confirmW(id){
   await db.from('withdrawal_splits').delete().eq('withdrawal_id',id);
   if(splits.length){
     var splitsRes=await db.from('withdrawal_splits').insert(splits);
-    if(splitsRes.error)console.error('splits write error:',splitsRes.error);
+    if(splitsRes.error)dbg('splits write error:',splitsRes.error);
   }
 
   EXP[id]=false;
@@ -10814,8 +10819,18 @@ function resetAll(){
 }
 async function resetAllConfirmed(){
   if(demoGuard())return;
-  await db.from('withdrawal_splits').delete().neq('id','00000000-0000-0000-0000-000000000000');
-  var res=await db.from('withdrawals').delete().neq('id','00000000-0000-0000-0000-000000000000');
+  // Scope deletion to THIS agency's withdrawals explicitly — never a blind table wipe
+  // that relies solely on RLS (a weak DELETE policy would otherwise erase every agency).
+  var ids=ALL_MODELS.map(function(m){return m.id;});
+  var orExpr=ids.length
+    ? 'model_id.in.('+ids.join(',')+'),and(model_id.is.null,agency_id.eq.'+_agencyId+')'
+    : 'and(model_id.is.null,agency_id.eq.'+_agencyId+')';
+  var wRes=await db.from('withdrawals').select('id').or(orExpr);
+  if(wRes.error){showToast(friendlyError(wRes.error),'error');return;}
+  var wids=(wRes.data||[]).map(function(w){return w.id;});
+  if(!wids.length){showToast('Nothing to clear','info');return;}
+  await db.from('withdrawal_splits').delete().in('withdrawal_id',wids);
+  var res=await db.from('withdrawals').delete().in('id',wids);
   if(res.error)showToast(friendlyError(res.error),'error');
   else{await loadWithdrawals();renderAll();showToast('Withdrawal history cleared','success');}
 }
@@ -10998,7 +11013,7 @@ async function addExpense(){
       var pubData=db.storage.from('expense-receipts').getPublicUrl(rPath);
       receiptUrl=(pubData.data&&pubData.data.publicUrl)||null;
     }else{
-      console.warn('[receipt] upload failed:',upRes.error.message);
+      dbg('[receipt] upload failed:',upRes.error.message);
       showToast('Receipt upload failed — saving without receipt','warn');
     }
     if(statusEl)statusEl.textContent='';
@@ -11066,7 +11081,7 @@ async function expSave(id){
       updatePayload.receipt_url=(pubData2.data&&pubData2.data.publicUrl)||null;
       dbg('[receipt] uploaded ok, url=',updatePayload.receipt_url);
     }else{
-      console.error('[receipt] edit upload failed:',upRes2.error.message,upRes2.error);
+      dbg('[receipt] edit upload failed:',upRes2.error.message,upRes2.error);
       showToast(friendlyError(upRes2.error),'error');
     }
   }
@@ -11349,7 +11364,7 @@ async function saveTaxRate(value){
   if(!_agencyId){showToast('Agency not loaded — rate saved locally only','warn');return;}
   var res=await db.from('agencies').update({tax_rate_pct:rate}).eq('id',_agencyId);
   if(res.error){
-    console.error('[saveTaxRate] DB error:',res.error);
+    dbg('[saveTaxRate] DB error:',res.error);
     showToast('Saved locally — '+friendlyError(res.error),'warn');
   }else{
     dbg('[saveTaxRate] saved tax_rate_pct='+rate+' to DB');
@@ -11409,7 +11424,7 @@ async function saveTaxPayment(){
     period:periodVal||null,notes:notesVal||null};
   var res=await db.from('tax_payments').insert(row).select().single();
   if(res.error){
-    console.error('[saveTaxPayment]',res.error);
+    dbg('[saveTaxPayment]',res.error);
     showToast(friendlyError(res.error),'error');
   }else{
     TAX_PAYMENTS.unshift({id:res.data.id,agency_id:res.data.agency_id,user_id:res.data.user_id,
@@ -12825,7 +12840,7 @@ async function submitChatterPayout(){
        chatter  +amt  (his "received" goes up → owed less)
        payer    -amt  ("received" goes down → owed the advance back)
      usd=0 / eur=0 net → no effect on "Total withdrawn" or platform stats. */
-  var wRes=await db.from('withdrawals').insert({platform:'Chatter payout',usd:0,request_date:date,received_date:date,eur:0,status:'ok',model_id:null,description:desc}).select('id').single();
+  var wRes=await db.from('withdrawals').insert({platform:'Chatter payout',usd:0,request_date:date,received_date:date,eur:0,status:'ok',model_id:null,description:desc,agency_id:_agencyId}).select('id').single();
   if(wRes.error||!wRes.data){showToast(friendlyError(wRes.error),'error');return;}
   var splits=[{withdrawal_id:wRes.data.id,partner_id:cid,eur_amount:r2(amt)}];
   if(payerId)splits.push({withdrawal_id:wRes.data.id,partner_id:payerId,eur_amount:r2(-amt)});
@@ -12910,8 +12925,10 @@ async function init(){
       if(!_invInfo.error&&_invInfo.data&&_preSession.user.email===_invInfo.data.email){
         await fetch(EDGE_URL+'/accept-invite',{
           method:'POST',
-          headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPA_KEY},
-          body:JSON.stringify({token:_invToken,user_id:_preSession.user.id})
+          // Send the user's real JWT; the function derives identity from it.
+          // user_id is NOT sent in the body (can't be trusted from the client).
+          headers:{'Content-Type':'application/json','Authorization':'Bearer '+(_preSession.access_token||SUPA_KEY)},
+          body:JSON.stringify({token:_invToken})
         });
         history.replaceState({},'',window.location.pathname);
         // Suppress onboarding — this user is joining an existing agency

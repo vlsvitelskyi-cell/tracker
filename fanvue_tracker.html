@@ -11836,12 +11836,21 @@ function renderBal(){
   tLoss=r2(tLoss);
   var avgRate=tU>0?(tEur/tU).toFixed(4):null;
 
-  var curM=S.months[S.months.length-1];
+  // "This month" = the actual current calendar month (may be $0 if no txns yet),
+  // not merely the latest month that happens to have data.
+  var _nowB=new Date();
+  var _curKeyB=_nowB.getFullYear()+'-'+String(_nowB.getMonth()+1).padStart(2,'0');
+  var _pdB=new Date(_nowB.getFullYear(),_nowB.getMonth()-1,1);
+  var _prevKeyB=_pdB.getFullYear()+'-'+String(_pdB.getMonth()+1).padStart(2,'0');
+  var curM=null,prevM=null;
+  for(var _bi=0;_bi<S.months.length;_bi++){
+    if(S.months[_bi].id===_curKeyB)curM=S.months[_bi];
+    else if(S.months[_bi].id===_prevKeyB)prevM=S.months[_bi];
+  }
   var curRev=curM?r2(mTot(curM)):0;
-  var prevM=S.months[S.months.length-2];
   var prevRev=prevM?r2(mTot(prevM)):0;
   var trendHtml='';
-  if(prevRev>0&&curRev>=0){
+  if(prevRev>0&&curRev>0){
     var trendPct=((curRev-prevRev)/prevRev*100).toFixed(1);
     var trendUp=parseFloat(trendPct)>=0;
     trendHtml='<span class="trend-badge '+(trendUp?'trend-up':'trend-down')+'">'+(trendUp?'+':'')+trendPct+'%</span>';
@@ -12603,10 +12612,15 @@ function updateSidebarStats(){
   if(mc){
     mc.textContent=''; /* single-model — count label removed */
   }
-  var curM=S.months[S.am]||S.months[S.months.length-1];
+  // Sidebar "This month" tracks the current calendar month (matches the KPI),
+  // independent of which month tab is selected in the ledger.
+  var _nowS=new Date();
+  var _ckS=_nowS.getFullYear()+'-'+String(_nowS.getMonth()+1).padStart(2,'0');
+  var curM=null;
+  for(var _si=0;_si<S.months.length;_si++){if(S.months[_si].id===_ckS){curM=S.months[_si];break;}}
   if(tm){
-    tm.textContent=curM?fc(mTot(curM)):'—';
     var curRevVal=curM?mTot(curM):0;
+    tm.textContent=fc(curRevVal);
     tm.style.color=curRevVal>0?'var(--pos-txt)':'var(--t2)';
   }
   var totalWdrawn=r2(S.ws.filter(function(w){return w.st==='ok';}).reduce(function(s,w){return s+w.usd;},0));

@@ -10031,6 +10031,22 @@ function fe(n){return '€'+Math.abs(n).toFixed(2);}
 function fu(n){return '$'+Math.abs(n).toFixed(2);}
 function g(id){return document.getElementById(id);}
 function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+/* Receipt viewing via short-lived SIGNED URLs (bucket is private).
+   Stored receipt_url may be a bare storage path (new) or a legacy public URL. */
+function receiptPath(raw){
+  if(!raw)return'';
+  var s=String(raw),m='/expense-receipts/',i=s.indexOf(m);
+  return i>=0?s.slice(i+m.length):s;
+}
+async function openReceipt(expId){
+  var exp=(S.exps||[]).find(function(x){return x.id===expId;});
+  var raw=exp&&exp.receipt_url;
+  if(!raw){showToast('No receipt found','warn');return;}
+  var w=window.open('','_blank');           /* open within the click gesture to avoid popup blocking */
+  var sres=await db.storage.from('expense-receipts').createSignedUrl(receiptPath(raw),3600);
+  if(sres.error||!sres.data){if(w)w.close();showToast('Could not open receipt','error');return;}
+  if(w)w.location=sres.data.signedUrl;else window.location=sres.data.signedUrl;
+}
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,5);}
 
 /* ---- B5: User-friendly error messages ---- */
@@ -11023,8 +11039,7 @@ async function addExpense(){
     var rPath=(_agencyId||'agency')+'/'+Date.now()+'-'+safeName;
     var upRes=await db.storage.from('expense-receipts').upload(rPath,receiptFile,{upsert:true,contentType:receiptFile.type});
     if(!upRes.error){
-      var pubData=db.storage.from('expense-receipts').getPublicUrl(rPath);
-      receiptUrl=(pubData.data&&pubData.data.publicUrl)||null;
+      receiptUrl=rPath; // store storage PATH; viewing uses a short-lived signed URL
     }else{
       dbg('[receipt] upload failed:',upRes.error.message);
       showToast('Receipt upload failed — saving without receipt','warn');
@@ -11090,9 +11105,8 @@ async function expSave(id){
     var rPath2=(_agencyId||'agency')+'/'+Date.now()+'-'+safeName2;
     var upRes2=await db.storage.from('expense-receipts').upload(rPath2,eeReceiptFile,{upsert:true,contentType:eeReceiptFile.type});
     if(!upRes2.error){
-      var pubData2=db.storage.from('expense-receipts').getPublicUrl(rPath2);
-      updatePayload.receipt_url=(pubData2.data&&pubData2.data.publicUrl)||null;
-      dbg('[receipt] uploaded ok, url=',updatePayload.receipt_url);
+      updatePayload.receipt_url=rPath2; // store storage PATH; viewing uses a signed URL
+      dbg('[receipt] uploaded ok, path=',updatePayload.receipt_url);
     }else{
       dbg('[receipt] edit upload failed:',upRes2.error.message,upRes2.error);
       showToast(friendlyError(upRes2.error),'error');
@@ -11192,7 +11206,7 @@ function renderExpenses(){
           +'<label>Receipt</label>'
           +'<div class="receipt-attach-area">'
             +(exp.receipt_url
-              ?'<a href="'+escHtml(exp.receipt_url)+'" target="_blank" rel="noopener" class="receipt-view-btn">'
+              ?'<a href="#" onclick="openReceipt(\''+exp.id+'\');return false" class="receipt-view-btn">'
                 +'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>'
                 +'View current</a> '
               :'')
@@ -11216,7 +11230,7 @@ function renderExpenses(){
       ?'<span style="font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;border:1px solid var(--line-1);color:var(--t4)">'+(mObj?escHtml(mObj.name):'Agency')+'</span>'
       :'';
     var receiptBadge=exp.receipt_url
-      ?'<a href="'+escHtml(exp.receipt_url)+'" target="_blank" rel="noopener" class="receipt-badge" title="View receipt">'
+      ?'<a href="#" onclick="openReceipt(\''+exp.id+'\');return false" class="receipt-badge" title="View receipt">'
         +'<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>'
         +'receipt'
         +'</a>'

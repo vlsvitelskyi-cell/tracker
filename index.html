@@ -834,7 +834,7 @@ footer{border-top:1px solid var(--line);padding:48px 0 36px;position:relative;z-
           <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
         </div>
         <div class="feat-title">Your data, secured</div>
-        <div class="feat-desc">Stored in the EU, GDPR-compliant, never sold. Export or delete everything any time. Read the <a href="/privacy" style="color:var(--green);text-decoration:none">privacy policy</a>.</div>
+        <div class="feat-desc">Stored in the EU (Ireland), encrypted at rest, GDPR-compliant, never sold. Export or delete everything any time. Read the <a href="/privacy" style="color:var(--green);text-decoration:none">privacy policy</a>.</div>
       </div>
     </div>
   </div>
@@ -1003,6 +1003,47 @@ footer{border-top:1px solid var(--line);padding:48px 0 36px;position:relative;z-
   </div>
 </section>
 
+<!-- ════════ SECURITY & COMPLIANCE ════════ -->
+<section class="section" id="security" style="padding-top:24px">
+  <div class="wrap">
+    <div class="center">
+      <div class="eyebrow">Security &amp; Compliance</div>
+      <h2 class="section-h">Your money data, protected</h2>
+      <p class="section-sub">Serious safeguards under the hood — encrypted, EU-hosted, and GDPR-compliant by design.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:8px">
+      <div class="card reveal">
+        <div class="feat-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        </div>
+        <div class="feat-title">EU-hosted</div>
+        <div class="feat-desc">All data lives in the Supabase EU region — Ireland (eu-west-1). GDPR by design, never transferred for marketing.</div>
+      </div>
+      <div class="card reveal">
+        <div class="feat-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </div>
+        <div class="feat-title">Encrypted tokens</div>
+        <div class="feat-desc">Your Fanvue access tokens are encrypted at rest (AES-256-GCM), stored server-side, and never exposed to the browser.</div>
+      </div>
+      <div class="card reveal">
+        <div class="feat-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+        </div>
+        <div class="feat-title">No passwords stored</div>
+        <div class="feat-desc">Sign-in runs through Supabase Auth and one-click Fanvue OAuth — we never see or store your passwords.</div>
+      </div>
+      <div class="card reveal">
+        <div class="feat-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        </div>
+        <div class="feat-title">You're in control</div>
+        <div class="feat-desc">Export everything as CSV or permanently delete your account and all data anytime. Your data is never sold.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ════════ FAQ ════════ -->
 <section class="section" id="faq" style="padding-top:24px">
   <div class="wrap">
@@ -1025,7 +1066,7 @@ footer{border-top:1px solid var(--line);padding:48px 0 36px;position:relative;z-
       </div>
       <div class="faq-item">
         <button class="faq-q">Is my financial data safe?<span class="faq-icon"></span></button>
-        <div class="faq-a"><div class="faq-a-inner">Yes. All data is stored in the EU, encrypted in transit, GDPR-compliant, and never sold or shared with advertisers. You own your data and can export it as CSV or permanently delete it anytime from Settings. Full details in our <a href="/privacy">privacy policy</a>.</div></div>
+        <div class="faq-a"><div class="faq-a-inner">Yes. All data is stored in the EU (Supabase, Ireland), encrypted in transit (HTTPS) and at rest — your Fanvue access tokens are encrypted with AES-256 and never exposed to the browser. We're GDPR-compliant and never sell or share your data with advertisers. You own your data and can export it as CSV or permanently delete it anytime from Settings. Full details, including the sub-processors we use, are in our <a href="/privacy">privacy policy</a>.</div></div>
       </div>
       <div class="faq-item">
         <button class="faq-q">Can I track income from outside Fanvue?<span class="faq-icon"></span></button>

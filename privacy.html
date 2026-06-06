@@ -447,7 +447,7 @@ footer{
       <li>Basic usage logs for error monitoring (no behavioural tracking)</li>
     </ul>
 
-    <div class="note-box">We do <strong>not</strong> collect: passwords, payment card details, government IDs, or any content from your Fanvue profile or messages.</div>
+    <div class="note-box">We never store your passwords in plaintext — sign-in is handled by <strong>Supabase Auth</strong> (passwords are salted and hashed) and Fanvue OAuth. We also do <strong>not</strong> collect: payment card details, government IDs, or any content from your Fanvue profile or messages.</div>
   </div>
 
   <!-- 03 -->
@@ -484,7 +484,11 @@ footer{
     <p>We do not sell, rent, or share your personal data with third parties for marketing purposes. We use the following sub-processors to operate the service:</p>
     <div class="processor-card">
       <div class="pc-name">Supabase</div>
-      <div class="pc-desc">Database and authentication — data stored in EU region</div>
+      <div class="pc-desc">Database, authentication, and file storage — data stored in the EU region (Ireland, eu-west-1)</div>
+    </div>
+    <div class="processor-card">
+      <div class="pc-name">Resend</div>
+      <div class="pc-desc">Transactional email delivery (partner invitations and optional daily digests) — receives the recipient's name and email address only</div>
     </div>
     <div class="processor-card">
       <div class="pc-name">Wise API</div>
@@ -545,7 +549,8 @@ footer{
     <h2>Data Security</h2>
     <ul class="llist">
       <li>All data is transmitted over HTTPS with valid TLS certificates</li>
-      <li>OAuth tokens and session credentials are stored securely server-side and never exposed in client-side code</li>
+      <li>Fanvue OAuth tokens are <strong>encrypted at rest</strong> (AES-256-GCM) and stored server-side; the encryption key is held separately from the database</li>
+      <li>Multi-tenant data is isolated by row-level security, so each agency can only access its own data</li>
       <li>Access to production data is restricted to the operator</li>
       <li>We do not log sensitive tokens or personal credentials</li>
     </ul>

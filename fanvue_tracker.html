@@ -7818,6 +7818,26 @@ function applyRoleUI(){
   if(rstBtn){var rstRow=rstBtn.closest('.setting-row');if(rstRow)rstRow.style.display=isAdmin?'':'none';}
   /* If a non-admin is somehow on the Integration tab, bounce them to Team */
   if(!isAdmin){var intgContent=g('settings-integration');if(intgContent&&intgContent.classList.contains('act'))switchSettingsTab('team');}
+  /* Chatter: restricted view — RLS already limits their data to their own.
+     Hide nav tabs that are irrelevant to a chatter (no data there for them). */
+  var isChatter=currentRole==='chatter';
+  ['expenses','withdrawals','tax'].forEach(function(t){
+    var nav=document.querySelector('[data-tab="'+t+'"]');
+    if(nav)nav.style.display=isChatter?'none':'';
+  });
+  if(isChatter){
+    /* Chatter manages only their own account → hide Team/Integration/Preferences settings tabs */
+    ['team','integration','preferences'].forEach(function(st){
+      var b=document.querySelector('[data-stab="'+st+'"]');
+      if(b)b.style.display='none';
+    });
+    /* If chatter is on a now-hidden main tab, send them to Overview */
+    var active=document.querySelector('.nav-item.act,[data-tab].act');
+    var curTab=active&&active.getAttribute&&active.getAttribute('data-tab');
+    if(curTab==='expenses'||curTab==='withdrawals'||curTab==='tax'){
+      var ov=document.querySelector('[data-tab="dashboard"]');if(ov)ov.click();
+    }
+  }
 }
 
 function showLogin(errMsg){

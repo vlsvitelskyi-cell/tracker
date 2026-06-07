@@ -7632,6 +7632,7 @@ var db=supabase.createClient(SUPA_URL,SUPA_KEY);
 /* ---- Auth state ---- */
 var currentUser=null;
 var currentRole=null;
+var REV_LOADED=false; /* true once loadRevenueData has run at least once (distinguishes "loading" from "loaded but empty") */
 var currentPartnerId='';
 /* Diagnostic logging — off in prod so ids/rates aren't leaked to the console.
    Set DEBUG=true (or window.DEBUG) to surface them while developing. */
@@ -7821,9 +7822,9 @@ function applyRoleUI(){
   /* Chatter: restricted view — RLS already limits their data to their own.
      Hide nav tabs that are irrelevant to a chatter (no data there for them). */
   var isChatter=currentRole==='chatter';
-  /* Chatter view = Overview (their own earnings card) + Settings(About) only.
-     Revenue is a partner monthly-revenue view; Expenses/Withdrawals/Tax are admin. */
-  ['revenue','expenses','withdrawals','tax'].forEach(function(t){
+  /* Chatter view = Overview + Revenue (their own earnings/transactions) + Settings(About).
+     Expenses/Withdrawals/Tax are admin/partner-only. */
+  ['expenses','withdrawals','tax'].forEach(function(t){
     var nav=document.querySelector('[data-tab="'+t+'"]');
     if(nav)nav.style.display=isChatter?'none':'';
   });
@@ -7836,9 +7837,15 @@ function applyRoleUI(){
     /* If chatter is on a now-hidden main tab, send them to Overview */
     var active=document.querySelector('.nav-item.act,[data-tab].act');
     var curTab=active&&active.getAttribute&&active.getAttribute('data-tab');
-    if(curTab==='revenue'||curTab==='expenses'||curTab==='withdrawals'||curTab==='tax'){
+    if(curTab==='expenses'||curTab==='withdrawals'||curTab==='tax'){
       var ov=document.querySelector('[data-tab="dashboard"]');if(ov)ov.click();
     }
+    /* Overview rework for chatter: hide partner-oriented sections, keep their own
+       CHATTER PAYOUTS card (#chatterSection) + the top KPIs (which RLS already
+       limits to the chatter's own numbers). */
+    ['#dashPartnerSection .section-header','#partnerCardsGrid','#dashPayoutFooter','#tab-dashboard .dash-activity'].forEach(function(sel){
+      var el=document.querySelector(sel);if(el)el.style.display='none';
+    });
   }
 }
 
@@ -10453,7 +10460,7 @@ async function loadRevenueData(){
   var statusEl=g('revLoadStatus');
   /* All-models aggregate mode */
   if(!ACTIVE_MODEL_ID&&ALL_MODELS.length===0){
-    S.txs=[];S.months=[];
+    S.txs=[];S.months=[];REV_LOADED=true;
     if(statusEl)statusEl.textContent='';
     renderAll();return;
   }
@@ -10537,6 +10544,7 @@ async function loadRevenueData(){
     if(!isNaN(savedAm)&&savedAm<S.months.length)S.am=savedAm;
     else S.am=S.months.length-1;
   }
+  REV_LOADED=true;
 
   var _nowTs=Date.now();
   localStorage.setItem('lastRevRefresh',String(_nowTs));
@@ -12234,12 +12242,19 @@ function renderSplitList(){
 /* ---- Render: Monthly revenue ---- */
 function renderMonths(){
   if(!S.months.length){
-    g('mTabs').innerHTML='<div style="display:flex;gap:4px;padding-bottom:1px">'
-      +'<div class="skeleton sk-line sk-tab" style="width:52px"></div>'
-      +'<div class="skeleton sk-line sk-tab sk-fade-2" style="width:52px"></div>'
-      +'<div class="skeleton sk-line sk-tab sk-fade-3" style="width:52px"></div>'
-      +'</div>';
-    g('mView').innerHTML=mkLoadingIndicator('Loading')+mkSkeletonTxRows(4);
+    g('mTabs').innerHTML='';
+    if(REV_LOADED){
+      g('mView').innerHTML='<div style="text-align:center;padding:48px 20px;color:var(--t3)">'
+        +(currentRole==='chatter'?'No earnings yet':'No revenue recorded yet')
+        +'<div style="font-size:12px;margin-top:6px;color:var(--t4)">Transactions will appear here once synced.</div></div>';
+    }else{
+      g('mTabs').innerHTML='<div style="display:flex;gap:4px;padding-bottom:1px">'
+        +'<div class="skeleton sk-line sk-tab" style="width:52px"></div>'
+        +'<div class="skeleton sk-line sk-tab sk-fade-2" style="width:52px"></div>'
+        +'<div class="skeleton sk-line sk-tab sk-fade-3" style="width:52px"></div>'
+        +'</div>';
+      g('mView').innerHTML=mkLoadingIndicator('Loading')+mkSkeletonTxRows(4);
+    }
     return;
   }
 

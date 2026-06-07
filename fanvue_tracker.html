@@ -7810,6 +7810,14 @@ function applyRoleUI(){
   /* Settings About: hide Workspace name section for partners */
   var wsSection=g('workspaceSection');
   if(wsSection)wsSection.style.display=isAdmin?'':'none';
+  /* Settings: Integration (Fanvue connect) is admin-only — hide tab for non-admins */
+  var intgTab=document.querySelector('[data-stab="integration"]');
+  if(intgTab)intgTab.style.display=isAdmin?'':'none';
+  /* Settings About: "Reset withdrawal history" is admin-only destructive — hide row for non-admins */
+  var rstBtn=document.querySelector('[onclick="resetAll()"]');
+  if(rstBtn){var rstRow=rstBtn.closest('.setting-row');if(rstRow)rstRow.style.display=isAdmin?'':'none';}
+  /* If a non-admin is somehow on the Integration tab, bounce them to Team */
+  if(!isAdmin){var intgContent=g('settings-integration');if(intgContent&&intgContent.classList.contains('act'))switchSettingsTab('team');}
 }
 
 function showLogin(errMsg){

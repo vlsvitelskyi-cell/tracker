@@ -7821,7 +7821,9 @@ function applyRoleUI(){
   /* Chatter: restricted view — RLS already limits their data to their own.
      Hide nav tabs that are irrelevant to a chatter (no data there for them). */
   var isChatter=currentRole==='chatter';
-  ['expenses','withdrawals','tax'].forEach(function(t){
+  /* Chatter view = Overview (their own earnings card) + Settings(About) only.
+     Revenue is a partner monthly-revenue view; Expenses/Withdrawals/Tax are admin. */
+  ['revenue','expenses','withdrawals','tax'].forEach(function(t){
     var nav=document.querySelector('[data-tab="'+t+'"]');
     if(nav)nav.style.display=isChatter?'none':'';
   });
@@ -7834,7 +7836,7 @@ function applyRoleUI(){
     /* If chatter is on a now-hidden main tab, send them to Overview */
     var active=document.querySelector('.nav-item.act,[data-tab].act');
     var curTab=active&&active.getAttribute&&active.getAttribute('data-tab');
-    if(curTab==='expenses'||curTab==='withdrawals'||curTab==='tax'){
+    if(curTab==='revenue'||curTab==='expenses'||curTab==='withdrawals'||curTab==='tax'){
       var ov=document.querySelector('[data-tab="dashboard"]');if(ov)ov.click();
     }
   }
@@ -10333,7 +10335,7 @@ function showTab(name,btn,isMobile){
   if(name==='dashboard'||name==='revenue'){
     requestAnimationFrame(function(){requestAnimationFrame(function(){renderChart();});});
   }
-  if(name==='settings'){loadAgencySettings();renderModelSplitSection();loadFanvueConnection();renderInviteModelRows();if(currentRole==='partner')switchSettingsTab('team');}
+  if(name==='settings'){loadAgencySettings();renderModelSplitSection();loadFanvueConnection();renderInviteModelRows();if(currentRole==='chatter')switchSettingsTab('about');else if(currentRole==='partner')switchSettingsTab('team');}
   if(name==='tax'){renderTaxPage();}
   /* KPI grid: only visible on dashboard */
   var dashStats=g('dashStats');

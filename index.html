@@ -18,7 +18,7 @@
 <meta name="twitter:title" content="Payout Manager — Financial OS for Fanvue Agencies">
 <meta name="twitter:description" content="Auto-sync Fanvue earnings, see income per chatter, split revenue with partners, and generate payout reports in one click.">
 <meta name="twitter:image" content="https://payoutmanager.app/og-image.png">
-<meta name="theme-color" content="#060608">
+<meta name="theme-color" content="#070708">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -26,295 +26,273 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 /* ════════════════════════════════════════════════════════════════
-   PAYOUT MANAGER — LANDING v2
-   Brand anchors (same as the tracker app + logo):
-   lime #a8f740 · purple #6d42f9 · near-black #060608 · Outfit/DM Sans
+   PAYOUT MANAGER — LANDING v3 · "editorial ledger"
+   Hairlines, index numbers, square corners, one accent.
+   Brand: lime #a8f740 · purple #6d42f9 · #070708 · Outfit/DM Sans
    ════════════════════════════════════════════════════════════════ */
 :root{
-  --bg:#060608;--bg2:#0A0A0E;--surface:#0E0E13;--surface2:#13131A;--surface3:#191923;
-  --line:rgba(255,255,255,.07);--line2:rgba(255,255,255,.12);
-  --t1:#F4F4F6;--t2:#B9B9C3;--t3:#7E7E8A;--t4:#55555F;
-  --lime:#a8f740;--lime-dim:#93cc30;--lime-08:rgba(168,247,64,.08);--lime-15:rgba(168,247,64,.15);--lime-25:rgba(168,247,64,.25);
-  --purple:#6d42f9;--purple-lt:#8B5CF6;--purple-10:rgba(109,66,249,.10);--purple-25:rgba(109,66,249,.25);
-  --red:#ff6b6b;
+  --bg:#070708;--bg2:#0B0B0D;--srf:#101013;--srf2:#15151A;
+  --hl:rgba(255,255,255,.08);--hl2:rgba(255,255,255,.14);
+  --t1:#F2F2F3;--t2:#B5B5BD;--t3:#77777F;--t4:#4D4D55;
+  --lime:#a8f740;--lime-ink:#0c1502;--lime-dim:rgba(168,247,64,.14);
+  --purple:#8B5CF6;--purple-dim:rgba(139,92,246,.13);
+  --blue:#5BA0F4;--red:#ff6b6b;
   --sans:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;
   --disp:'Outfit',var(--sans);
-  --r2:10px;--r3:14px;--r4:20px;--r5:28px;
-  --ease:cubic-bezier(.22,.8,.26,.99);
+  --ease:cubic-bezier(.23,.86,.28,.99);
+  --W:1180px;
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
-::selection{background:var(--lime);color:#060608}
+::selection{background:var(--lime);color:var(--lime-ink)}
 body{
   background:var(--bg);color:var(--t1);font-family:var(--sans);
   font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased;
   overflow-x:hidden;
 }
-/* film-grain texture — kills the flat "generated" look */
+/* film grain */
 body::after{
-  content:'';position:fixed;inset:0;pointer-events:none;z-index:2000;opacity:.035;
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:2000;opacity:.04;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 img,svg{display:block}
 a{color:inherit;text-decoration:none}
 button{font-family:inherit;cursor:pointer}
-.wrap{max-width:1180px;margin:0 auto;padding:0 28px}
+.wrap{max-width:var(--W);margin:0 auto;padding:0 28px;position:relative}
 
-/* ── custom cursor (fine pointers only) ─────────────────────── */
-@media (hover:hover) and (pointer:fine){
-  body.has-cursor, body.has-cursor a, body.has-cursor button, body.has-cursor summary, body.has-cursor label{cursor:none}
-  .cur-dot,.cur-ring{position:fixed;top:0;left:0;pointer-events:none;z-index:3000;border-radius:50%;will-change:transform}
-  .cur-dot{width:6px;height:6px;background:var(--lime)}
-  .cur-ring{width:34px;height:34px;border:1.5px solid rgba(168,247,64,.55);
-    transition:width .25s var(--ease),height .25s var(--ease),border-color .25s,background .25s,margin .25s var(--ease)}
-  body.cur-hover .cur-ring{width:52px;height:52px;margin:-9px 0 0 -9px;border-color:rgba(168,247,64,.9);background:rgba(168,247,64,.06)}
-  body.cur-down .cur-ring{width:26px;height:26px;margin:4px 0 0 4px}
+/* column guides — editorial blueprint feel */
+.guides{position:fixed;inset:0;pointer-events:none;z-index:0}
+.guides .gwrap{max-width:var(--W);height:100%;margin:0 auto;padding:0 28px;display:flex;justify-content:space-between}
+.guides i{width:1px;background:rgba(255,255,255,.035)}
+main,header,nav,section,footer{position:relative;z-index:1}
+
+/* small-caps index label */
+.lbl{
+  display:flex;align-items:center;gap:12px;
+  font-family:var(--disp);font-size:11px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--t3);
 }
-.cur-dot,.cur-ring{display:none}
-body.has-cursor .cur-dot,body.has-cursor .cur-ring{display:block}
+.lbl b{color:var(--lime);font-weight:700}
+.lbl::after{content:'';flex:1;height:1px;background:var(--hl)}
+
+/* hairline section top with + crosshairs */
+.xsec{border-top:1px solid var(--hl);position:relative}
+.xsec .x{
+  position:absolute;top:-8.5px;font-family:var(--disp);font-size:13px;font-weight:400;
+  color:var(--t4);line-height:1;user-select:none;background:var(--bg);padding:1px 2px;
+}
+.xsec .x.xl{left:max(28px,calc(50% - var(--W)/2 + 28px));transform:translateX(-50%)}
+.xsec .x.xr{right:max(28px,calc(50% - var(--W)/2 + 28px));transform:translateX(50%)}
 
 /* ── nav ────────────────────────────────────────────────────── */
 .nav{
-  position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:900;
-  width:min(1180px,calc(100% - 28px));
-  display:flex;align-items:center;justify-content:space-between;
-  padding:10px 14px 10px 18px;border-radius:16px;
-  background:rgba(10,10,14,.72);border:1px solid var(--line);
-  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  position:fixed;top:0;left:0;right:0;z-index:900;
+  border-bottom:1px solid var(--hl);
+  background:rgba(7,7,8,.82);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
 }
-.nav-logo{display:flex;align-items:center;gap:10px;font-family:var(--disp);font-weight:700;font-size:15px;letter-spacing:-.01em}
-.nav-logo img{width:26px;height:26px}
+.nav-in{max-width:var(--W);margin:0 auto;padding:0 28px;height:58px;display:flex;align-items:center;justify-content:space-between}
+.nav-logo{display:flex;align-items:center;gap:10px;font-family:var(--disp);font-weight:700;font-size:14.5px;letter-spacing:-.01em}
+.nav-logo img{width:24px;height:24px}
 .nav-logo b{color:var(--lime)}
-.nav-links{display:flex;gap:26px;font-size:13.5px;font-weight:500;color:var(--t2)}
+.nav-links{display:flex;gap:30px;font-family:var(--disp);font-size:12px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--t3)}
 .nav-links a{transition:color .2s}
 .nav-links a:hover{color:var(--t1)}
 .nav-cta{
-  font-family:var(--disp);font-weight:600;font-size:13px;color:#060608;
-  background:var(--lime);padding:9px 18px;border-radius:10px;
-  transition:transform .2s var(--ease),box-shadow .2s;
-  will-change:transform;
+  font-family:var(--disp);font-weight:700;font-size:12.5px;letter-spacing:.04em;
+  color:var(--lime-ink);background:var(--lime);padding:9px 18px;border-radius:6px;
+  transition:box-shadow .2s;will-change:transform;
 }
-.nav-cta:hover{box-shadow:0 4px 24px rgba(168,247,64,.35)}
+.nav-cta:hover{box-shadow:0 3px 20px rgba(168,247,64,.35)}
 
 /* ── hero ───────────────────────────────────────────────────── */
-.hero{position:relative;padding:148px 0 90px;overflow:hidden}
-.hero-bg{position:absolute;inset:0;pointer-events:none}
-.hero-bg .ray{position:absolute;width:780px;height:780px;border-radius:50%;filter:blur(110px);opacity:.5}
-.ray.r1{background:radial-gradient(circle,rgba(109,66,249,.32),transparent 65%);top:-340px;right:-180px}
-.ray.r2{background:radial-gradient(circle,rgba(168,247,64,.13),transparent 65%);bottom:-420px;left:-260px}
-.hero-grid{
-  position:absolute;inset:0;
-  background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
-  background-size:56px 56px;
-  mask-image:radial-gradient(ellipse 75% 55% at 50% 8%,black 25%,transparent 75%);
-  -webkit-mask-image:radial-gradient(ellipse 75% 55% at 50% 8%,black 25%,transparent 75%);
-}
-.hero-inner{position:relative;display:grid;grid-template-columns:1.02fr .98fr;gap:56px;align-items:center}
-.hero-badge{
-  display:inline-flex;align-items:center;gap:10px;margin-bottom:26px;
-  font-size:12.5px;font-weight:600;color:var(--t2);
-  border:1px solid var(--line2);border-radius:100px;padding:7px 14px 7px 9px;
-  background:rgba(255,255,255,.025);
-}
-.hero-badge .dot{width:7px;height:7px;border-radius:50%;background:var(--lime);box-shadow:0 0 10px var(--lime);animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
-.hero-badge b{color:var(--lime);font-weight:700}
+.hero{padding:148px 0 0}
+.hero-top{margin-bottom:54px}
+.hero .lbl{margin-bottom:34px}
+.hero .lbl .live-amt{color:var(--t2);letter-spacing:.06em}
 h1{
-  font-family:var(--disp);font-weight:800;letter-spacing:-.035em;line-height:1.04;
-  font-size:clamp(38px,4.5vw,60px);margin-bottom:22px;
+  font-family:var(--disp);font-weight:700;letter-spacing:-.045em;line-height:.98;
+  font-size:clamp(46px,7.2vw,104px);text-wrap:balance;
 }
-h1 .ln{display:block;overflow:hidden;padding-bottom:.08em;margin-bottom:-.08em}
-h1 .ln span{display:block;transform:translateY(112%);animation:lift .9s var(--ease) forwards}
-h1 .ln:nth-child(2) span{animation-delay:.08s}
-h1 .ln:nth-child(3) span{animation-delay:.16s}
+h1 .ln{display:block;overflow:hidden;padding-bottom:.06em;margin-bottom:-.02em}
+h1 .ln > span{display:block;transform:translateY(110%);animation:lift .85s var(--ease) forwards}
+h1 .ln:nth-child(2) > span{animation-delay:.09s}
+h1 .ln:nth-child(3) > span{animation-delay:.18s}
 @keyframes lift{to{transform:translateY(0)}}
-.gx{
-  background:linear-gradient(95deg,var(--lime) 10%,#d6ff8f 45%,var(--purple-lt) 100%);
-  -webkit-background-clip:text;background-clip:text;color:transparent;
+.mark{
+  background:var(--lime);color:var(--lime-ink);
+  padding:0 .12em;margin:0 -.02em;
+  box-decoration-break:clone;-webkit-box-decoration-break:clone;
 }
-.hero-sub{font-size:17px;color:var(--t2);max-width:520px;margin-bottom:34px;line-height:1.65}
+.hero-grid2{display:grid;grid-template-columns:.92fr 1.08fr;gap:64px;align-items:start;padding-bottom:96px}
+.hero-sub{font-size:16.5px;color:var(--t2);max-width:440px;margin-bottom:36px;line-height:1.7}
 .hero-sub b{color:var(--t1);font-weight:600}
-.hero-actions{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:20px}
+.hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:22px}
 .btn-primary{
   display:inline-flex;align-items:center;gap:9px;
-  font-family:var(--disp);font-weight:700;font-size:15px;color:#060608;
-  background:var(--lime);padding:15px 28px;border-radius:13px;
-  transition:transform .25s var(--ease),box-shadow .25s;
-  box-shadow:0 6px 30px rgba(168,247,64,.22);
-  will-change:transform;
+  font-family:var(--disp);font-weight:700;font-size:14.5px;letter-spacing:.01em;color:var(--lime-ink);
+  background:var(--lime);padding:15px 26px;border-radius:7px;
+  transition:box-shadow .25s;will-change:transform;
 }
-.btn-primary:hover{box-shadow:0 10px 44px rgba(168,247,64,.4)}
+.btn-primary:hover{box-shadow:0 8px 36px rgba(168,247,64,.35)}
 .btn-primary svg{transition:transform .25s var(--ease)}
 .btn-primary:hover svg{transform:translateX(3px)}
 .btn-ghost{
   display:inline-flex;align-items:center;gap:8px;
-  font-family:var(--disp);font-weight:600;font-size:15px;color:var(--t1);
-  border:1px solid var(--line2);padding:15px 26px;border-radius:13px;
-  background:rgba(255,255,255,.02);transition:border-color .2s,background .2s;
-  will-change:transform;
+  font-family:var(--disp);font-weight:600;font-size:14.5px;color:var(--t1);
+  border:1px solid var(--hl2);padding:15px 24px;border-radius:7px;
+  transition:border-color .2s,background .2s;will-change:transform;
 }
-.btn-ghost:hover{border-color:rgba(168,247,64,.45);background:var(--lime-08)}
-.hero-note{font-size:13px;color:var(--t3)}
+.btn-ghost:hover{border-color:rgba(168,247,64,.5);background:var(--lime-dim)}
+.hero-note{font-size:12.5px;color:var(--t3);font-family:var(--disp);letter-spacing:.01em}
 .hero-note b{color:var(--t2)}
+.hero-meta{margin-top:42px;border-top:1px solid var(--hl);padding-top:18px;display:flex;gap:36px}
+.hm{font-family:var(--disp)}
+.hm .v{font-size:19px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.hm .k{font-size:10px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--t4);margin-top:2px}
 
-/* hero mock — the live dashboard */
-.mock-wrap{perspective:1400px}
+/* live dashboard mock */
+.mock-wrap{perspective:1500px;position:relative}
+.mock-tag{
+  position:absolute;top:-26px;right:0;z-index:3;
+  font-family:var(--disp);font-size:10px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--t4);
+  display:flex;align-items:center;gap:8px;
+}
+.mock-tag .dot{width:6px;height:6px;border-radius:50%;background:var(--lime);box-shadow:0 0 9px var(--lime);animation:pulse 1.9s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 .mock{
-  position:relative;border-radius:var(--r4);overflow:hidden;
-  background:linear-gradient(180deg,var(--surface2),var(--surface));
-  border:1px solid var(--line2);
-  box-shadow:0 40px 90px rgba(0,0,0,.55),0 0 80px rgba(109,66,249,.10);
-  will-change:transform;
-  transition:transform .35s var(--ease);
+  position:relative;border-radius:10px;overflow:hidden;
+  background:var(--srf);border:1px solid var(--hl2);
+  box-shadow:0 50px 110px rgba(0,0,0,.6);
+  will-change:transform;transition:transform .35s var(--ease);
 }
-.mock::before{
-  content:'';position:absolute;inset:0;pointer-events:none;border-radius:inherit;z-index:5;
-  background:linear-gradient(115deg,rgba(255,255,255,.05) 0%,transparent 35%);
-}
-.mock-bar{display:flex;align-items:center;gap:7px;padding:11px 16px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.015)}
-.mdot{width:9px;height:9px;border-radius:50%}
-.mock-url{
-  margin-left:10px;font-size:11px;color:var(--t3);background:rgba(255,255,255,.04);
-  padding:4px 12px;border-radius:7px;font-family:var(--disp);
-}
-.mock-live{
-  margin-left:auto;display:flex;align-items:center;gap:6px;
-  font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--lime);
-}
-.mock-live .dot{width:6px;height:6px;border-radius:50%;background:var(--lime);box-shadow:0 0 8px var(--lime);animation:pulse 1.8s infinite}
+.mock-bar{display:flex;align-items:center;gap:7px;padding:11px 16px;border-bottom:1px solid var(--hl);background:rgba(255,255,255,.015)}
+.mdot{width:8px;height:8px;border-radius:50%}
+.mock-url{margin-left:10px;font-size:11px;color:var(--t3);background:rgba(255,255,255,.04);padding:3px 12px;border-radius:5px;font-family:var(--disp)}
+.mock-live{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:9.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--lime);font-family:var(--disp)}
+.mock-live .dot{width:5px;height:5px;border-radius:50%;background:var(--lime);box-shadow:0 0 7px var(--lime);animation:pulse 1.8s infinite}
 .mock-body{display:grid;grid-template-columns:1.5fr 1fr}
-.mock-main{padding:18px;border-right:1px solid var(--line)}
+.mock-main{padding:18px;border-right:1px solid var(--hl)}
 .mock-kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
-.mk{background:rgba(255,255,255,.025);border:1px solid var(--line);border-radius:var(--r2);padding:12px 14px}
-.mk-l{font-size:9.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--t3);margin-bottom:5px}
+.mk{border:1px solid var(--hl);border-radius:7px;padding:12px 14px;background:rgba(255,255,255,.018)}
+.mk-l{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--t4);margin-bottom:5px;font-family:var(--disp)}
 .mk-v{font-family:var(--disp);font-weight:700;font-size:21px;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
-.mk-fx{display:flex;align-items:center;gap:6px;margin-top:5px;font-size:10px;color:var(--t3)}
+.mk-fx{display:flex;align-items:center;gap:6px;margin-top:5px;font-size:9.5px;color:var(--t3)}
 .fxd{width:5px;height:5px;border-radius:50%;background:var(--lime);box-shadow:0 0 6px var(--lime);flex-shrink:0}
-.mock-lt{font-size:9.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--t3);margin-bottom:9px}
-.feed{display:flex;flex-direction:column;gap:7px;min-height:212px}
+.mock-lt{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--t4);margin-bottom:9px;font-family:var(--disp)}
+.feed{display:flex;flex-direction:column;gap:7px;min-height:208px}
 .frow{
   display:flex;align-items:center;gap:9px;
-  background:rgba(255,255,255,.02);border:1px solid var(--line);border-radius:9px;
+  border:1px solid var(--hl);border-radius:7px;background:rgba(255,255,255,.015);
   padding:8px 11px;font-size:12px;
 }
-.frow.enter{animation:rowIn .55s var(--ease)}
-@keyframes rowIn{from{opacity:0;transform:translateY(-14px) scale(.97)}to{opacity:1;transform:none}}
-.fbadge{font-size:8.5px;font-weight:800;letter-spacing:.07em;padding:3px 7px;border-radius:5px;font-family:var(--disp);flex-shrink:0}
-.b-fv{background:var(--purple-10);color:var(--purple-lt);border:1px solid var(--purple-25)}
-.b-tg{background:rgba(59,130,246,.1);color:#5BA0F4;border:1px solid rgba(59,130,246,.25)}
-.b-pp{background:rgba(14,165,233,.1);color:#38BDF8;border:1px solid rgba(14,165,233,.25)}
+.frow.enter{animation:rowIn .5s var(--ease)}
+@keyframes rowIn{from{opacity:0;transform:translateY(-13px)}to{opacity:1;transform:none}}
+.fbadge{font-size:8.5px;font-weight:800;letter-spacing:.08em;padding:3px 7px;border-radius:4px;font-family:var(--disp);flex-shrink:0}
+.b-fv{background:var(--purple-dim);color:var(--purple)}
+.b-tg{background:rgba(91,160,244,.12);color:var(--blue)}
+.b-pp{background:rgba(56,189,248,.12);color:#38BDF8}
 .fdesc{color:var(--t2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
 .fchat{
-  display:inline-flex;align-items:center;gap:4px;flex-shrink:0;
-  font-size:9px;font-weight:700;color:var(--lime);background:var(--lime-08);
-  border:1px solid var(--lime-25);border-radius:5px;padding:2px 6px;font-family:var(--disp);
+  flex-shrink:0;font-size:9px;font-weight:700;color:var(--lime);
+  background:var(--lime-dim);border-radius:4px;padding:2.5px 7px;font-family:var(--disp);
 }
 .famt{font-family:var(--disp);font-weight:700;color:var(--lime);font-variant-numeric:tabular-nums;flex-shrink:0}
 .mock-side{padding:18px}
 .mpart{margin-bottom:14px}
 .mp-top{display:flex;justify-content:space-between;font-size:12px;font-weight:600;margin-bottom:6px}
 .mp-top .pct{color:var(--t3);font-family:var(--disp)}
-.mp-bar{height:5px;border-radius:4px;background:rgba(255,255,255,.06);overflow:hidden;margin-bottom:6px}
-.mp-bar span{display:block;height:100%;border-radius:4px}
+.mp-bar{height:4px;border-radius:3px;background:rgba(255,255,255,.07);overflow:hidden;margin-bottom:6px}
+.mp-bar span{display:block;height:100%}
 .mp-row{display:flex;justify-content:space-between;font-size:11px;color:var(--t3)}
 .mp-row b{color:var(--t1);font-family:var(--disp);font-variant-numeric:tabular-nums}
-.mside-div{height:1px;background:var(--line);margin:16px 0 14px}
+.mside-div{height:1px;background:var(--hl);margin:15px 0 13px}
 .mchat-name{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;margin-bottom:8px}
-.mchat-av{width:22px;height:22px;border-radius:7px;background:var(--lime-15);color:var(--lime);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;font-family:var(--disp)}
-.mock-foot{
-  display:flex;align-items:center;gap:8px;border-top:1px solid var(--line);
-  padding:10px 18px;font-size:11px;color:var(--t3);background:rgba(255,255,255,.012);
-}
+.mchat-av{width:21px;height:21px;border-radius:5px;background:var(--lime-dim);color:var(--lime);display:flex;align-items:center;justify-content:center;font-size:8.5px;font-weight:800;font-family:var(--disp)}
+.mock-foot{display:flex;align-items:center;gap:8px;border-top:1px solid var(--hl);padding:10px 18px;font-size:11px;color:var(--t3)}
 .mock-foot svg{color:var(--lime);flex-shrink:0}
 
-/* ── shared section primitives ──────────────────────────────── */
-.section{padding:104px 0}
-.eyebrow{
-  display:flex;align-items:center;gap:10px;
-  font-family:var(--disp);font-size:11.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
-  color:var(--lime);margin-bottom:18px;
+/* ── ticker marquee ─────────────────────────────────────────── */
+.ticker{border-top:1px solid var(--hl);border-bottom:1px solid var(--hl);background:var(--bg2);overflow:hidden;padding:13px 0}
+.ticker-track{display:flex;gap:0;width:max-content;animation:tick 38s linear infinite}
+.ticker:hover .ticker-track{animation-play-state:paused}
+@keyframes tick{to{transform:translateX(-50%)}}
+.titem{
+  display:inline-flex;align-items:center;gap:9px;padding:0 26px;
+  font-family:var(--disp);font-size:12px;font-weight:500;letter-spacing:.06em;color:var(--t3);
+  white-space:nowrap;border-right:1px solid var(--hl);
 }
-.eyebrow::before{content:'';width:22px;height:1.5px;background:var(--lime);opacity:.7}
-h2{font-family:var(--disp);font-weight:700;letter-spacing:-.03em;line-height:1.08;font-size:clamp(30px,3.4vw,44px);margin-bottom:16px}
-.sec-sub{font-size:16.5px;color:var(--t2);max-width:560px;line-height:1.65}
+.titem b{color:var(--lime);font-variant-numeric:tabular-nums;font-weight:700}
+.titem .src{font-size:9.5px;letter-spacing:.14em;color:var(--t4)}
 
-/* reveal-on-scroll */
-.rv{opacity:0;transform:translateY(26px);transition:opacity .7s var(--ease),transform .7s var(--ease);transition-delay:var(--d,0s)}
+/* ── section scaffolding ────────────────────────────────────── */
+.section{padding:96px 0}
+h2{font-family:var(--disp);font-weight:700;letter-spacing:-.035em;line-height:1.04;font-size:clamp(30px,3.6vw,48px);margin:22px 0 14px;text-wrap:balance}
+.sec-sub{font-size:16px;color:var(--t2);max-width:540px;line-height:1.7}
+.rv{opacity:0;transform:translateY(18px);transition:opacity .65s var(--ease),transform .65s var(--ease);transition-delay:var(--d,0s)}
 .rv.in{opacity:1;transform:none}
 
-/* ── works-with strip ───────────────────────────────────────── */
-.works{padding:36px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--bg2)}
-.works-row{display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap}
-.works-l{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--t4);white-space:nowrap}
-.works-items{display:flex;gap:34px;flex-wrap:wrap;align-items:center}
-.witem{display:flex;align-items:center;gap:9px;font-family:var(--disp);font-weight:600;font-size:14px;color:var(--t3);transition:color .25s}
-.witem:hover{color:var(--t1)}
-.witem svg{opacity:.75;flex-shrink:0}
+/* ── steps (01/02/03 columns with hairlines) ────────────────── */
+.steps{display:grid;grid-template-columns:repeat(3,1fr);margin-top:54px;border-top:1px solid var(--hl)}
+.step{padding:30px 28px 8px 0;border-right:1px solid var(--hl);margin-right:28px}
+.step:last-child{border-right:none;margin-right:0}
+.step-num{font-family:var(--disp);font-weight:400;font-size:13px;color:var(--t4);letter-spacing:.1em;margin-bottom:16px}
+.step-num b{color:var(--lime);font-weight:700}
+.step h3{font-family:var(--disp);font-weight:700;font-size:18px;letter-spacing:-.015em;margin-bottom:9px}
+.step p{font-size:14px;color:var(--t2);line-height:1.65}
 
-/* ── steps ──────────────────────────────────────────────────── */
-.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:54px}
-.step{
-  background:var(--surface);border:1px solid var(--line);border-radius:var(--r4);
-  padding:30px 28px;transition:border-color .3s,transform .3s var(--ease);
+/* ── ledger feature index ───────────────────────────────────── */
+.ledger{margin-top:54px;border-top:1px solid var(--hl)}
+.lrow{
+  display:grid;grid-template-columns:88px 1.05fr .95fr;gap:32px;align-items:center;
+  padding:34px 0;border-bottom:1px solid var(--hl);
+  transition:background .25s;position:relative;
 }
-.step:hover{border-color:rgba(168,247,64,.3);transform:translateY(-4px)}
-.step-num{
-  font-family:var(--disp);font-weight:800;font-size:13px;color:var(--lime);
-  background:var(--lime-08);border:1px solid var(--lime-25);
-  width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;
-  margin-bottom:18px;
+.lrow::before{
+  content:'';position:absolute;left:-28px;top:0;bottom:0;width:2px;background:var(--lime);
+  transform:scaleY(0);transition:transform .3s var(--ease);transform-origin:top;
 }
-.step h3{font-family:var(--disp);font-weight:700;font-size:18.5px;letter-spacing:-.015em;margin-bottom:9px}
-.step p{font-size:14.5px;color:var(--t2);line-height:1.6}
+.lrow:hover::before{transform:scaleY(1)}
+.lrow:hover .lnum{color:var(--lime)}
+.lnum{
+  font-family:var(--disp);font-weight:400;font-size:30px;letter-spacing:-.02em;color:var(--t4);
+  font-variant-numeric:tabular-nums;transition:color .25s;align-self:start;line-height:1.1;
+}
+.lrow h3{font-family:var(--disp);font-weight:700;font-size:21px;letter-spacing:-.02em;margin-bottom:8px}
+.lrow p{font-size:14.5px;color:var(--t2);line-height:1.65;max-width:460px}
+.lrow p b{color:var(--t1);font-weight:600}
+.lviz{justify-self:end;width:100%;max-width:360px}
+/* viz primitives */
+.vrow{display:flex;align-items:center;gap:9px;border:1px solid var(--hl);border-radius:7px;padding:9px 12px;font-size:12px;background:rgba(255,255,255,.015)}
+.vtable{font-family:var(--disp);font-size:12.5px;font-variant-numeric:tabular-nums}
+.vtable .tr{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--hl);color:var(--t2)}
+.vtable .tr b{color:var(--t1)}
+.vtable .tr.tot{border-bottom:none;color:var(--lime)}
+.vtable .tr.tot b{color:var(--lime)}
+.vpills{display:flex;gap:8px}
+.vpills span{flex:1;text-align:center;font-size:11px;font-weight:600;font-family:var(--disp);border:1px solid var(--hl);border-radius:6px;padding:8px 6px;color:var(--t3)}
+.vpills span.on{background:var(--lime-dim);border-color:rgba(168,247,64,.4);color:var(--lime)}
+.vfx{display:flex;align-items:center;gap:10px;font-family:var(--disp);font-size:12.5px;flex-wrap:wrap}
+.vfx .chip{display:flex;align-items:center;gap:7px;border:1px solid var(--hl);border-radius:6px;padding:7px 11px;font-variant-numeric:tabular-nums;color:var(--t2)}
+.vfx .loss{color:var(--red);font-size:12px}
+.vdoc{display:flex;align-items:center;gap:10px;border:1px solid var(--hl);border-radius:7px;padding:11px 13px;font-family:var(--disp);font-size:12px;color:var(--t2)}
+.vdoc svg{color:var(--lime);flex-shrink:0}
 
-/* ── bento features ─────────────────────────────────────────── */
-.bento{display:grid;grid-template-columns:repeat(6,1fr);gap:16px;margin-top:56px}
-.bcell{
-  position:relative;overflow:hidden;
-  background:var(--surface);border:1px solid var(--line);border-radius:var(--r4);
-  padding:28px;display:flex;flex-direction:column;
-  transition:border-color .3s,transform .3s var(--ease),box-shadow .3s;
-}
-.bcell:hover{border-color:var(--line2);transform:translateY(-4px);box-shadow:0 18px 50px rgba(0,0,0,.4)}
-.bcell.hl:hover{border-color:rgba(168,247,64,.35)}
-.b-2{grid-column:span 2}.b-3{grid-column:span 3}
-.bico{
-  width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;
-  background:var(--lime-08);border:1px solid var(--lime-25);color:var(--lime);
-}
-.bcell.purp .bico{background:var(--purple-10);border-color:var(--purple-25);color:var(--purple-lt)}
-.bcell h3{font-family:var(--disp);font-weight:700;font-size:19px;letter-spacing:-.015em;margin:22px 0 8px}
-.bcell p{font-size:14.5px;color:var(--t2);line-height:1.62}
-.bcell p b{color:var(--t1);font-weight:600}
-.bviz{margin-top:auto;padding-top:20px}
-.bviz-in{border-top:1px solid var(--line);padding-top:16px}
-/* split viz */
-.sv-row{display:flex;justify-content:space-between;font-size:12px;font-family:var(--disp);font-variant-numeric:tabular-nums;color:var(--t2);padding:4px 0}
-.sv-row b{color:var(--t1)}
-.sv-row.tot{border-top:1px dashed var(--line2);margin-top:5px;padding-top:8px;color:var(--lime)}
-.sv-row.tot b{color:var(--lime)}
-/* fx viz */
-.fxv{display:flex;align-items:center;gap:10px;font-family:var(--disp);font-size:13px;flex-wrap:wrap}
-.fxv .chip{display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:8px;padding:7px 11px;font-variant-numeric:tabular-nums}
-.fxv .loss{color:var(--red);font-size:12px}
-/* expense toggle viz */
-.exv{display:flex;gap:8px}
-.exv span{
-  flex:1;text-align:center;font-size:11px;font-weight:600;font-family:var(--disp);
-  border:1px solid var(--line);border-radius:8px;padding:8px 6px;color:var(--t3);
-}
-.exv span.on{background:var(--lime-08);border-color:var(--lime-25);color:var(--lime)}
-/* feed-row viz */
-.chv{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.02);border:1px solid var(--line);border-radius:9px;padding:9px 12px;font-size:12px}
-.chv .famt{font-size:12px}
+/* ── stat band ──────────────────────────────────────────────── */
+.stats{border-top:1px solid var(--hl);border-bottom:1px solid var(--hl);background:var(--bg2)}
+.stats-in{display:grid;grid-template-columns:repeat(4,1fr)}
+.stat{padding:40px 28px;border-right:1px solid var(--hl)}
+.stat:last-child{border-right:none}
+.stat .v{font-family:var(--disp);font-weight:700;font-size:clamp(28px,3vw,42px);letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1}
+.stat .v small{font-size:.45em;font-weight:600;color:var(--t3);letter-spacing:0}
+.stat .k{font-family:var(--disp);font-size:10.5px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--t4);margin-top:10px}
 
 /* ── compare ────────────────────────────────────────────────── */
-.cmp{margin-top:54px;border:1px solid var(--line);border-radius:var(--r4);overflow:hidden}
-.cmp-head,.cmp-row{display:grid;grid-template-columns:1.4fr 1fr 1fr}
-.cmp-head{background:var(--surface2);border-bottom:1px solid var(--line)}
-.cmp-head div{padding:16px 22px;font-family:var(--disp);font-weight:700;font-size:13.5px}
+.cmp{margin-top:54px;border:1px solid var(--hl)}
+.cmp-head,.cmp-row{display:grid;grid-template-columns:1.3fr 1fr 1fr}
+.cmp-head{border-bottom:1px solid var(--hl);background:var(--bg2)}
+.cmp-head div{padding:14px 22px;font-family:var(--disp);font-weight:600;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--t3)}
 .cmp-head .pm{color:var(--lime)}
-.cmp-row{border-bottom:1px solid var(--line);transition:background .2s}
+.cmp-row{border-bottom:1px solid var(--hl);transition:background .2s}
 .cmp-row:last-child{border-bottom:none}
 .cmp-row:hover{background:rgba(255,255,255,.015)}
 .cmp-row div{padding:15px 22px;font-size:13.5px;color:var(--t2);display:flex;align-items:center;gap:9px}
@@ -323,151 +301,159 @@ h2{font-family:var(--disp);font-weight:700;letter-spacing:-.03em;line-height:1.0
 .ic-no{color:var(--t4);flex-shrink:0}
 
 /* ── calculator ─────────────────────────────────────────────── */
-.calc{
-  margin-top:54px;display:grid;grid-template-columns:1fr 1fr;
-  border:1px solid var(--line);border-radius:var(--r4);overflow:hidden;background:var(--surface);
-}
-.calc-in{padding:36px;border-right:1px solid var(--line)}
+.calc{margin-top:54px;display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--hl)}
+.calc-in{padding:36px;border-right:1px solid var(--hl)}
 .cfield{margin-bottom:26px}
-.cfield label{display:flex;justify-content:space-between;font-size:13px;font-weight:600;color:var(--t2);margin-bottom:12px}
-.cfield label output{font-family:var(--disp);color:var(--lime);font-weight:700;font-variant-numeric:tabular-nums}
-input[type=range]{
-  width:100%;height:4px;border-radius:3px;background:var(--surface3);appearance:none;-webkit-appearance:none;outline:none;
-}
+.cfield label{display:flex;justify-content:space-between;font-family:var(--disp);font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--t3);margin-bottom:14px}
+.cfield label output{color:var(--lime);font-weight:700;font-size:13px;letter-spacing:.02em;font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;height:3px;background:var(--srf2);appearance:none;-webkit-appearance:none;outline:none}
 input[type=range]::-webkit-slider-thumb{
-  appearance:none;-webkit-appearance:none;width:18px;height:18px;border-radius:50%;
-  background:var(--lime);border:3px solid #060608;box-shadow:0 0 0 1.5px var(--lime),0 2px 10px rgba(168,247,64,.4);
+  appearance:none;-webkit-appearance:none;width:16px;height:16px;border-radius:50%;
+  background:var(--lime);border:3px solid var(--bg);box-shadow:0 0 0 1.5px var(--lime);
 }
-input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:var(--lime);border:3px solid #060608;box-shadow:0 0 0 1.5px var(--lime)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:var(--lime);border:3px solid var(--bg);box-shadow:0 0 0 1.5px var(--lime)}
 input[type=range]:focus-visible{outline:2px solid var(--lime);outline-offset:6px}
 .ctoggle{display:flex;align-items:center;gap:10px;font-size:13.5px;color:var(--t2);user-select:none}
-.ctoggle input{accent-color:var(--lime);width:16px;height:16px}
-.calc-out{padding:36px;background:var(--surface2)}
-.co-title{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);margin-bottom:18px}
-.co-row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--line);font-size:14px}
-.co-row:last-of-type{border-bottom:none}
-.co-row .who{display:flex;align-items:center;gap:9px;color:var(--t2)}
-.co-dot{width:8px;height:8px;border-radius:3px;flex-shrink:0}
+.ctoggle input{accent-color:var(--lime);width:15px;height:15px}
+.calc-out{padding:36px;background:var(--bg2)}
+.co-title{font-family:var(--disp);font-size:11px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--t3);margin-bottom:16px}
+.co-row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--hl);font-size:14px}
+.co-row .who{display:flex;align-items:center;gap:10px;color:var(--t2)}
+.co-dot{width:7px;height:7px;border-radius:2px;flex-shrink:0}
 .co-row b{font-family:var(--disp);font-size:16px;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.co-row.tot{border-bottom:none}
 .co-note{margin-top:16px;font-size:12px;color:var(--t4);line-height:1.6}
 
 /* ── pricing ────────────────────────────────────────────────── */
-.price-card{
-  margin:54px auto 0;max-width:520px;position:relative;
-  background:linear-gradient(180deg,var(--surface2),var(--surface));
-  border:1px solid rgba(168,247,64,.3);border-radius:var(--r5);padding:44px;text-align:center;
-  box-shadow:0 30px 80px rgba(0,0,0,.45),0 0 60px rgba(168,247,64,.06);
-}
-.price-num{font-family:var(--disp);font-weight:800;font-size:58px;letter-spacing:-.04em;line-height:1}
-.price-num small{font-size:17px;font-weight:600;color:var(--t3);letter-spacing:0}
-.price-per{font-size:13px;color:var(--t3);margin:8px 0 28px}
-.price-list{list-style:none;text-align:left;margin-bottom:32px;display:grid;gap:11px}
-.price-list li{display:flex;gap:11px;font-size:14.5px;color:var(--t2);align-items:flex-start}
+.price{margin-top:54px;border:1px solid var(--hl);display:grid;grid-template-columns:1fr 1.2fr}
+.price-l{padding:46px;border-right:1px solid var(--hl);display:flex;flex-direction:column;justify-content:center}
+.price-num{font-family:var(--disp);font-weight:700;font-size:clamp(54px,6vw,84px);letter-spacing:-.05em;line-height:1;font-variant-numeric:tabular-nums}
+.price-num small{font-size:.26em;font-weight:600;color:var(--t3);letter-spacing:0}
+.price-per{font-family:var(--disp);font-size:11px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--t4);margin-top:14px}
+.price-r{padding:46px}
+.price-list{list-style:none;margin-bottom:30px;display:grid;gap:12px}
+.price-list li{display:flex;gap:12px;font-size:14.5px;color:var(--t2);align-items:flex-start}
 .price-list svg{flex-shrink:0;margin-top:3px;color:var(--lime)}
-.price-card .btn-primary{width:100%;justify-content:center}
-.price-foot{margin-top:16px;font-size:12.5px;color:var(--t4)}
+.price-foot{margin-top:14px;font-size:12.5px;color:var(--t4)}
 
 /* ── faq ────────────────────────────────────────────────────── */
-.faq{max-width:760px;margin:54px auto 0}
-.faq details{border:1px solid var(--line);border-radius:var(--r3);margin-bottom:10px;background:var(--surface);overflow:hidden;transition:border-color .25s}
-.faq details[open]{border-color:var(--line2)}
+.faq{max-width:780px;margin:54px 0 0;border-top:1px solid var(--hl)}
+.faq details{border-bottom:1px solid var(--hl)}
 .faq summary{
   list-style:none;display:flex;justify-content:space-between;align-items:center;gap:16px;
-  padding:19px 24px;font-family:var(--disp);font-weight:600;font-size:15.5px;letter-spacing:-.01em;
+  padding:21px 4px;font-family:var(--disp);font-weight:600;font-size:15.5px;letter-spacing:-.01em;
   transition:color .2s;
 }
 .faq summary::-webkit-details-marker{display:none}
 .faq summary:hover{color:var(--lime)}
-.faq summary svg{flex-shrink:0;transition:transform .3s var(--ease);color:var(--t3)}
+.faq summary svg{flex-shrink:0;transition:transform .3s var(--ease);color:var(--t4)}
 .faq details[open] summary svg{transform:rotate(45deg);color:var(--lime)}
-.faq .fa-body{padding:0 24px 20px;font-size:14.5px;color:var(--t2);line-height:1.68}
+.faq .fa-body{padding:0 4px 22px;font-size:14.5px;color:var(--t2);line-height:1.7;max-width:640px}
 
-/* ── final cta ──────────────────────────────────────────────── */
-.final{position:relative;text-align:center;padding:130px 0 140px;overflow:hidden}
-.final .ray{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:900px;height:600px;border-radius:50%;
-  background:radial-gradient(ellipse,rgba(168,247,64,.09),transparent 65%);filter:blur(60px);pointer-events:none}
-.final h2{font-size:clamp(34px,4vw,52px)}
-.final .sec-sub{margin:0 auto 38px;max-width:480px}
-.final .hero-actions{justify-content:center;margin-bottom:0}
+/* ── final ──────────────────────────────────────────────────── */
+.final{padding:120px 0 130px;text-align:left}
+.final h2{font-size:clamp(38px,5vw,72px);letter-spacing:-.045em;max-width:900px}
+.final .sec-sub{margin-bottom:38px}
 
 /* ── footer ─────────────────────────────────────────────────── */
-footer{border-top:1px solid var(--line);padding:38px 0;background:var(--bg2)}
+footer{border-top:1px solid var(--hl);padding:34px 0;background:var(--bg2)}
 .foot-row{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap}
-.foot-l{display:flex;align-items:center;gap:10px;font-family:var(--disp);font-weight:700;font-size:14px}
-.foot-l img{width:22px;height:22px}
-.foot-links{display:flex;gap:24px;font-size:13px;color:var(--t3);flex-wrap:wrap}
+.foot-l{display:flex;align-items:center;gap:10px;font-family:var(--disp);font-weight:700;font-size:13.5px}
+.foot-l img{width:20px;height:20px}
+.foot-links{display:flex;gap:24px;font-family:var(--disp);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);flex-wrap:wrap}
 .foot-links a:hover{color:var(--t1)}
-.foot-cr{font-size:12px;color:var(--t4)}
+.foot-cr{font-size:12px;color:var(--t4);font-family:var(--disp)}
+
+/* ── custom cursor ──────────────────────────────────────────── */
+@media (hover:hover) and (pointer:fine){
+  body.has-cursor,body.has-cursor a,body.has-cursor button,body.has-cursor summary,body.has-cursor label{cursor:none}
+  .cur-dot,.cur-ring{position:fixed;top:0;left:0;pointer-events:none;z-index:3000;border-radius:50%;will-change:transform}
+  .cur-dot{width:5px;height:5px;background:var(--lime)}
+  .cur-ring{width:30px;height:30px;border:1px solid rgba(168,247,64,.5);
+    transition:width .25s var(--ease),height .25s var(--ease),border-color .25s,background .25s,margin .25s var(--ease)}
+  body.cur-hover .cur-ring{width:46px;height:46px;margin:-8px 0 0 -8px;border-color:rgba(168,247,64,.9);background:rgba(168,247,64,.05)}
+  body.cur-down .cur-ring{width:22px;height:22px;margin:4px 0 0 4px}
+}
+.cur-dot,.cur-ring{display:none}
+body.has-cursor .cur-dot,body.has-cursor .cur-ring{display:block}
 
 /* ── responsive ─────────────────────────────────────────────── */
 @media(max-width:1020px){
-  .hero-inner{grid-template-columns:1fr;gap:52px}
+  .hero-grid2{grid-template-columns:1fr;gap:56px;padding-bottom:72px}
   .hero-sub{max-width:none}
-  .bento{grid-template-columns:repeat(2,1fr)}
-  .b-2,.b-3{grid-column:span 2}
+  .lrow{grid-template-columns:56px 1fr;gap:20px}
+  .lviz{grid-column:2;justify-self:start;max-width:420px}
+  .stats-in{grid-template-columns:1fr 1fr}
+  .stat:nth-child(2){border-right:none}
+  .stat:nth-child(1),.stat:nth-child(2){border-bottom:1px solid var(--hl)}
   .steps{grid-template-columns:1fr}
-  .calc{grid-template-columns:1fr}
-  .calc-in{border-right:none;border-bottom:1px solid var(--line)}
+  .step{border-right:none;margin-right:0;border-bottom:1px solid var(--hl);padding:26px 0}
+  .step:last-child{border-bottom:none}
+  .calc,.price{grid-template-columns:1fr}
+  .calc-in,.price-l{border-right:none;border-bottom:1px solid var(--hl)}
 }
 @media(max-width:680px){
   .nav-links{display:none}
-  .hero{padding-top:118px;padding-bottom:64px}
-  .section{padding:76px 0}
+  .hero{padding-top:118px}
+  .section{padding:70px 0}
+  h1{font-size:clamp(40px,11.5vw,58px)}
   .mock-body{grid-template-columns:1fr}
-  .mock-main{border-right:none;border-bottom:1px solid var(--line)}
-  .bento{grid-template-columns:1fr}
-  .b-2,.b-3{grid-column:span 1}
-  .cmp-head div,.cmp-row div{padding:12px 12px;font-size:12px}
-  .calc-in,.calc-out{padding:26px}
-  .price-card{padding:32px 24px}
-  .works-row{justify-content:center}
-  .final{padding:90px 0 100px}
+  .mock-main{border-right:none;border-bottom:1px solid var(--hl)}
+  .hero-meta{flex-wrap:wrap;gap:22px}
+  .cmp-head div,.cmp-row div{padding:11px 12px;font-size:11.5px}
+  .calc-in,.calc-out,.price-l,.price-r{padding:26px}
+  .stats-in{grid-template-columns:1fr 1fr}
+  .stat{padding:26px 20px}
+  .lnum{font-size:22px}
+  .lrow h3{font-size:18px}
+  .final{padding:84px 0 92px}
 }
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
   html{scroll-behavior:auto}
   .rv{opacity:1;transform:none}
   h1 .ln span{transform:none;animation:none}
+  .ticker-track{animation:none}
 }
 </style>
 </head>
 <body>
 
+<div class="guides" aria-hidden="true"><div class="gwrap"><i></i><i></i><i></i><i></i><i></i></div></div>
 <div class="cur-dot" aria-hidden="true"></div>
 <div class="cur-ring" aria-hidden="true"></div>
 
 <!-- ════════ NAV ════════ -->
 <nav class="nav">
-  <a class="nav-logo" href="#" aria-label="Payout Manager home">
-    <img src="/logo.svg" alt="" width="26" height="26">
-    Payout<b>Manager</b>
-  </a>
-  <div class="nav-links">
-    <a href="#features">Features</a>
-    <a href="#how">How it works</a>
-    <a href="#calc">Calculator</a>
-    <a href="#pricing">Pricing</a>
-    <a href="#faq">FAQ</a>
+  <div class="nav-in">
+    <a class="nav-logo" href="#" aria-label="Payout Manager home">
+      <img src="/logo.svg" alt="" width="24" height="24">
+      Payout<b>Manager</b>
+    </a>
+    <div class="nav-links">
+      <a href="#how">Setup</a>
+      <a href="#features">Ledger</a>
+      <a href="#calc">Math</a>
+      <a href="#pricing">Price</a>
+      <a href="#faq">FAQ</a>
+    </div>
+    <a class="nav-cta magnetic" data-store-cta href="/tracker">Get the app</a>
   </div>
-  <a class="nav-cta magnetic" data-store-cta href="/tracker">Get the app</a>
 </nav>
 
 <!-- ════════ HERO ════════ -->
 <header class="hero">
-  <div class="hero-bg" aria-hidden="true">
-    <div class="ray r1"></div>
-    <div class="ray r2"></div>
-    <div class="hero-grid"></div>
-  </div>
   <div class="wrap">
-    <div class="hero-inner">
+    <div class="hero-top">
+      <div class="lbl"><b>Payout Manager</b> · Fanvue App Store · <span class="live-amt"><span id="lblAmt">$12,483.71</span> synced and counting</span></div>
+      <h1>
+        <span class="ln"><span>Every dollar tracked.</span></span>
+        <span class="ln"><span>Every split <span class="mark">exact.</span></span></span>
+        <span class="ln"><span>Every payout on time.</span></span>
+      </h1>
+    </div>
+    <div class="hero-grid2">
       <div>
-        <div class="hero-badge"><span class="dot"></span> Live on the <b>Fanvue App&nbsp;Store</b></div>
-        <h1>
-          <span class="ln"><span>Every dollar tracked.</span></span>
-          <span class="ln"><span>Every split exact.</span></span>
-          <span class="ln"><span class="gx">Every payout on time.</span></span>
-        </h1>
         <p class="hero-sub">
           Payout Manager syncs your Fanvue earnings <b>the moment they happen</b>, splits revenue
           between partners and chatters <b>to the cent</b>, and turns month-end chaos into a
@@ -476,15 +462,21 @@ footer{border-top:1px solid var(--line);padding:38px 0;background:var(--bg2)}
         <div class="hero-actions">
           <a class="btn-primary magnetic" data-store-cta href="/tracker">
             Subscribe on Fanvue
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
           </a>
           <a class="btn-ghost magnetic" href="/tracker">Try the live demo</a>
         </div>
-        <p class="hero-note"><b>$14.99/mo</b> · billed through the Fanvue App Store · cancel anytime · full interactive demo, no signup</p>
+        <p class="hero-note"><b>$14.99/mo</b> · billed through Fanvue · cancel anytime · full demo, no signup</p>
+        <div class="hero-meta">
+          <div class="hm"><div class="v">≤ $0.01</div><div class="k">Rounding drift</div></div>
+          <div class="hm"><div class="v">~ 5 s</div><div class="k">Webhook to ledger</div></div>
+          <div class="hm"><div class="v">1 click</div><div class="k">Month-end report</div></div>
+        </div>
       </div>
 
       <!-- live dashboard mock -->
       <div class="mock-wrap">
+        <div class="mock-tag"><span class="dot"></span> Ledger · live preview</div>
         <div class="mock" id="mock" aria-label="Animated preview of the Payout Manager dashboard">
           <div class="mock-bar">
             <span class="mdot" style="background:#FF5F57"></span>
@@ -513,7 +505,7 @@ footer{border-top:1px solid var(--line);padding:38px 0;background:var(--bg2)}
               <div class="mock-lt">Partner payouts</div>
               <div class="mpart">
                 <div class="mp-top">Alex R. <span class="pct">50%</span></div>
-                <div class="mp-bar"><span style="width:50%;background:var(--purple-lt)"></span></div>
+                <div class="mp-bar"><span style="width:50%;background:var(--purple)"></span></div>
                 <div class="mp-row"><span>Remaining</span><b id="remA">$2,108.42</b></div>
               </div>
               <div class="mpart">
@@ -523,7 +515,7 @@ footer{border-top:1px solid var(--line);padding:38px 0;background:var(--bg2)}
               </div>
               <div class="mside-div"></div>
               <div class="mock-lt">Chatter</div>
-              <div class="mchat-name"><span class="mchat-av">ST</span> Sam Turner <span class="pct" style="margin-left:auto;color:var(--t3);font-family:var(--disp);font-size:11px">15%</span></div>
+              <div class="mchat-name"><span class="mchat-av">ST</span> Sam Turner <span class="pct" style="margin-left:auto;font-size:11px">15%</span></div>
               <div class="mp-row"><span>Earned this month</span><b id="chatEarn">$311.20</b></div>
             </div>
           </div>
@@ -537,38 +529,40 @@ footer{border-top:1px solid var(--line);padding:38px 0;background:var(--bg2)}
   </div>
 </header>
 
-<!-- ════════ WORKS WITH ════════ -->
-<section class="works">
-  <div class="wrap works-row rv">
-    <span class="works-l">Tracks income from</span>
-    <div class="works-items">
-      <span class="witem"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Fanvue · auto-sync</span>
-      <span class="witem"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg> PayPal</span>
-      <span class="witem"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg> Telegram</span>
-      <span class="witem"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg> Any custom platform</span>
-    </div>
+<!-- ════════ TICKER ════════ -->
+<div class="ticker" aria-hidden="true">
+  <div class="ticker-track" id="tickerTrack">
+    <span class="titem"><span class="src">FANVUE</span> Subscription renewal <b>+$7.99</b></span>
+    <span class="titem"><span class="src">FANVUE</span> Tip received <b>+$25.00</b></span>
+    <span class="titem"><span class="src">FANVUE</span> Message unlock <b>+$12.00</b></span>
+    <span class="titem"><span class="src">PAYPAL</span> Custom content <b>+$40.00</b></span>
+    <span class="titem"><span class="src">FANVUE</span> Post unlock <b>+$15.20</b></span>
+    <span class="titem"><span class="src">TELEGRAM</span> Gift — Mood Pack <b>+$19.00</b></span>
+    <span class="titem"><span class="src">FANVUE</span> New subscription <b>+$9.99</b></span>
+    <span class="titem"><span class="src">TELEGRAM</span> Tip — 4067 stars <b>+$54.00</b></span>
   </div>
-</section>
+</div>
 
 <!-- ════════ HOW ════════ -->
-<section class="section" id="how">
+<section class="section xsec" id="how">
+  <span class="x xl">+</span><span class="x xr">+</span>
   <div class="wrap">
-    <div class="eyebrow rv">How it works</div>
+    <div class="lbl rv"><b>01</b> · Setup</div>
     <h2 class="rv" style="--d:.05s">Live in three steps</h2>
     <p class="sec-sub rv" style="--d:.1s">No spreadsheets to migrate, no setup calls. Connect, invite, done.</p>
-    <div class="steps">
-      <div class="step rv" style="--d:.05s">
-        <div class="step-num">1</div>
+    <div class="steps rv" style="--d:.12s">
+      <div class="step">
+        <div class="step-num"><b>1</b> — CONNECT</div>
         <h3>Connect Fanvue</h3>
         <p>One-tap OAuth from the Fanvue App Store. Earnings start syncing through webhooks the moment a fan pays — with a 15-minute polling fallback so nothing slips through.</p>
       </div>
-      <div class="step rv" style="--d:.15s">
-        <div class="step-num">2</div>
+      <div class="step">
+        <div class="step-num"><b>2</b> — INVITE</div>
         <h3>Invite your team</h3>
         <p>Partners get their revenue share, chatters get a personal percentage. Everyone sees exactly what they're owed — and only what they're allowed to see.</p>
       </div>
-      <div class="step rv" style="--d:.25s">
-        <div class="step-num">3</div>
+      <div class="step">
+        <div class="step-num"><b>3</b> — DONE</div>
         <h3>Money tracks itself</h3>
         <p>Splits recalculate on every transaction. Record withdrawals when you cash out, and the ledger shows who's been paid and who's still owed — to the cent.</p>
       </div>
@@ -576,99 +570,123 @@ footer{border-top:1px solid var(--line);padding:38px 0;background:var(--bg2)}
   </div>
 </section>
 
-<!-- ════════ FEATURES (BENTO) ════════ -->
-<section class="section" id="features" style="padding-top:30px">
+<!-- ════════ FEATURES (LEDGER INDEX) ════════ -->
+<section class="section xsec" id="features" style="padding-top:84px">
+  <span class="x xl">+</span><span class="x xr">+</span>
   <div class="wrap">
-    <div class="eyebrow rv">Features</div>
-    <h2 class="rv" style="--d:.05s">Everything the money side needs.<br>Nothing it doesn't.</h2>
-    <div class="bento">
+    <div class="lbl rv"><b>02</b> · The ledger</div>
+    <h2 class="rv" style="--d:.05s">Six things a spreadsheet can't do.</h2>
+    <div class="ledger">
 
-      <div class="bcell b-3 hl rv" style="--d:.05s">
-        <div class="bico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
-        <h3>Real-time Fanvue sync</h3>
-        <p>Webhooks land each transaction <b>seconds after the fan pays</b> — subscriptions, tips, unlocks, the lot. A 15-minute polling fallback covers webhook hiccups, so your numbers are never stale.</p>
-        <div class="bviz"><div class="bviz-in">
-          <div class="chv"><span class="fbadge b-fv">FANVUE</span><span class="fdesc">Message unlock</span><span class="famt">+$15.20</span></div>
-        </div></div>
+      <div class="lrow rv">
+        <div class="lnum">01</div>
+        <div>
+          <h3>Real-time Fanvue sync</h3>
+          <p>Webhooks land each transaction <b>seconds after the fan pays</b> — subscriptions, tips, unlocks. A 15-minute polling fallback covers hiccups, so the numbers are never stale.</p>
+        </div>
+        <div class="lviz">
+          <div class="vrow"><span class="fbadge b-fv">FANVUE</span><span class="fdesc">Message unlock</span><span class="famt">+$15.20</span></div>
+        </div>
       </div>
 
-      <div class="bcell b-3 purp rv" style="--d:.12s">
-        <div class="bico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 19a6 6 0 0 0-12 0"/><circle cx="8" cy="9" r="4"/><path d="M22 19a6 6 0 0 0-6-6 4 4 0 1 0 0-8"/></svg></div>
-        <h3>Chatter tracking</h3>
-        <p>Tag any transaction to a chatter — their cut comes <b>off the top</b> before partner splits, so everyone's math stays honest. Record payouts and cash advances with proper double-entry bookkeeping.</p>
-        <div class="bviz"><div class="bviz-in">
-          <div class="chv"><span class="fbadge b-fv">FANVUE</span><span class="fdesc">Tip received</span><span class="fchat">→ Sam · 15%</span><span class="famt">+$40.00</span></div>
-        </div></div>
+      <div class="lrow rv">
+        <div class="lnum">02</div>
+        <div>
+          <h3>Chatter tracking</h3>
+          <p>Tag any transaction to a chatter — their cut comes <b>off the top</b> before partner splits. Payouts and cash advances are recorded as proper double-entry, so nobody's totals drift.</p>
+        </div>
+        <div class="lviz">
+          <div class="vrow"><span class="fbadge b-fv">FANVUE</span><span class="fdesc">Tip received</span><span class="fchat">→ Sam · 15%</span><span class="famt">+$40.00</span></div>
+        </div>
       </div>
 
-      <div class="bcell b-2 hl rv" style="--d:.05s">
-        <div class="bico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg></div>
-        <h3>Splits exact to the cent</h3>
-        <p>Shares always sum to the pool — no penny drift, ever. Dated split history keeps past months accurate when percentages change.</p>
-        <div class="bviz"><div class="bviz-in">
-          <div class="sv-row"><span>Alex · 50%</span><b>$546.81</b></div>
-          <div class="sv-row"><span>Jamie · 50%</span><b>$546.80</b></div>
-          <div class="sv-row tot"><span>Pool</span><b>$1,093.61 ✓</b></div>
-        </div></div>
+      <div class="lrow rv">
+        <div class="lnum">03</div>
+        <div>
+          <h3>Splits exact to the cent</h3>
+          <p>Shares always sum to the pool — <b>no penny drift, ever</b>. Dated split history keeps past months accurate when percentages change.</p>
+        </div>
+        <div class="lviz vtable">
+          <div class="tr"><span>Alex · 50%</span><b>$546.81</b></div>
+          <div class="tr"><span>Jamie · 50%</span><b>$546.80</b></div>
+          <div class="tr tot"><span>Pool</span><b>$1,093.61 ✓</b></div>
+        </div>
       </div>
 
-      <div class="bcell b-2 rv" style="--d:.12s">
-        <div class="bico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
-        <h3>Expenses that match reality</h3>
-        <p>Mark each cost as paid from a partner's <b>own pocket</b> (reimbursed on top) or <b>from revenue</b> (shared by everyone). Attach receipts to every line.</p>
-        <div class="bviz"><div class="bviz-in exv">
+      <div class="lrow rv">
+        <div class="lnum">04</div>
+        <div>
+          <h3>Expenses that match reality</h3>
+          <p>Mark each cost as paid from a partner's <b>own pocket</b> (reimbursed on top) or <b>from revenue</b> (shared by everyone). Receipts attach to every line.</p>
+        </div>
+        <div class="lviz vpills">
           <span class="on">Own pocket → reimburse</span>
           <span>From revenue → shared</span>
-        </div></div>
+        </div>
       </div>
 
-      <div class="bcell b-2 rv" style="--d:.19s">
-        <div class="bico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg></div>
-        <h3>Withdrawals & live FX</h3>
-        <p>Live <b>ECB mid-market rate</b>, refreshed hourly. See expected vs received on every cash-out and exactly what the conversion cost you.</p>
-        <div class="bviz"><div class="bviz-in fxv">
+      <div class="lrow rv">
+        <div class="lnum">05</div>
+        <div>
+          <h3>Withdrawals & live FX</h3>
+          <p>Live <b>ECB mid-market rate</b>, refreshed hourly. Expected vs received on every cash-out — and exactly what the conversion cost you.</p>
+        </div>
+        <div class="lviz vfx">
           <span class="chip"><span class="fxd"></span> 1 USD = 0.8668 EUR</span>
           <span class="loss">FX loss −€5.37</span>
-        </div></div>
+        </div>
       </div>
 
-      <div class="bcell b-3 rv" style="--d:.05s">
-        <div class="bico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>
-        <h3>One-click reporting</h3>
-        <p>Branded PDF statements for any date range — revenue, expenses, partner distribution, full ledger. CSV export for your accountant. A tax set-aside tracker so the bill never surprises you.</p>
-      </div>
-
-      <div class="bcell b-3 rv" style="--d:.12s">
-        <div class="bico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/></svg></div>
-        <h3>Roles that protect the numbers</h3>
-        <p>Admins run the agency. Partners see their own split and payout history — nothing else. Chatters see only what they've earned. Every row is isolated per agency at the database level.</p>
+      <div class="lrow rv">
+        <div class="lnum">06</div>
+        <div>
+          <h3>One-click reporting</h3>
+          <p>Branded PDF statements for any date range — revenue, expenses, distribution, full ledger. CSV for your accountant. Tax set-aside so the bill never surprises you.</p>
+        </div>
+        <div class="lviz">
+          <div class="vdoc">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            statement_june.pdf · 248 KB — ready
+          </div>
+        </div>
       </div>
 
     </div>
   </div>
 </section>
 
+<!-- ════════ STAT BAND ════════ -->
+<div class="stats">
+  <div class="stats-in">
+    <div class="stat rv"><div class="v">≤ $0.01</div><div class="k">Max rounding drift</div></div>
+    <div class="stat rv" style="--d:.06s"><div class="v">15 <small>min</small></div><div class="k">Sync fallback window</div></div>
+    <div class="stat rv" style="--d:.12s"><div class="v">60 <small>min</small></div><div class="k">FX rate refresh</div></div>
+    <div class="stat rv" style="--d:.18s"><div class="v">1 <small>click</small></div><div class="k">Month-end PDF</div></div>
+  </div>
+</div>
+
 <!-- ════════ COMPARE ════════ -->
-<section class="section" id="compare" style="padding-top:30px">
+<section class="section" id="compare">
   <div class="wrap">
-    <div class="eyebrow rv">Why not a spreadsheet</div>
-    <h2 class="rv" style="--d:.05s">Built for this. Not adapted to it.</h2>
+    <div class="lbl rv"><b>03</b> · Versus the spreadsheet</div>
+    <h2 class="rv" style="--d:.05s">Same job. Different century.</h2>
     <div class="cmp rv" style="--d:.1s">
       <div class="cmp-head"><div></div><div class="pm">Payout Manager</div><div>Spreadsheet</div></div>
-      <div class="cmp-row"><div>Earnings arrive</div><div><svg class="ic-yes" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Seconds, via webhooks</div><div><svg class="ic-no" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Manual copy-paste</div></div>
-      <div class="cmp-row"><div>Chatter cut math</div><div><svg class="ic-yes" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Off the top, automatic</div><div><svg class="ic-no" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Fragile formulas</div></div>
-      <div class="cmp-row"><div>Split rounding</div><div><svg class="ic-yes" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Always sums to the pool</div><div><svg class="ic-no" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Pennies go missing</div></div>
-      <div class="cmp-row"><div>FX on withdrawals</div><div><svg class="ic-yes" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Live ECB rate + loss per transfer</div><div><svg class="ic-no" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Yesterday's Google rate</div></div>
-      <div class="cmp-row"><div>Who can see what</div><div><svg class="ic-yes" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Per-role access, per-agency isolation</div><div><svg class="ic-no" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Everyone sees everything</div></div>
-      <div class="cmp-row"><div>Month-end report</div><div><svg class="ic-yes" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> One click — PDF & CSV</div><div><svg class="ic-no" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> An evening of formatting</div></div>
+      <div class="cmp-row"><div>Earnings arrive</div><div><svg class="ic-yes" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Seconds, via webhooks</div><div><svg class="ic-no" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Manual copy-paste</div></div>
+      <div class="cmp-row"><div>Chatter cut math</div><div><svg class="ic-yes" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Off the top, automatic</div><div><svg class="ic-no" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Fragile formulas</div></div>
+      <div class="cmp-row"><div>Split rounding</div><div><svg class="ic-yes" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Always sums to the pool</div><div><svg class="ic-no" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Pennies go missing</div></div>
+      <div class="cmp-row"><div>FX on withdrawals</div><div><svg class="ic-yes" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Live ECB rate + loss per transfer</div><div><svg class="ic-no" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Yesterday's Google rate</div></div>
+      <div class="cmp-row"><div>Who can see what</div><div><svg class="ic-yes" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Per-role access, per-agency isolation</div><div><svg class="ic-no" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Everyone sees everything</div></div>
+      <div class="cmp-row"><div>Month-end report</div><div><svg class="ic-yes" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> One click — PDF & CSV</div><div><svg class="ic-no" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> An evening of formatting</div></div>
     </div>
   </div>
 </section>
 
 <!-- ════════ CALCULATOR ════════ -->
-<section class="section" id="calc" style="padding-top:30px">
+<section class="section xsec" id="calc">
+  <span class="x xl">+</span><span class="x xr">+</span>
   <div class="wrap">
-    <div class="eyebrow rv">Try the math</div>
+    <div class="lbl rv"><b>04</b> · The math</div>
     <h2 class="rv" style="--d:.05s">Run your own numbers</h2>
     <p class="sec-sub rv" style="--d:.1s">The same engine the app uses — chatter cut off the top, partner splits on the rest, exact to the cent.</p>
     <div class="calc rv" style="--d:.12s">
@@ -688,9 +706,9 @@ footer{border-top:1px solid var(--line);padding:38px 0;background:var(--bg2)}
       <div class="calc-out">
         <div class="co-title">Monthly distribution</div>
         <div class="co-row"><span class="who"><span class="co-dot" style="background:var(--lime)"></span>Chatter cut</span><b id="cChat" style="color:var(--lime)">$400.00</b></div>
-        <div class="co-row"><span class="who"><span class="co-dot" style="background:var(--purple-lt)"></span>You</span><b id="cYou">$4,560.00</b></div>
-        <div class="co-row"><span class="who"><span class="co-dot" style="background:#5BA0F4"></span>Your partner</span><b id="cPart">$3,040.00</b></div>
-        <div class="co-row" style="border-top:1px dashed var(--line2)"><span class="who" style="color:var(--t3)">Total distributed</span><b id="cTot" style="color:var(--t3)">$8,000.00</b></div>
+        <div class="co-row"><span class="who"><span class="co-dot" style="background:var(--purple)"></span>You</span><b id="cYou">$4,560.00</b></div>
+        <div class="co-row"><span class="who"><span class="co-dot" style="background:var(--blue)"></span>Your partner</span><b id="cPart">$3,040.00</b></div>
+        <div class="co-row tot"><span class="who" style="color:var(--t3)">Total distributed</span><b id="cTot" style="color:var(--t3)">$8,000.00</b></div>
         <p class="co-note">Chatter earns their % of the gross they generated; partners split the remainder. In the app this runs per-transaction with dated split history — this is the simplified monthly view.</p>
       </div>
     </div>
@@ -698,34 +716,39 @@ footer{border-top:1px solid var(--line);padding:38px 0;background:var(--bg2)}
 </section>
 
 <!-- ════════ PRICING ════════ -->
-<section class="section" id="pricing" style="padding-top:30px">
+<section class="section" id="pricing">
   <div class="wrap">
-    <div class="eyebrow rv" style="justify-content:center">Pricing</div>
-    <h2 class="rv" style="--d:.05s;text-align:center">One plan. Everything in.</h2>
-    <div class="price-card rv" style="--d:.1s">
-      <div class="price-num">$14.99<small>/mo</small></div>
-      <div class="price-per">per agency · billed through the Fanvue App Store</div>
-      <ul class="price-list">
-        <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Real-time Fanvue sync — webhooks + polling fallback</li>
-        <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Unlimited partners & chatters with role-based access</li>
-        <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Cent-exact splits, dated split history, chatter advances</li>
-        <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Expenses with receipts · live ECB FX · tax set-aside</li>
-        <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> PDF statements & CSV export, any date range</li>
-      </ul>
-      <a class="btn-primary magnetic" data-store-cta href="/tracker">
-        Subscribe on Fanvue
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-      </a>
-      <p class="price-foot">Cancel anytime in your Fanvue account. Explore the full demo first — no signup needed.</p>
+    <div class="lbl rv"><b>05</b> · Price</div>
+    <h2 class="rv" style="--d:.05s">One plan. Everything in.</h2>
+    <div class="price rv" style="--d:.1s">
+      <div class="price-l">
+        <div class="price-num">$14.99<small> /mo</small></div>
+        <div class="price-per">Per agency · via Fanvue App Store</div>
+      </div>
+      <div class="price-r">
+        <ul class="price-list">
+          <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Real-time Fanvue sync — webhooks + polling fallback</li>
+          <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Unlimited partners & chatters with role-based access</li>
+          <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Cent-exact splits, dated split history, chatter advances</li>
+          <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Expenses with receipts · live ECB FX · tax set-aside</li>
+          <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> PDF statements & CSV export, any date range</li>
+        </ul>
+        <a class="btn-primary magnetic" data-store-cta href="/tracker">
+          Subscribe on Fanvue
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </a>
+        <p class="price-foot">Cancel anytime in your Fanvue account. Explore the full demo first — no signup needed.</p>
+      </div>
     </div>
   </div>
 </section>
 
 <!-- ════════ FAQ ════════ -->
-<section class="section" id="faq" style="padding-top:30px">
+<section class="section xsec" id="faq">
+  <span class="x xl">+</span><span class="x xr">+</span>
   <div class="wrap">
-    <div class="eyebrow rv" style="justify-content:center">FAQ</div>
-    <h2 class="rv" style="--d:.05s;text-align:center">Questions, answered</h2>
+    <div class="lbl rv"><b>06</b> · FAQ</div>
+    <h2 class="rv" style="--d:.05s">Questions, answered</h2>
     <div class="faq rv" style="--d:.1s">
       <details>
         <summary>How does the Fanvue sync actually work? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></summary>
@@ -755,17 +778,17 @@ footer{border-top:1px solid var(--line);padding:38px 0;background:var(--bg2)}
   </div>
 </section>
 
-<!-- ════════ FINAL CTA ════════ -->
-<section class="final">
-  <div class="ray" aria-hidden="true"></div>
+<!-- ════════ FINAL ════════ -->
+<section class="final xsec">
+  <span class="x xl">+</span><span class="x xr">+</span>
   <div class="wrap">
-    <div class="eyebrow rv" style="justify-content:center">Get started</div>
-    <h2 class="rv" style="--d:.05s">Stop reconciling.<br><span class="gx">Start running.</span></h2>
-    <p class="sec-sub rv" style="--d:.1s">Your next payout could be the first one that takes thirty seconds instead of an evening.</p>
+    <div class="lbl rv"><b>07</b> · Get started</div>
+    <h2 class="rv" style="--d:.05s">Month-end takes <span class="mark">thirty seconds</span> now.</h2>
+    <p class="sec-sub rv" style="--d:.1s">Connect your Fanvue account and watch the first transaction land in the ledger.</p>
     <div class="hero-actions rv" style="--d:.15s">
       <a class="btn-primary magnetic" data-store-cta href="/tracker">
         Subscribe on Fanvue
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
       </a>
       <a class="btn-ghost magnetic" href="/tracker">Try the live demo</a>
     </div>
@@ -780,7 +803,7 @@ footer{border-top:1px solid var(--line);padding:38px 0;background:var(--bg2)}
       <a href="/tracker">Live demo</a>
       <a href="/privacy">Privacy</a>
       <a href="/terms">Terms</a>
-      <a href="mailto:support@payoutmanager.app">support@payoutmanager.app</a>
+      <a href="mailto:support@payoutmanager.app">Support</a>
     </div>
     <div class="foot-cr">© <span id="yr"></span> Payout Manager</div>
   </div>
@@ -803,11 +826,11 @@ if(FINE&&!REDUCED){
   var dot=document.querySelector('.cur-dot'),ring=document.querySelector('.cur-ring');
   var mx=innerWidth/2,my=innerHeight/2,rx=mx,ry=my;
   addEventListener('mousemove',function(e){mx=e.clientX;my=e.clientY;
-    dot.style.transform='translate('+(mx-3)+'px,'+(my-3)+'px)';
+    dot.style.transform='translate('+(mx-2.5)+'px,'+(my-2.5)+'px)';
   },{passive:true});
   (function loop(){
     rx+=(mx-rx)*.16;ry+=(my-ry)*.16;
-    ring.style.transform='translate('+(rx-17)+'px,'+(ry-17)+'px)';
+    ring.style.transform='translate('+(rx-15)+'px,'+(ry-15)+'px)';
     requestAnimationFrame(loop);
   })();
   addEventListener('mousedown',function(){document.body.classList.add('cur-down');});
@@ -816,21 +839,26 @@ if(FINE&&!REDUCED){
     el.addEventListener('mouseenter',function(){document.body.classList.add('cur-hover');});
     el.addEventListener('mouseleave',function(){document.body.classList.remove('cur-hover');});
   });
-  /* magnetic pull on CTAs */
   document.querySelectorAll('.magnetic').forEach(function(btn){
     btn.addEventListener('mousemove',function(e){
       var r=btn.getBoundingClientRect();
       var dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2);
-      btn.style.transform='translate('+dx*.18+'px,'+dy*.18+'px)';
+      btn.style.transform='translate('+dx*.16+'px,'+dy*.16+'px)';
     });
     btn.addEventListener('mouseleave',function(){btn.style.transform='';});
   });
 }
 
+/* ── ticker: duplicate content for seamless loop ────────────── */
+(function(){
+  var t=document.getElementById('tickerTrack');
+  if(t)t.innerHTML+=t.innerHTML;
+})();
+
 /* ── scroll reveal ──────────────────────────────────────────── */
 var rvObs=new IntersectionObserver(function(es){
   es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');rvObs.unobserve(e.target);}});
-},{threshold:.15,rootMargin:'0px 0px -40px 0px'});
+},{threshold:.12,rootMargin:'0px 0px -30px 0px'});
 document.querySelectorAll('.rv').forEach(function(el){rvObs.observe(el);});
 
 /* ── hero: live dashboard simulation ────────────────────────── */
@@ -848,7 +876,8 @@ document.querySelectorAll('.rv').forEach(function(el){rvObs.observe(el);});
   ];
   var month=12483.71,remA=2108.42,remB=1967.18,chat=311.20,idx=0;
   var elM=document.getElementById('kpiMonth'),elA=document.getElementById('remA'),
-      elB=document.getElementById('remB'),elC=document.getElementById('chatEarn');
+      elB=document.getElementById('remB'),elC=document.getElementById('chatEarn'),
+      elL=document.getElementById('lblAmt');
   function fmt(n){return '$'+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
   function row(x,animate){
     var div=document.createElement('div');
@@ -860,7 +889,7 @@ document.querySelectorAll('.rv').forEach(function(el){rvObs.observe(el);});
     return div;
   }
   for(var i=0;i<4;i++){feed.appendChild(row(DATA[(idx++)%DATA.length],false));}
-  if(REDUCED)return; /* static snapshot for reduced motion */
+  if(REDUCED)return;
   var visible=true;
   new IntersectionObserver(function(es){visible=es[0].isIntersecting;},{threshold:.1}).observe(feed);
   function tick(){
@@ -874,6 +903,7 @@ document.querySelectorAll('.rv').forEach(function(el){rvObs.observe(el);});
       if(x.chat)chat+=x.a*.15;
       elM.textContent=fmt(month);elA.textContent=fmt(remA);
       elB.textContent=fmt(remB);elC.textContent=fmt(chat);
+      if(elL)elL.textContent=fmt(month);
     }
     setTimeout(tick,2300+Math.random()*900);
   }
@@ -887,13 +917,13 @@ if(FINE&&!REDUCED){
     mw.addEventListener('mousemove',function(e){
       var r=mw.getBoundingClientRect();
       var px=(e.clientX-r.left)/r.width-.5,py=(e.clientY-r.top)/r.height-.5;
-      mock.style.transform='rotateY('+(px*5).toFixed(2)+'deg) rotateX('+(-py*4).toFixed(2)+'deg)';
+      mock.style.transform='rotateY('+(px*4).toFixed(2)+'deg) rotateX('+(-py*3).toFixed(2)+'deg)';
     });
     mw.addEventListener('mouseleave',function(){mock.style.transform='';});
   }
 }
 
-/* ── calculator (same logic family as the app: chatter off the top) ── */
+/* ── calculator (chatter off the top, remainder split) ──────── */
 (function(){
   var iRev=document.getElementById('iRev'),iSplit=document.getElementById('iSplit'),iChat=document.getElementById('iChat');
   if(!iRev)return;
@@ -905,7 +935,7 @@ if(FINE&&!REDUCED){
     var chatCut=hasChat?Math.round(rev/3*.15*100)/100:0;
     var pool=rev-chatCut;
     var you=Math.round(pool*split*100)/100;
-    var partner=Math.round((pool-you)*100)/100; /* remainder → always sums exactly */
+    var partner=Math.round((pool-you)*100)/100;
     document.getElementById('cChat').textContent=money(chatCut);
     document.getElementById('cYou').textContent=money(you);
     document.getElementById('cPart').textContent=money(partner);

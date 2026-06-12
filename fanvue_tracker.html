@@ -6440,13 +6440,12 @@ button, a,
     width: 100% !important;
   }
 
-  /* Make sort rows horizontally scrollable instead of wrapping */
+  /* Sort rows WRAP on mobile: scrolling hid the clipped buttons with no visible
+     affordance (QA: "$ Low" was cut off). 4 small pills wrap cleanly instead. */
   .sort-row {
-    flex-wrap: nowrap !important;
-    overflow-x: auto !important;
-    -webkit-overflow-scrolling: touch !important;
-    scrollbar-width: none !important;
-    padding-bottom: 4px !important;
+    flex-wrap: wrap !important;
+    width: 100% !important;
+    overflow: visible !important;
   }
   .sort-row::-webkit-scrollbar {
     display: none;
@@ -6456,6 +6455,29 @@ button, a,
     white-space: nowrap !important;
   }
 }
+
+/* ══ QA r3: mobile layout fixes ══════════════════════════════════════
+   At ≤960px .tx-date is display:none, but the grid kept its 4 fixed tracks
+   (112px 1fr 68px 88px) — the empty 68px date track + 88px amount track pushed
+   the description to ~10px and the amount past the card edge. Collapse to
+   3 flexible tracks. Month tabs & sort rows scroll instead of clipping. */
+@media (max-width: 960px) {
+  .tx-row { grid-template-columns: minmax(64px,auto) minmax(0,1fr) auto; padding: 9px 12px; }
+  .tx-row > *:first-child { max-width: 96px; }
+  .mtab-row { overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  .mtab-row::-webkit-scrollbar { display: none; }
+  .mtab { white-space: nowrap; flex-shrink: 0; }
+  /* Distribution breakdown is a wide-screen nicety — on mobile it crushed the
+     partner name to zero width; the total still includes reimbursements. */
+  .rev-stmt-breakdown { display: none; }
+  /* Distribution sub-label wraps onto its own line instead of overlapping */
+  .rev-stmt-hdr span { display: block; margin-top: 2px; }
+  /* body 90px + .page-content 100px bottom paddings stacked into a ~190px black
+     dead zone under the last card. One padding, sized to the 58px bottom nav. */
+  body { padding-bottom: 0; }
+  .page-content { padding-bottom: calc(80px + env(safe-area-inset-bottom)); }
+}
+.rev-stmt-breakdown { font-size: 10px; color: var(--t4); font-family: var(--mono); white-space: nowrap; }
 
 </style>
 </head>
@@ -12467,7 +12489,7 @@ function renderMonths(){
       var splitPct=getCurrentSplit(ACTIVE_MODEL_ID,p.id)||0;
       var isMe=currentUser&&p.user_id===currentUser.id;
       var breakdown=ownExp>0.005
-        ?'<span style="font-size:10px;color:var(--t4);font-family:var(--mono);white-space:nowrap">'+fu(poolShare)+' share + '+fu(ownExp)+' reimbursed</span>'
+        ?'<span class="rev-stmt-breakdown">'+fu(poolShare)+' share + '+fu(ownExp)+' reimbursed</span>'
         :'';
       html+='<div class="rev-stmt-row">'
         +'<div style="display:flex;align-items:center;gap:10px;min-width:0">'

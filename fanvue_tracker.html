@@ -5453,7 +5453,14 @@ html { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
   padding: 0 2px;
 }
 .tx-row:hover .tx-actions,
+.tx-row:focus-within .tx-actions,
 .tx-item:hover .tx-row .tx-actions { opacity: 1; pointer-events: auto; }
+/* No-hover inputs (touch/pen, e.g. iPad ≥960px): hover-reveal would swallow the
+   first tap ("click once → row highlights, click again → modal") and leave the
+   actions unreachable — show them inline instead of as a hover overlay. */
+@media (hover: none) {
+  .tx-row .tx-actions { opacity: 1; pointer-events: auto; position: static; transform: none; margin-left: 8px; }
+}
 /* tx-row needs relative positioning for the absolute actions */
 .tx-row { position: relative; }
 /* chatter-assign button — sits at right edge of spacer col, hover feedback */
@@ -6953,10 +6960,10 @@ button, a,
 
           <!-- Right rail: Revenue Split + Revenue By Month -->
           <div class="dash-activity-rail">
-            <!-- Revenue Split -->
+            <!-- Withdrawal split — actual cash received per partner (NOT the configured %) -->
             <div class="rail-block rail-block--split">
               <div class="section-header">
-                <span class="section-title">Revenue Split</span>
+                <span class="section-title">Withdrawal Split</span>
               </div>
               <div class="dash-rail-section">
                 <div class="split-labels" id="splitLabels"></div>
@@ -9749,6 +9756,7 @@ function hideDemoBanner(){
 }
 function enterDemoMode(){
   DEMO_MODE=true;
+  fetchWiseRate(); // live FX even in demo (startup's call is skipped on the no-session path)
   DEMO_STATE=buildDemoState(); // rebuild with rolling dates anchored to today
   _agencyId=DEMO_AID;
   ALL_MODELS=DEMO_STATE.models.slice();
@@ -10026,7 +10034,9 @@ async function _buildPDF(dateFrom,dateTo){
     startY:y,margin:{left:margin,right:margin},
     styles:{fontSize:9,cellPadding:4,textColor:CLR.black,lineColor:CLR.gray2,lineWidth:0.2},
     headStyles:{fillColor:CLR.gray1,textColor:CLR.gray4,fontStyle:'bold',fontSize:8},
-    columnStyles:{0:{cellWidth:50},1:{cellWidth:20,halign:'center'},2:{cellWidth:35,halign:'right'},3:{cellWidth:35,halign:'right'},4:{cellWidth:35,halign:'right'}},
+    /* fixed cols total 125; 'auto' Partner col absorbs the rest of the 174-unit
+       content width (50px fixed used to overflow the page by ~1 unit) */
+    columnStyles:{0:{cellWidth:'auto'},1:{cellWidth:20,halign:'center'},2:{cellWidth:35,halign:'right'},3:{cellWidth:35,halign:'right'},4:{cellWidth:35,halign:'right'}},
     head:[['Partner','Split','Gross Share','Withdrawn','Outstanding']],
     body:partnerRows.map(function(r){return[r.name,r.pct+'%',_fmtUSD(r.grossShare),_fmtUSD(r.withdrawn),_fmtUSD(r.outstanding)];}),
     didParseCell:function(data){
@@ -10818,7 +10828,7 @@ async function addW(){
   // B7: styled confirm dialog with withdrawal currency
   var sym={EUR:'€',GBP:'£',USD:'$'}[WD_CURRENCY]||'€';
   var wdRate=WD_CURRENCY==='GBP'?(FX_RATES.GBP||0.73):WD_CURRENCY==='USD'?1.0:WISE_RATE;
-  var received=(usd*wdRate).toFixed(2);
+  var received=r2(usd*wdRate).toFixed(2); // r2 = same rounding as the saved "Expected ≈" estimate
   var existing=g('wdConfirmOverlay');if(existing)existing.remove();
   var html='<div id="wdConfirmOverlay" style="position:fixed;inset:0;z-index:500;'
     +'background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:20px">'
@@ -11430,7 +11440,10 @@ async function refreshRevenue(){
 
 /* ---- Calculations ---- */
 function mTot(m){return Object.values(m.revenues||{}).reduce(function(s,v){return s+(v||0);},0);}
-function okWs(){return S.ws.filter(function(w){return w.st==='ok'&&w.eur>0;});}
+/* Confirmed withdrawals. eur>0 excludes unconfirmed drafts — but chatter advances
+   are net-zero double-entry rows (eur:0 with offsetting splits), so rows that
+   carry splits count too; their 0-eur adds nothing to FX/rate aggregates. */
+function okWs(){return S.ws.filter(function(w){return w.st==='ok'&&(w.eur>0||Object.keys(w.splitsByPartner||{}).length>0);});}
 // LEGACY: can remove after testing — used only as 2-partner backward compat
 function mVSh(m){return(mTot(m)+((m.expByPartner||{})[P0().id]||0)-((m.expByPartner||{})[P1().id]||0))/2;}
 function mVlSh(m){return(mTot(m)+((m.expByPartner||{})[P1().id]||0)-((m.expByPartner||{})[P0().id]||0))/2;}
@@ -12128,7 +12141,7 @@ function renderBal(){
     }
   }
   var hint=g('splitHint');
-  if(hint)hint.innerHTML='<span class="split-no-data">Based on recorded withdrawals</span>';
+  if(hint)hint.innerHTML='<span class="split-no-data">Share of cash actually withdrawn to date — configured splits are shown per partner below</span>';
 
   renderSplitList();
 

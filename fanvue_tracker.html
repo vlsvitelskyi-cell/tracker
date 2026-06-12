@@ -6479,6 +6479,8 @@ button, a,
   .rev-stmt-breakdown { display: none; }
   /* Distribution sub-label wraps onto its own line instead of overlapping */
   .rev-stmt-hdr span { display: block; margin-top: 2px; }
+  /* Model Performance: 3×120px fixed columns pushed Net past a 390px screen */
+  .model-perf-hdr, .model-perf-row { grid-template-columns: minmax(0,1fr) repeat(3, minmax(64px,auto)); padding-left: 14px; padding-right: 14px; }
   /* body 90px + .page-content 100px bottom paddings stacked into a ~190px black
      dead zone under the last card. One padding, sized to the 58px bottom nav. */
   body { padding-bottom: 0; }

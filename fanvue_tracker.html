@@ -7038,7 +7038,14 @@ button, a,
               <div class="field">
                 <label>Partner</label>
                 <select id="expPartner"></select>
-                <div class="sub-hint">Deducted from partner's revenue share.</div>
+              </div>
+              <div class="field">
+                <label>Paid from</label>
+                <select id="expPaidFrom" onchange="updateExpPaidFromHint()">
+                  <option value="personal">Own pocket — reimburse partner</option>
+                  <option value="revenue">Earned revenue — shared cost</option>
+                </select>
+                <div class="sub-hint" id="expPaidFromHint">Partner fronted this cost personally — it's repaid on top of their split.</div>
               </div>
               <input type="hidden" id="expModel">
             </div>
@@ -7363,7 +7370,7 @@ button, a,
               <button id="curBtnEUR" class="btn" onclick="setDisplayCurrency('EUR')">EUR €</button>
               <button id="curBtnGBP" class="btn" onclick="setDisplayCurrency('GBP')">GBP £</button>
             </div>
-            <p class="settings-hint" style="margin-bottom:0">Exchange rates update automatically via Wise API.</p>
+            <p class="settings-hint" style="margin-bottom:0">Exchange rates refresh automatically (ECB mid-market). If the live rate is unavailable, an estimated fallback is used.</p>
           </div>
           <div class="card">
             <div class="sec-row">
@@ -7481,14 +7488,14 @@ button, a,
             <div class="setting-row">
               <div class="setting-info">
                 <div class="setting-label">Exchange rate (USD → EUR)</div>
-                <div class="setting-desc">Wise mid-market rate, updated at app load</div>
+                <div class="setting-desc" id="fxDescAbout">Estimated rate</div>
               </div>
               <div class="setting-value" id="wiseRateAbout">—</div>
             </div>
             <div class="setting-row" id="wiseGbpRow" style="display:none">
               <div class="setting-info">
                 <div class="setting-label">Exchange rate (USD → GBP)</div>
-                <div class="setting-desc">Wise mid-market rate</div>
+                <div class="setting-desc" id="fxGbpDescAbout">Estimated rate</div>
               </div>
               <div class="setting-value" id="wiseGbpAbout">—</div>
             </div>
@@ -8434,8 +8441,12 @@ function chatterCutForMonth(monthId){
   });
   return r2(sum);
 }
-function partnerShareForMonth(partnerId,month){
-  // Use last day of the month as representative date for temporal split lookup
+/* Allocate the month's net pool among active partners by their splits, rounding
+   to cents with the LARGEST-REMAINDER method so the shares always sum exactly to
+   the rounded pool total (no $0.01 drift between "sum of shares" and "total").
+   Residual cents go to the partner(s) with the largest fractional part;
+   deterministic tie-break by partner id. Returns {partnerId: poolShare}. */
+function monthPartnerShares(month){
   var parts=month.id.split('-');
   var lastDay=new Date(parseInt(parts[0]),parseInt(parts[1]),0).getDate();
   var dateStr=month.id+'-'+String(lastDay).padStart(2,'0');
@@ -8444,9 +8455,30 @@ function partnerShareForMonth(partnerId,month){
   // Chatter cut is removed from the pool BEFORE partners split it,
   // so partner shares shrink by the chatter's earnings (chatter reduces pool).
   var netPool=mTot(month)-allExp-(month.agencyExp||0)-chatterCutForMonth(month.id);
-  var split=getSplitForDate(ACTIVE_MODEL_ID,partnerId,dateStr)/100;
+  var act=PARTNERS.filter(function(p){return p.status==='active'&&p.role!=='chatter';});
+  var raw=act.map(function(p){return{id:p.id,share:netPool*getSplitForDate(ACTIVE_MODEL_ID,p.id,dateStr)/100};});
+  var targetCents=Math.round(raw.reduce(function(s,x){return s+x.share;},0)*100);
+  var items=raw.map(function(x){
+    var exact=x.share*100;
+    var base=Math.floor(exact+1e-9); // cents, floor (negative-safe enough for our magnitudes)
+    return{id:x.id,cents:base,frac:exact-base};
+  });
+  var residual=targetCents-items.reduce(function(s,x){return s+x.cents;},0);
+  var order=items.slice().sort(function(a,b){return b.frac-a.frac||(a.id<b.id?-1:1);});
+  var i=0;
+  while(residual!==0&&order.length){
+    order[i%order.length].cents+=(residual>0?1:-1);
+    residual+=(residual>0?-1:1);
+    i++;
+  }
+  var out={};
+  items.forEach(function(x){out[x.id]=x.cents/100;});
+  return out;
+}
+function partnerShareForMonth(partnerId,month){
+  var poolShare=monthPartnerShares(month)[partnerId]||0;
   var ownExp=(month.expByPartner||{})[partnerId]||0;
-  return netPool*split+ownExp;
+  return poolShare+ownExp;
 }
 function totalPartnerShare(partnerId){
   return r2(S.months.reduce(function(sum,m){return sum+partnerShareForMonth(partnerId,m);},0));
@@ -9582,12 +9614,8 @@ function renderCurrencyButtons(){
   });
 }
 async function loadFxRates(){
-  try{
-    var res=await fetch('https://api.wise.com/v1/rates?source=USD&target=GBP');
-    if(res.ok){var d=await res.json();var e=Array.isArray(d)?d[0]:d;if(e&&e.rate)FX_RATES.GBP=e.rate;}
-  }catch(e){}
-  FX_RATES.EUR=WISE_RATE;
-  FX_RATES.USD=1;
+  /* Single source of truth — the /fx-rate Edge Function (fetched once per load). */
+  return fetchWiseRate();
 }
 var PLATFORM_COLORS=['#8B5CF6','#3B82F6','#0EA5E9','#a8f740','#F59E0B','#A855F7','#EC4899','#EF4444'];
 /* Semantic platform identity */
@@ -9648,7 +9676,7 @@ function buildDemoState(){
   S:{
     months:[
       {id:m2.id,name:m2.name,revenues:{Fanvue:4210},expByPartner:{'demo-p1':120,'demo-p2':80},agencyExp:0},
-      {id:m1.id,name:m1.name,revenues:{Fanvue:5880},expByPartner:{'demo-p1':150,'demo-p2':90},agencyExp:0},
+      {id:m1.id,name:m1.name,revenues:{Fanvue:5880},expByPartner:{'demo-p1':150},agencyExp:90},
       {id:m0.id,name:m0.name,revenues:{Fanvue:3540},expByPartner:{'demo-p1':100,'demo-p2':60},agencyExp:0}
     ],
     ws:[
@@ -9667,12 +9695,12 @@ function buildDemoState(){
       {id:'dt8',amount:1650,platform:'fanvue',date:day(m0,18),source:'sync',model_id:'demo-m2',description:'Tip',chatter_id:'demo-chatter-1'}
     ],
     exps:[
-      {id:'de1',amount:120,partner_id:'demo-p1',date:day(m2,28),description:'[equipment] Lighting kit',model_id:null},
-      {id:'de2',amount:80,partner_id:'demo-p2',date:day(m2,28),description:'[software] Editing tools',model_id:null},
-      {id:'de3',amount:150,partner_id:'demo-p1',date:day(m1,28),description:'[equipment] Camera upgrade',model_id:null},
-      {id:'de4',amount:90,partner_id:'demo-p2',date:day(m1,28),description:'[marketing] Promotion',model_id:null},
-      {id:'de5',amount:100,partner_id:'demo-p1',date:day(m0,15),description:'[software] Subscription',model_id:null},
-      {id:'de6',amount:60,partner_id:'demo-p2',date:day(m0,15),description:'[equipment] Accessories',model_id:null}
+      {id:'de1',amount:120,partner_id:'demo-p1',date:day(m2,28),description:'[equipment] Lighting kit',model_id:null,paid_from:'personal'},
+      {id:'de2',amount:80,partner_id:'demo-p2',date:day(m2,28),description:'[software] Editing tools',model_id:null,paid_from:'personal'},
+      {id:'de3',amount:150,partner_id:'demo-p1',date:day(m1,28),description:'[equipment] Camera upgrade',model_id:null,paid_from:'personal'},
+      {id:'de4',amount:90,partner_id:'demo-p2',date:day(m1,28),description:'[marketing] Promotion',model_id:null,paid_from:'revenue'},
+      {id:'de5',amount:100,partner_id:'demo-p1',date:day(m0,15),description:'[software] Subscription',model_id:null,paid_from:'personal'},
+      {id:'de6',amount:60,partner_id:'demo-p2',date:day(m0,15),description:'[equipment] Accessories',model_id:null,paid_from:'personal'}
     ],
     am:2,
     platforms:['Fanvue']
@@ -10033,6 +10061,11 @@ async function _buildPDF(dateFrom,dateTo){
 }
 
 /* ---- Utils ---- */
+/* DB money columns are numeric(10,2) → hard cap. Validate client-side with a
+   clear message instead of letting the insert fail with a cryptic DB error. */
+var MAX_AMT=99999999.99;
+function amtOverLimit(a){return Math.abs(a)>MAX_AMT;}
+var AMT_LIMIT_MSG='Amount is too large — maximum is 99,999,999.99.';
 function pn(v){
   var s=String(v==null?0:v).replace(/[$€£\s]/g,'');
   if(s.indexOf(',')>-1 && s.indexOf('.')>-1){ s=s.replace(/,/g,''); } // 1,000.50 → 1000.50
@@ -10354,28 +10387,56 @@ function showTab(name,btn,isMobile){
   if(tbRec)tbRec.style.display=name==='dashboard'?'inline-flex':'none';
 }
 
-/* ---- Wise rate ---- */
-async function fetchWiseRate(){
-  try{
-    var res=await fetch('https://api.wise.com/v1/rates?source=USD&target=EUR');
-    if(!res.ok)throw new Error();
-    var data=await res.json();
-    var entry=Array.isArray(data)?data[0]:data;
-    if(entry&&typeof entry.rate==='number')WISE_RATE=entry.rate;
-  }catch(e){}
-  FX_RATES.EUR=WISE_RATE;
+/* ---- FX rate (server-side via Edge Function; ECB reference rates) ----
+   Browser calls to api.wise.com always fail (401 — needs a private key), so the
+   old code silently fell back to a hardcoded rate while claiming "refreshed just
+   now". Now: /fx-rate Edge Function (frankfurter.app / ECB, cached server-side).
+   _fxLive is true ONLY after a successful fetch — every label tells the truth. */
+var _fxLive=false,_fxUpdatedAt=null,_fxPromise=null;
+function _fxLabel(rate,cur){
+  return _fxLive
+    ? '1 USD = '+rate.toFixed(4)+' '+cur+' · ECB mid-market · updated '+relTime(_fxUpdatedAt)
+    : '1 USD ≈ '+rate.toFixed(4)+' '+cur+' · estimated (live rate unavailable)';
+}
+function _applyFxUI(){
   var el=g('wiseRateLine');
-  if(el)el.innerHTML='<span style="color:var(--green-text)">Wise mid-market: 1 USD = '+WISE_RATE.toFixed(4)+' EUR</span>';
+  if(el)el.innerHTML='<span style="color:'+(_fxLive?'var(--green-text)':'var(--text3)')+'">'+_fxLabel(WISE_RATE,'EUR')+'</span>';
   var fxField=g('nFxRate');
   if(fxField&&!fxField.value)fxField.value=WISE_RATE.toFixed(4);
   var hint=g('fxRateHint');
-  if(hint)hint.textContent='1 USD = '+WISE_RATE.toFixed(4)+' EUR · Wise mid-market · refreshed just now';
+  if(hint)hint.textContent=_fxLabel(WISE_RATE,'EUR');
   var rateAbout=g('wiseRateAbout');
   if(rateAbout)rateAbout.textContent=WISE_RATE.toFixed(4);
+  var rateDesc=g('fxDescAbout');
+  if(rateDesc)rateDesc.textContent=_fxLive?'ECB mid-market rate · updated '+relTime(_fxUpdatedAt):'Estimated rate — live rate unavailable';
   var gbpAbout=g('wiseGbpAbout');
   if(gbpAbout&&FX_RATES.GBP){gbpAbout.textContent=FX_RATES.GBP.toFixed(4);}
+  var gbpDesc=g('fxGbpDescAbout');
+  if(gbpDesc)gbpDesc.textContent=_fxLive?'ECB mid-market rate':'Estimated rate';
   var gbpRow=g('wiseGbpRow');
   if(gbpRow&&FX_RATES.GBP&&FX_RATES.GBP!==0.73)gbpRow.style.display='flex';
+}
+async function fetchWiseRate(){
+  if(!_fxPromise){
+    _fxPromise=(async function(){
+      try{
+        var res=await fetch(EDGE_URL+'/fx-rate',{headers:{'Authorization':'Bearer '+SUPA_KEY}});
+        if(!res.ok)throw new Error('fx '+res.status);
+        var d=await res.json();
+        if(d&&typeof d.EUR==='number'&&d.EUR>0){
+          WISE_RATE=d.EUR;
+          FX_RATES.EUR=d.EUR;
+          if(typeof d.GBP==='number'&&d.GBP>0)FX_RATES.GBP=d.GBP;
+          _fxLive=true;
+          _fxUpdatedAt=Date.now();
+        }
+      }catch(e){dbg('[fx] live rate unavailable:',e&&e.message);}
+      FX_RATES.EUR=WISE_RATE;
+      FX_RATES.USD=1;
+    })();
+  }
+  await _fxPromise;
+  _applyFxUI();
 }
 
 async function requestDataDeletion(){
@@ -10490,7 +10551,7 @@ async function loadRevenueData(){
   });
 
   var allExps=(expRes.data||[]).map(function(exp){
-    return{id:exp.id,amount:parseFloat(exp.amount_usd)||0,partner_id:exp.partner_id,date:exp.date,description:exp.description||'',model_id:exp.model_id||null,receipt_url:exp.receipt_url||null};
+    return{id:exp.id,amount:parseFloat(exp.amount_usd)||0,partner_id:exp.partner_id,date:exp.date,description:exp.description||'',model_id:exp.model_id||null,receipt_url:exp.receipt_url||null,paid_from:exp.paid_from||'personal'};
   });
   /* Filter expenses: show all if All-models view, else model-specific + agency (null) */
   S.exps=ACTIVE_MODEL_ID
@@ -10520,7 +10581,12 @@ async function loadRevenueData(){
     if(!key)return;
     ensureMonth(key);
     var amt=parseFloat(exp.amount_usd)||0;
-    if(exp.partner_id){
+    /* Funding model:
+       'personal' + partner → partner fronted the cost personally: reduces the pool
+         AND the partner is reimbursed on top of their split (expByPartner).
+       'revenue' (or no partner) → paid from earned revenue: reduces the pool only,
+         no reimbursement (agencyExp). */
+    if(exp.partner_id&&(exp.paid_from||'personal')==='personal'){
       monthMap[key].expByPartner[exp.partner_id]=(monthMap[key].expByPartner[exp.partner_id]||0)+amt;
     }else{
       monthMap[key].agencyExp+=amt;
@@ -10711,6 +10777,12 @@ async function addW(){
     g('nUSD').focus();
     return;
   }
+  if(amtOverLimit(usd)){
+    showToast(AMT_LIMIT_MSG,'error');
+    g('nUSD').style.borderColor='var(--red)';
+    g('nUSD').focus();
+    return;
+  }
   g('nUSD').style.borderColor='';
   var fxInput=g('nFxRate');
   var rate=fxInput&&pn(fxInput.value)>0?pn(fxInput.value):WISE_RATE;
@@ -10753,6 +10825,7 @@ async function confirmW(id){
   if(demoGuard())return;
   var eur=pn(g('e_'+id).value);
   if(!eur||eur<=0){g('e_'+id).focus();return;}
+  if(amtOverLimit(eur)){showToast(AMT_LIMIT_MSG,'error');g('e_'+id).focus();return;}
   var partners=PARTNERS.filter(function(p){return p.status==='active'&&p.role!=='chatter';});
   var splits=partners.map(function(p){
     var inp=g('sp_'+id+'_'+p.id);
@@ -10913,6 +10986,13 @@ async function addTransaction(){
     g('txAmt').focus();
     return;
   }
+  if(amtOverLimit(amt)){
+    var _s2=g('txStatus');
+    if(_s2)_s2.innerHTML='<span style="color:var(--red)">'+AMT_LIMIT_MSG+'</span>';
+    g('txAmt').style.borderColor='var(--red)';
+    g('txAmt').focus();
+    return;
+  }
   g('txAmt').style.borderColor='';
   var date=g('txDate').value||new Date().toISOString().slice(0,10);
   var pl=g('txPl').value;
@@ -10974,6 +11054,7 @@ async function txSave(id){
   var date=g('te_date_'+id).value;
   var pl=g('te_pl_'+id).value;
   if(amt===0){var s=g('txStatus');if(s)s.innerHTML='<span style="color:var(--red)">Enter a non-zero amount.</span>';g('te_amt_'+id).focus();return;}
+  if(amtOverLimit(amt)){showToast(AMT_LIMIT_MSG,'error');g('te_amt_'+id).focus();return;}
   if(!date){g('te_date_'+id).focus();return;}
 
   var btn=g('te_save_'+id);
@@ -11024,6 +11105,15 @@ function renderWModelSelect(){
   sel.innerHTML=agencyOpt+modelOpts;
 }
 
+/* Paid-from hint: explains the financial consequence of the choice */
+function updateExpPaidFromHint(){
+  var sel=g('expPaidFrom'),hint=g('expPaidFromHint');
+  if(!sel||!hint)return;
+  hint.textContent=sel.value==='revenue'
+    ?'Paid out of earned revenue — reduces everyone’s share, no reimbursement.'
+    :'Partner fronted this cost personally — it’s repaid on top of their split.';
+}
+
 /* ---- Receipt file selection helpers ---- */
 function expReceiptSelected(){
   var input=g('expReceipt');
@@ -11056,6 +11146,7 @@ async function addExpense(){
   if(demoGuard())return;
   var amt=pn(g('expAmt').value);
   if(!amt||amt<=0){g('expAmt').focus();return;}
+  if(amtOverLimit(amt)){showToast(AMT_LIMIT_MSG,'error');g('expAmt').focus();return;}
   var activePartners=PARTNERS.filter(function(p){return p.status==='active'&&p.role!=='chatter';});
   var partnerId=activePartners.length===1?activePartners[0].id:(g('expPartner').value||'');
   if(!partnerId)return;
@@ -11086,11 +11177,13 @@ async function addExpense(){
   }
 
   var expModelId=(g('expModel')&&g('expModel').value)||null;
+  var expPaidFrom=(g('expPaidFrom')&&g('expPaidFrom').value)==='revenue'?'revenue':'personal';
   var res=await db.from('expenses').insert({
     agency_id:_agencyId,
     partner_id:partnerId,amount_usd:r2(amt),date:date,description:desc,
     model_id:expModelId||null,
-    receipt_url:receiptUrl
+    receipt_url:receiptUrl,
+    paid_from:expPaidFrom
   });
 
   if(res.error){
@@ -11098,7 +11191,7 @@ async function addExpense(){
   }else{
     var pName=(PARTNERS.find(function(p){return p.id===partnerId;})||{name:'partner'}).name;
     g('expAmt').value='';g('expDesc').value='';
-    if(g('expCat'))g('expCat').value='';
+    if(g('expCat'))g('expCat').value='Marketing'; // sensible default, not blank
     if(receiptInput){receiptInput.value='';expReceiptSelected();}
     showToast('Expense recorded · '+fu(amt)+(cat?' ['+cat+']':'')+' for '+pName,'success');
     await loadRevenueData();renderAll();
@@ -11130,6 +11223,7 @@ async function expSave(id){
   var date=g('ee_date_'+id).value;
   var desc=(g('ee_desc_'+id).value||'').trim();
   if(!amt||amt<=0){g('ee_amt_'+id).focus();return;}
+  if(amtOverLimit(amt)){showToast(AMT_LIMIT_MSG,'error');g('ee_amt_'+id).focus();return;}
   if(!date)return;
   var btn=g('ee_save_'+id);
   if(btn){btn.disabled=true;btn.textContent='Saving…';}
@@ -11138,6 +11232,8 @@ async function expSave(id){
   var eeReceiptInput=g('ee_receipt_'+id);
   var eeReceiptFile=eeReceiptInput&&eeReceiptInput.files&&eeReceiptInput.files[0]?eeReceiptInput.files[0]:null;
   var updatePayload={amount_usd:r2(amt),date:date,description:desc||null};
+  var _eePF=g('ee_paidfrom_'+id);
+  if(_eePF)updatePayload.paid_from=_eePF.value==='revenue'?'revenue':'personal';
   if(eeReceiptFile){
     var safeName2=eeReceiptFile.name.replace(/[^a-zA-Z0-9._-]/g,'_').slice(0,80);
     var rPath2=(_agencyId||'agency')+'/'+Date.now()+'-'+safeName2;
@@ -11240,6 +11336,11 @@ function renderExpenses(){
         +'<input type="date" id="ee_date_'+exp.id+'" value="'+exp.date+'"></div>'
         +'<div class="field"><label>Description</label>'
         +'<input id="ee_desc_'+exp.id+'" value="'+escHtml(exp.description||'')+'" placeholder="Optional"></div>'
+        +'<div class="field"><label>Paid from</label>'
+        +'<select id="ee_paidfrom_'+exp.id+'">'
+          +'<option value="personal"'+(exp.paid_from!=='revenue'?' selected':'')+'>Own pocket — reimburse</option>'
+          +'<option value="revenue"'+(exp.paid_from==='revenue'?' selected':'')+'>Earned revenue — shared</option>'
+        +'</select></div>'
         +'<div class="field" style="grid-column:1/-1">'
           +'<label>Receipt</label>'
           +'<div class="receipt-attach-area">'
@@ -11274,12 +11375,16 @@ function renderExpenses(){
         +'</a>'
       :'';
     var catCls=(parsed.cat||'other').toLowerCase();
+    var paidFromBadge=exp.paid_from==='revenue'
+      ?'<span title="Paid from earned revenue — shared cost, no reimbursement" style="font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;background:rgba(245,158,11,.12);color:var(--warn-txt,#F59E0B);white-space:nowrap">from revenue</span>'
+      :'';
     html+='<div class="expense-row">'
       +'<span class="expense-cat-pill '+catCls+'">'+escHtml(parsed.cat||'Other')+'</span>'
       +'<div class="expense-info">'
         +'<span class="expense-partner">'+escHtml(p.name||'Agency')+'</span>'
         +'<div style="display:flex;align-items:center;gap:5px;min-width:0">'
           +(parsed.text?'<span class="expense-desc">'+escHtml(parsed.text)+'</span>':'')
+          +paidFromBadge
           +modelBadge
           +receiptBadge
         +'</div>'
@@ -11337,7 +11442,7 @@ function onWithdrawalSplitInput(wId){
   if(hint&&eur>0){
     var w=S.ws.find(function(x){return x.id===wId;});
     if(w){var expE=expectedEur(w.usd),loss=r2(expE-eur);
-      hint.textContent='Wise expected: '+fe(expE)+(loss>0?'  |  Loss: '+fe(loss):'  |  On par or better');}
+      hint.textContent='Expected: '+fe(expE)+(loss>0?'  |  Loss: '+fe(loss):'  |  On par or better');}
   }
   if(!eur)return;
   var partners=PARTNERS.filter(function(p){return p.status==='active'&&p.role!=='chatter';});
@@ -12348,21 +12453,30 @@ function renderMonths(){
     html+='</div>';
   }
 
-  /* Section 3: Distribution by partner */
+  /* Section 3: Distribution by partner — payout = split share of the net pool
+     plus reimbursement of expenses the partner fronted personally. The breakdown
+     is shown explicitly so the total never reads as a plain %-of-net. */
   if(activePartners.length){
-    html+='<div class="rev-stmt-section"><div class="rev-stmt-hdr">Distribution</div>';
+    var _mShares=monthPartnerShares(m);
+    html+='<div class="rev-stmt-section"><div class="rev-stmt-hdr">Distribution <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--t4)">· payout incl. expense reimbursements</span></div>';
     activePartners.forEach(function(p,i){
       var pColor=pColorVars[i%5];
-      var share=r2(partnerShareForMonth(p.id,m));
+      var poolShare=r2(_mShares[p.id]||0);
+      var ownExp=r2((m.expByPartner||{})[p.id]||0);
+      var share=r2(poolShare+ownExp);
       var splitPct=getCurrentSplit(ACTIVE_MODEL_ID,p.id)||0;
       var isMe=currentUser&&p.user_id===currentUser.id;
+      var breakdown=ownExp>0.005
+        ?'<span style="font-size:10px;color:var(--t4);font-family:var(--mono);white-space:nowrap">'+fu(poolShare)+' share + '+fu(ownExp)+' reimbursed</span>'
+        :'';
       html+='<div class="rev-stmt-row">'
-        +'<div style="display:flex;align-items:center;gap:10px">'
+        +'<div style="display:flex;align-items:center;gap:10px;min-width:0">'
           +'<div class="rev-pl-dot" style="background:'+pColor+'"></div>'
           +'<span class="rev-stmt-label">'+escHtml(p.name)+(isMe?' <span style="font-size:10px;color:var(--t4);font-family:var(--mono)">(You)</span>':'')+'</span>'
         +'</div>'
         +(splitPct?'<span class="rev-stmt-pct">'+splitPct+'%</span>':'')
         +'<div class="rev-stmt-fill"></div>'
+        +breakdown
         +'<span class="rev-stmt-amt" style="color:var(--t1)">'+fu(share)+'</span>'
       +'</div>';
     });
@@ -12589,7 +12703,7 @@ function renderList(){
           +'<div class="g2" style="margin-bottom:.875rem">'
           +'<div class="field"><label>Received (EUR)</label>'
           +'<input class="num" id="e_'+w.id+'" placeholder="0.00" oninput="onWithdrawalSplitInput(\''+w.id+'\')">'
-          +'<p class="sub-hint" id="rh_'+w.id+'">Wise expected: '+fe(expE)+'</p></div><div></div></div>'
+          +'<p class="sub-hint" id="rh_'+w.id+'">Expected: '+fe(expE)+'</p></div><div></div></div>'
           +'<p class="sec-label" style="margin-bottom:.625rem">Split</p>'
           +'<div class="g2" style="margin-bottom:.875rem">'
           +PARTNERS.filter(function(p){return p.status==='active'&&p.role!=='chatter';}).map(function(p,i){
@@ -12915,6 +13029,7 @@ async function submitChatterPayout(){
   var cid=_chatterPayoutId;if(!cid)return;
   var amt=pn(g('chPayoutAmt').value);
   if(!amt||amt<=0){g('chPayoutAmt').focus();return;}
+  if(amtOverLimit(amt)){showToast(AMT_LIMIT_MSG,'error');g('chPayoutAmt').focus();return;}
   var date=g('chPayoutDate').value||new Date().toISOString().slice(0,10);
   var c=(CHATTERS||[]).find(function(x){return x.id===cid;});
   var payerId=(g('chPayoutPayer')&&g('chPayoutPayer').value)||'';

@@ -12595,7 +12595,7 @@ function renderList(){
           +PARTNERS.filter(function(p){return p.status==='active'&&p.role!=='chatter';}).map(function(p,i){
             var colorClass=PARTNER_COLOR_KEYS[i%PARTNER_COLOR_KEYS.length];
             return '<div class="field"><label style="color:var(--'+colorClass+'-text)">'+escHtml(p.name)+' (EUR)</label>'
-              +'<input class="num" id="sp_'+w.id+'_'+p.id+'" placeholder="0.00" oninput="onWithdrawalSplitInput(\''+w.id+'\')" data-partner="'+p.id+'"></div>';
+              +'<input class="num" id="sp_'+w.id+'_'+p.id+'" placeholder="0.00" data-partner="'+p.id+'"></div>';
           }).join('')
           +((CHATTERS&&CHATTERS.length)?CHATTERS.map(function(c){
             return '<div class="field"><label style="color:var(--green)">'+escHtml(c.name)+' · chatter (EUR)</label>'

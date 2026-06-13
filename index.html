@@ -103,6 +103,9 @@ main,header,nav,section,footer{position:relative;z-index:1}
   transition:box-shadow .2s;will-change:transform;
 }
 .nav-cta:hover{box-shadow:0 3px 20px rgba(168,247,64,.35)}
+.nav-actions{display:flex;align-items:center;gap:16px}
+.nav-signin{font-family:var(--disp);font-weight:600;font-size:12.5px;letter-spacing:.02em;color:var(--t2);transition:color .2s;white-space:nowrap}
+.nav-signin:hover{color:var(--t1)}
 
 /* ── hero ───────────────────────────────────────────────────── */
 .hero{padding:148px 0 0}
@@ -437,7 +440,10 @@ body.has-cursor .cur-dot,body.has-cursor .cur-ring{display:block}
       <a href="#pricing">Price</a>
       <a href="#faq">FAQ</a>
     </div>
-    <a class="nav-cta magnetic" data-store-cta href="/tracker">Get the app</a>
+    <div class="nav-actions">
+      <a class="nav-signin" href="/tracker">Sign in</a>
+      <a class="nav-cta magnetic" data-store-cta href="/tracker">Get the app</a>
+    </div>
   </div>
 </nav>
 

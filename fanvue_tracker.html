@@ -5729,7 +5729,6 @@ html { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
 }
 .partner-cards-grid.count-1 {
   grid-template-columns: 1fr;
-  max-width: 420px;
 }
 .partner-cards-grid.count-4,
 .partner-cards-grid.count-5 {
@@ -8233,6 +8232,10 @@ async function forgotPassword(){
 async function logout(){
   teardownRealtime();
   try{await db.auth.signOut();}catch(e){}
+  // Clear non-user-scoped cached state so it can't bleed into the next account
+  // that signs in on this tab (platforms, tax, currency prefs, sync stamps).
+  ['ft6_platforms','ft6_am','taxRate','taxTrackingEnabled','lastAutoSync','lastRevRefresh','displayCurrency','wd_currency']
+    .forEach(function(k){try{localStorage.removeItem(k);}catch(e){}});
   // SECURITY: hard-reload so NO agency-scoped state (_agencyId, _agencyName,
   // AGENCY_PLAN, PARTNERS, splits, …) can bleed into the next account that
   // signs in on this tab. The startup() boot then loads the next user cleanly.
@@ -8300,8 +8303,12 @@ async function loadAllModelsSplits(){
 
 function getCurrentSplit(modelId,partnerId){
   var splits=MODEL_SPLITS[modelId];
-  if(!splits)return 50;
-  return splits[partnerId]!=null?splits[partnerId]:50;
+  if(splits&&splits[partnerId]!=null)return splits[partnerId];
+  // No explicit split stored. A solo agency (only the owner, no other active
+  // partners) keeps 100%. With multiple partners, fall back to the legacy 50.
+  var act=(PARTNERS||[]).filter(function(p){return p.status==='active'&&p.role!=='chatter';});
+  if(act.length<=1)return 100;
+  return 50;
 }
 
 // Returns the split % that was effective on a given date (YYYY-MM-DD).
@@ -8967,6 +8974,7 @@ async function loadAgencySettings(){
       S.platforms=agData.data.platforms;
       renderPlatformSelect();
       renderPlatformSettings();
+      renderChartLegend();renderMonths();  // refresh Overview to THIS agency's platforms (not a stale cache)
     }
     if(agData.data.tax_rate_pct!=null){
       TAX_RATE_PCT=parseFloat(agData.data.tax_rate_pct);

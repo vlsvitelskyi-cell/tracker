@@ -54,8 +54,8 @@
   /* TEXT — t3 raised to #747480 for readability */
   --t1: #F0F0F2;
   --t2: #A0A0AA;
-  --t3: #747480;
-  --t4: #4A4A54;
+  --t3: #868692;
+  --t4: #7a7a86;
 
   /* SEMANTIC */
   --pos:     #a8f740;
@@ -4180,7 +4180,7 @@ button { font-family: var(--sans); }
 /* t3: #56565E → #68687A  (~2.56:1 → ~3.9:1 on --bg — now legible) */
 :root {
   --t2: #A2A2AE;
-  --t3: #68687A;
+  --t3: #868692;
 }
 
 /* ─ B. Timestamp + metadata rescue (all were at t4 = invisible) ── */
@@ -5887,11 +5887,12 @@ html { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
 }
 .plan-chip{
   display:inline-flex;align-items:center;gap:6px;cursor:pointer;
-  padding:5px 11px;border-radius:999px;font-size:12px;font-weight:600;
+  padding:5px 11px;border-radius:999px;font-size:12px;font-weight:600;font-family:inherit;
   background:var(--pro-soft);color:#c3b0ff;border:1px solid rgba(109,66,249,.4);
   transition:background .15s,border-color .15s;white-space:nowrap;
 }
 .plan-chip:hover{ background:rgba(109,66,249,.2);border-color:rgba(109,66,249,.6); }
+.plan-chip:focus-visible{ outline:2px solid #c3b0ff;outline-offset:2px; }
 .plan-chip svg{ flex:0 0 auto; }
 /* Pro = active status chip (calm lime, not an upsell) */
 .plan-chip.pro{ background:rgba(168,247,64,.1);color:#bced86;border-color:rgba(168,247,64,.32); }
@@ -6887,7 +6888,7 @@ button, a,
 
     <!-- UPGRADE MODAL (free → Pro) -->
     <div class="upgrade-ov" id="upgradeOverlay" onclick="if(event.target===this)closeUpgrade()">
-      <div class="upgrade-modal" role="dialog" aria-modal="true">
+      <div class="upgrade-modal" role="dialog" aria-modal="true" aria-labelledby="upgradeTitle" aria-describedby="upgradeBody">
         <div class="um-top">
           <div class="um-icon">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
@@ -6929,10 +6930,10 @@ button, a,
           <span id="userEmail" style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
           <span class="user-role-badge" id="userRoleBadge"></span>
         </div>
-        <div class="plan-chip" id="planChip" style="display:none" onclick="showTab('settings',document.querySelector('[data-tab=settings]'));switchSettingsTab('plan')" title="You're on the Free plan">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        <button class="plan-chip" id="planChip" type="button" style="display:none" onclick="showTab('settings',document.querySelector('[data-tab=settings]'));switchSettingsTab('plan')" title="You're on the Free plan">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
           <span>Free · Upgrade</span>
-        </div>
+        </button>
         <button id="reportBtn" onclick="openReportModal()">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
@@ -7330,7 +7331,7 @@ button, a,
             <hr class="form-sep">
             <div class="field">
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-                <label style="margin-bottom:0">FX Rate (USD→EUR)</label>
+                <label for="nFxRate" style="margin-bottom:0">FX Rate (USD→EUR)</label>
                 <button class="btn" style="height:26px;padding:0 10px;font-size:12px;white-space:nowrap" onclick="if(WISE_RATE){g('nFxRate').value=WISE_RATE.toFixed(4)}">Use current rate</button>
               </div>
               <input id="nFxRate" class="num" placeholder="0.0000">
@@ -9283,8 +9284,29 @@ function showUpgrade(feature){
   if(b)b.textContent=c.b;
   var cta=g('upgradeCta');if(cta)cta.href=FANVUE_STORE_URL;
   var ov=g('upgradeOverlay');if(ov)ov.classList.add('open');
+  // a11y: move focus into the dialog, trap Tab, allow Escape, restore on close.
+  _upgradeReturnFocus=document.activeElement;
+  document.addEventListener('keydown',_upgradeKeydown,true);
+  setTimeout(function(){var c2=g('upgradeCta');if(c2)c2.focus();},30);
 }
-function closeUpgrade(){var ov=g('upgradeOverlay');if(ov)ov.classList.remove('open');}
+var _upgradeReturnFocus=null;
+function _upgradeKeydown(e){
+  if(e.key==='Escape'){e.preventDefault();closeUpgrade();return;}
+  if(e.key==='Tab'){
+    var ov=g('upgradeOverlay');if(!ov)return;
+    var f=ov.querySelectorAll('a[href],button:not([disabled])');
+    if(!f.length)return;
+    var first=f[0],last=f[f.length-1];
+    if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}
+    else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}
+  }
+}
+function closeUpgrade(){
+  var ov=g('upgradeOverlay');if(ov)ov.classList.remove('open');
+  document.removeEventListener('keydown',_upgradeKeydown,true);
+  if(_upgradeReturnFocus&&_upgradeReturnFocus.focus){try{_upgradeReturnFocus.focus();}catch(e){}}
+  _upgradeReturnFocus=null;
+}
 
 function _planCheck(on){
   return on
@@ -9314,6 +9336,25 @@ function renderPlanTab(){
     +'</div>'
     +'</div>';
 }
+
+// a11y: most form labels are siblings of their input (no for/id), so screen
+// readers don't announce them. Link each label to its control on load.
+var _a11yLabelId=1;
+function associateLabels(){
+  document.querySelectorAll('label:not([for])').forEach(function(lab){
+    if(lab.querySelector('input,select,textarea'))return; // wrapping label = already linked
+    var ctl=null,n=lab.nextElementSibling;
+    while(n&&!ctl){
+      if(/^(INPUT|SELECT|TEXTAREA)$/.test(n.tagName))ctl=n;
+      else if(n.querySelector)ctl=n.querySelector('input,select,textarea');
+      n=n.nextElementSibling;
+    }
+    if(!ctl&&lab.parentElement)ctl=lab.parentElement.querySelector('input,select,textarea');
+    if(ctl){ if(!ctl.id)ctl.id='a11yf_'+(_a11yLabelId++); lab.setAttribute('for',ctl.id); }
+  });
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',associateLabels);
+else associateLabels();
 
 function checkSubscriptionGate(){
   // Free plan is never hard-gated — a free (or lapsed-to-free) user keeps full

@@ -8972,6 +8972,7 @@ async function loadAgencySettings(){
     updateSidebarStats();
     if(agData.data.platforms&&Array.isArray(agData.data.platforms)&&agData.data.platforms.length){
       S.platforms=agData.data.platforms;
+      _platformsFromDb=true;               // authoritative — init() must not overwrite with the global cache
       renderPlatformSelect();
       renderPlatformSettings();
       renderChartLegend();renderMonths();  // refresh Overview to THIS agency's platforms (not a stale cache)
@@ -10835,7 +10836,8 @@ async function loadPlatformsForPartner(){
   var agData=await db.from('agencies').select('platforms').eq('id',agId).single();
   if(!agData.error&&agData.data&&Array.isArray(agData.data.platforms)&&agData.data.platforms.length){
     S.platforms=agData.data.platforms;
-    renderPlatformSelect();
+    _platformsFromDb=true;
+    renderPlatformSelect();renderChartLegend();renderMonths();
   }
 }
 
@@ -13447,10 +13449,14 @@ window.addEventListener('scroll',function(){
   if(tb)tb.style.boxShadow=window.scrollY>8?'0 4px 20px rgba(0,0,0,.4)':'none';
 },{passive:true});
 /* ---- Init ---- */
+var _platformsFromDb=false;
 async function init(){
   try{
+    // Only use the (global) cache if the agency's real platforms haven't been
+    // loaded from the DB yet — otherwise this would clobber them with a prior
+    // account's cached list.
     var savedPl=localStorage.getItem('ft6_platforms');
-    if(savedPl)S.platforms=JSON.parse(savedPl);
+    if(savedPl&&!_platformsFromDb)S.platforms=JSON.parse(savedPl);
   }catch(e){}
 
   var savedAm=parseInt(localStorage.getItem('ft6_am')||'');

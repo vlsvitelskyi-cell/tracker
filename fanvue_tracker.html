@@ -7899,6 +7899,9 @@ function setAgencyContext(ag){
   var asn=g('agencySwitcherName');if(asn)asn.textContent=_agencyName||'—';
   var reportBtn=g('reportBtn');if(reportBtn)reportBtn.style.display=isAdmin?'flex':'none';
   applyRoleUI();
+  // Load the plan as early as the agency context is known (before the dashboard
+  // becomes interactive) so feature-gates apply without a race window.
+  loadAgencyPlan();
 }
 
 // Render / show the header agency switcher (only when the user has >1 agency).
@@ -9226,6 +9229,9 @@ function applyPlanUI(){
   // Topbar "Free · Upgrade" chip — free admins only
   var chip=g('planChip');
   if(chip)chip.style.display=(free&&isAdmin)?'inline-flex':'none';
+  // Safety: free is never hard-gated — clear the subscription overlay if a race
+  // (gate evaluated before the plan loaded) left it showing.
+  if(free){var _gate=g('subscriptionGate');if(_gate)_gate.style.display='none';}
   // Plan settings tab — admins only (free shows upgrade, paid shows status)
   var planTab=g('planSettingsTab');
   if(planTab)planTab.style.display=isAdmin?'':'none';
@@ -9289,8 +9295,10 @@ function renderPlanTab(){
 }
 
 function checkSubscriptionGate(){
+  // Free plan is never hard-gated — a free (or lapsed-to-free) user keeps full
+  // access to their manual data; paid features are gated individually instead.
   var m=ALL_MODELS.find(function(x){return x.id===ACTIVE_MODEL_ID;});
-  if(m&&m.subscription_active===false){
+  if(!isFreePlan()&&m&&m.subscription_active===false){
     var gate=g('subscriptionGate');
     if(gate){
       gate.style.display='flex';
@@ -9377,7 +9385,7 @@ async function invitePartner(){
 
 function renderSubBanners(){
   var html='';
-  if(FANVUE_CONNECTION&&!FANVUE_CONNECTION.subscription_active){
+  if(!isFreePlan()&&FANVUE_CONNECTION&&!FANVUE_CONNECTION.subscription_active){
     html='<div class="sub-banner expired">Subscribe via <a href="https://www.fanvue.com/app-store" target="_blank" rel="noopener" style="color:inherit;font-weight:600">Fanvue App Store</a> to continue using Payout Manager.</div>';
   }
   var ds=g('subBannerDash'),ss=g('subBannerSettings');
@@ -13533,6 +13541,7 @@ async function autoSyncIncremental(){
 
 async function syncFullHistory(){
   if(demoGuard())return;
+  if(isFreePlan())return showUpgrade('sync');
   var btn=g('syncBtn'),st=g('syncStatus');
   if(!ACTIVE_MODEL_ID){
     st.innerHTML='<span class="setting-meta">No account connected</span>';

@@ -5893,6 +5893,9 @@ html { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
 }
 .plan-chip:hover{ background:rgba(109,66,249,.2);border-color:rgba(109,66,249,.6); }
 .plan-chip svg{ flex:0 0 auto; }
+/* Pro = active status chip (calm lime, not an upsell) */
+.plan-chip.pro{ background:rgba(168,247,64,.1);color:#bced86;border-color:rgba(168,247,64,.32); }
+.plan-chip.pro:hover{ background:rgba(168,247,64,.16);border-color:rgba(168,247,64,.5); }
 
 /* Upsell card (shown inside locked sections) */
 .upsell-card{
@@ -9230,9 +9233,23 @@ async function loadAgencyPlan(){
 function applyPlanUI(){
   var free=isFreePlan();
   var isAdmin=currentRole==='admin'||currentRole==='owner';
-  // Topbar "Free · Upgrade" chip — free admins only
+  // Topbar plan chip — Free (upsell) or Pro (active status); admins only
   var chip=g('planChip');
-  if(chip)chip.style.display=(free&&isAdmin)?'inline-flex':'none';
+  if(chip){
+    if(!isAdmin){
+      chip.style.display='none';
+    }else if(free){
+      chip.style.display='inline-flex';
+      chip.className='plan-chip';
+      chip.title='You’re on the Free plan — upgrade to Pro';
+      chip.innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg><span>Free · Upgrade</span>';
+    }else{
+      chip.style.display='inline-flex';
+      chip.className='plan-chip pro';
+      chip.title='Pro plan — active';
+      chip.innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg><span>Pro</span>';
+    }
+  }
   // Safety: free is never hard-gated — clear the subscription overlay if a race
   // (gate evaluated before the plan loaded) left it showing.
   if(free){var _gate=g('subscriptionGate');if(_gate)_gate.style.display='none';}

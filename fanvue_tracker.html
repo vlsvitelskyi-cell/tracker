@@ -8162,14 +8162,11 @@ async function signup(){
     err.textContent='Account created! Signing you in…';
     var signInAfterReg=await db.auth.signInWithPassword({email:email,password:pass});
     if(!signInAfterReg.error&&signInAfterReg.data.user){
-      var rd=await loadUserRole(signInAfterReg.data.user.id);
-      if(rd){
-        showApp(signInAfterReg.data.user,rd);
-        if(currentRole==='admin')await loadAgencySettings();
-        await Promise.all([loadPartners(),loadModels()]);
-        init();loadFanvueConnection();
-        if(ALL_MODELS.length===0&&currentRole==='admin')showOnboardingOverlay();
-      }
+      // SECURITY: boot through startup() (full reload) so the new account loads
+      // ITS OWN agency context. The previous partial path reused stale
+      // _agencyId/_agencyName/AGENCY_PLAN from any prior session on this tab.
+      location.reload();
+      return;
     }
   }
   btn.disabled=false;btn.textContent='Create account';
@@ -8235,11 +8232,11 @@ async function forgotPassword(){
 
 async function logout(){
   teardownRealtime();
-  await db.auth.signOut();
-  PARTNERS=[];ALL_MODELS=[];ACTIVE_MODEL_ID='';MODEL_SPLITS={};SPLIT_HISTORY=[];PARTNER_SPLITS={};FANVUE_CONNECTION=null;TAX_RATE_PCT=null;TAX_ENABLED=false;TAX_PAYMENTS=[];
-  showLogin();
-  S={months:[],ws:[],txs:[],exps:[],am:0,platforms:DEFAULT_PLATFORMS.slice()};
-  renderAll();
+  try{await db.auth.signOut();}catch(e){}
+  // SECURITY: hard-reload so NO agency-scoped state (_agencyId, _agencyName,
+  // AGENCY_PLAN, PARTNERS, splits, …) can bleed into the next account that
+  // signs in on this tab. The startup() boot then loads the next user cleanly.
+  location.reload();
 }
 
 /* ---- Entity IDs (loaded from DB after auth) ---- */
@@ -8264,6 +8261,7 @@ async function loadModels(){
     .order('created_at',{ascending:true});
   if(res.error||!res.data||!res.data.length){
     dbg('loadModels failed:',res.error);
+    ALL_MODELS=[];ACTIVE_MODEL_ID='';  // never keep prior-agency models on screen
     return;
   }
   ALL_MODELS=res.data.map(function(m){return{
@@ -8698,7 +8696,12 @@ async function loadPartners(){
     .eq('agency_id',_agencyId)
     .order('created_at',{ascending:true});
   if(res.error){dbg('loadPartners:',res.error);return;}
-  if(!res.data||!res.data.length){dbg('loadPartners: no partners found');return;}
+  if(!res.data||!res.data.length){
+    // Clear (don't keep prior-agency rows on screen) and re-render empty.
+    PARTNERS=[];CHATTERS=[];
+    renderPartnerCards();renderPartnerSelect();renderChatterSection();
+    return;
+  }
   PARTNERS=res.data.map(function(p){return{id:p.id,name:p.name,status:p.status||'active',invited_email:p.invited_email||null,user_id:p.user_id||null,split_pct:p.split_pct||0,role:p.role||'partner'};});
   CHATTERS=PARTNERS.filter(function(p){return p.role==='chatter'&&p.status==='active';});
   /* Try to load admin user_ids (used for role labels on partner cards) */
@@ -9221,12 +9224,13 @@ var AGENCY_PLAN='paid';
 var FANVUE_STORE_URL='https://www.fanvue.com/app-store/details/04d3aa20-b096-4b0b-bf3c-f509e3d4990c';
 function isFreePlan(){return AGENCY_PLAN==='free';}
 
+var _planLoaded=false;
 async function loadAgencyPlan(){
-  if(DEMO_MODE){AGENCY_PLAN='paid';applyPlanUI();return;}
-  if(!_agencyId){applyPlanUI();return;}
+  if(DEMO_MODE){AGENCY_PLAN='paid';_planLoaded=true;applyPlanUI();return;}
+  if(!_agencyId){_planLoaded=false;applyPlanUI();return;}
   try{
     var r=await db.from('agencies').select('plan_tier').eq('id',_agencyId).single();
-    if(!r.error&&r.data&&r.data.plan_tier)AGENCY_PLAN=r.data.plan_tier;
+    if(!r.error&&r.data&&r.data.plan_tier){AGENCY_PLAN=r.data.plan_tier;_planLoaded=true;}
   }catch(e){}
   applyPlanUI();
 }
@@ -9237,7 +9241,7 @@ function applyPlanUI(){
   // Topbar plan chip — Free (upsell) or Pro (active status); admins only
   var chip=g('planChip');
   if(chip){
-    if(!isAdmin){
+    if(!isAdmin||!_planLoaded){
       chip.style.display='none';
     }else if(free){
       chip.style.display='inline-flex';

@@ -7515,6 +7515,10 @@ button, a,
             <div class="uc-title">Put your earnings on autopilot</div>
             <div class="uc-body">Connect Fanvue and Payout Manager syncs every transaction automatically — no manual entry, updated around the clock. Auto-sync is part of <b>Pro</b>.</div>
             <a class="btn-pro" href="https://www.fanvue.com/app-store" target="_blank" rel="noopener" onclick="event.preventDefault();showUpgrade('sync')">Upgrade to Pro →</a>
+            <div style="margin-top:14px;font-size:12.5px;color:var(--text2)">
+              Already subscribed on Fanvue?
+              <a href="#" onclick="event.preventDefault();connectFanvue()" style="color:#b9a3ff;font-weight:600;text-decoration:none">Connect your account →</a>
+            </div>
           </div>
           <div class="card" id="integrationRealCard">
             <div class="sec-label">Fanvue Account</div>
@@ -9615,7 +9619,6 @@ async function onboardingNext(){
 }
 
 async function connectFanvueOnboarding(){
-  if(isFreePlan())return showUpgrade('sync');
   var btn=g('obConnectBtn');
   btn.disabled=true;btn.textContent='Connecting…';
   try{
@@ -9641,7 +9644,10 @@ async function connectFanvueOnboarding(){
 
 async function connectFanvue(){
   if(demoGuard())return;
-  if(isFreePlan())return showUpgrade('sync');
+  // NOTE: connecting is the upgrade-verification path — a free user who has
+  // paid on Fanvue connects here, and oauth-callback flips them to paid. Free
+  // users who haven't paid are bounced by the callback (subscription_required).
+  // So we do NOT hard-block connect by plan; sync stays gated server-side.
   var btn=g('connectBtn');
   if(btn){btn.disabled=true;btn.textContent='Connecting…';}
   try{
@@ -9863,6 +9869,11 @@ function handleCallbackParams(){
         }
       });
     },3000);
+  }else if(params.get('fanvue_error')==='subscription_required'){
+    // Connected, but no active Pro subscription on Fanvue → friendly upsell.
+    history.replaceState({},'',window.location.pathname);
+    showToast('We couldn’t find an active Pro subscription on Fanvue.','info');
+    setTimeout(function(){showUpgrade('sync');},400);
   }else if(params.get('fanvue_error')){
     var errors={
       access_denied:'Authorization cancelled.',

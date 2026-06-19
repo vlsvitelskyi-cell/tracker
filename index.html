@@ -339,6 +339,30 @@ input[type=range]:focus-visible{outline:2px solid var(--lime);outline-offset:6px
 .price-list svg{flex-shrink:0;margin-top:3px;color:var(--lime)}
 .price-foot{margin-top:14px;font-size:12.5px;color:var(--t4)}
 
+/* ── two-tier pricing (Free / Pro) ──────────────────────────── */
+.tiers{margin-top:54px;display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.tier{border:1px solid var(--hl);padding:40px 34px;display:flex;flex-direction:column;position:relative}
+.tier.pro{border-color:rgba(168,247,64,.42);background:linear-gradient(180deg,rgba(168,247,64,.05),transparent)}
+.tier-tag{font-family:var(--disp);font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--t4)}
+.tier.pro .tier-tag{color:var(--lime)}
+.tier-badge{position:absolute;top:18px;right:20px;font-family:var(--disp);font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#08080A;background:var(--lime);padding:4px 9px;border-radius:999px}
+.tier-num{font-family:var(--disp);font-weight:700;font-size:clamp(44px,5vw,64px);letter-spacing:-.05em;line-height:1;font-variant-numeric:tabular-nums;margin:16px 0 4px}
+.tier-num small{font-size:.27em;font-weight:600;color:var(--t3);letter-spacing:0}
+.tier-desc{font-size:13.5px;color:var(--t3);margin-bottom:26px;min-height:36px}
+.tier-list{list-style:none;display:grid;gap:11px;margin-bottom:30px;flex:1}
+.tier-list li{display:flex;gap:11px;font-size:14px;color:var(--t2);align-items:flex-start;line-height:1.4}
+.tier-list li svg{flex-shrink:0;margin-top:3px}
+.tier-list li.on svg{color:var(--lime)}
+.tier-list li.off{color:var(--t4)}
+.tier-list li.off svg{color:var(--t4);opacity:.5}
+.tier .btn-primary{width:100%;justify-content:center}
+.btn-line{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;
+  padding:15px 26px;border:1px solid var(--hl);color:var(--t1);font-family:var(--disp);
+  font-weight:600;font-size:14px;transition:border-color .2s,background .2s;box-sizing:border-box}
+.btn-line:hover{border-color:var(--t2);background:rgba(255,255,255,.02)}
+.tier-foot{margin-top:13px;font-size:12px;color:var(--t4);text-align:center}
+@media(max-width:760px){.tiers{grid-template-columns:1fr}}
+
 /* ── faq ────────────────────────────────────────────────────── */
 .faq{max-width:780px;margin:54px 0 0;border-top:1px solid var(--hl)}
 .faq details{border-bottom:1px solid var(--hl)}
@@ -470,9 +494,9 @@ body.has-cursor .cur-dot,body.has-cursor .cur-ring{display:block}
             Subscribe on Fanvue
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
           </a>
-          <a class="btn-ghost magnetic" href="/tracker">Try the live demo</a>
+          <a class="btn-ghost magnetic" href="/tracker">Start free</a>
         </div>
-        <p class="hero-note"><b>$14.99/mo</b> · billed through Fanvue · cancel anytime · full demo, no signup</p>
+        <p class="hero-note"><b>Free plan, forever</b> · Pro $14.99/mo billed through Fanvue · cancel anytime</p>
         <div class="hero-meta">
           <div class="hm"><div class="v">≤ $0.01</div><div class="k">Rounding drift</div></div>
           <div class="hm"><div class="v">~ 5 s</div><div class="k">Webhook to ledger</div></div>
@@ -725,26 +749,45 @@ body.has-cursor .cur-dot,body.has-cursor .cur-ring{display:block}
 <section class="section" id="pricing">
   <div class="wrap">
     <div class="lbl rv"><b>05</b> · Price</div>
-    <h2 class="rv" style="--d:.05s">One plan. Everything in.</h2>
-    <div class="price rv" style="--d:.1s">
-      <div class="price-l">
-        <div class="price-num">$14.99<small> /mo</small></div>
-        <div class="price-per">Per agency · via Fanvue App Store</div>
+    <h2 class="rv" style="--d:.05s">Start free. Upgrade when you grow.</h2>
+    <div class="tiers rv" style="--d:.1s">
+
+      <!-- FREE -->
+      <div class="tier">
+        <div class="tier-tag">Free</div>
+        <div class="tier-num">$0<small> /forever</small></div>
+        <div class="tier-desc">For solo creators who track their Fanvue payouts by hand.</div>
+        <ul class="tier-list">
+          <li class="on"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Log income, expenses & withdrawals manually</li>
+          <li class="on"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Earnings dashboard & full revenue history</li>
+          <li class="on"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Multi-currency payout view & live FX rates</li>
+          <li class="off"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Automatic Fanvue sync</li>
+          <li class="off"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Team, chatters, reports & tax tools</li>
+        </ul>
+        <a class="btn-line" href="/tracker">Start free</a>
+        <p class="tier-foot">No card. No Fanvue connection required.</p>
       </div>
-      <div class="price-r">
-        <ul class="price-list">
-          <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Real-time Fanvue sync — webhooks + polling fallback</li>
-          <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Unlimited partners & chatters with role-based access</li>
-          <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Cent-exact splits, dated split history, chatter advances</li>
-          <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Expenses with receipts · live ECB FX · tax set-aside</li>
-          <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> PDF statements & CSV export, any date range</li>
+
+      <!-- PRO -->
+      <div class="tier pro">
+        <div class="tier-badge">Most popular</div>
+        <div class="tier-tag">Pro</div>
+        <div class="tier-num">$14.99<small> /mo</small></div>
+        <div class="tier-desc">For creators & agencies who want payouts on autopilot.</div>
+        <ul class="tier-list">
+          <li class="on"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Everything in Free, plus:</li>
+          <li class="on"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Real-time Fanvue sync — webhooks + polling fallback</li>
+          <li class="on"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Unlimited partners & chatters · cent-exact splits</li>
+          <li class="on"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Receipts · tax set-aside · daily email digest</li>
+          <li class="on"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> PDF statements & CSV export, any date range</li>
         </ul>
         <a class="btn-primary magnetic" data-store-cta href="/tracker">
-          Subscribe on Fanvue
+          Get Pro on Fanvue
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
         </a>
-        <p class="price-foot">Cancel anytime in your Fanvue account. Explore the full demo first — no signup needed.</p>
+        <p class="tier-foot">$14.99/mo per agency · cancel anytime in Fanvue.</p>
       </div>
+
     </div>
   </div>
 </section>
@@ -756,6 +799,10 @@ body.has-cursor .cur-dot,body.has-cursor .cur-ring{display:block}
     <div class="lbl rv"><b>06</b> · FAQ</div>
     <h2 class="rv" style="--d:.05s">Questions, answered</h2>
     <div class="faq rv" style="--d:.1s">
+      <details>
+        <summary>Is there a free plan? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></summary>
+        <div class="fa-body">Yes — the Free plan is free forever, no card required. You get the full dashboard and ledger to log income, expenses and withdrawals by hand, with revenue history and live FX. Upgrade to Pro ($14.99/mo through the Fanvue App Store) when you want automatic Fanvue sync, a team with partners and chatters, PDF reports, the daily digest and tax tools.</div>
+      </details>
       <details>
         <summary>How does the Fanvue sync actually work? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></summary>
         <div class="fa-body">You connect through Fanvue's official OAuth — no passwords shared. Fanvue sends a webhook the moment a transaction happens, and the app also polls every 15 minutes as a safety net. If a webhook is ever missed, the next poll catches it.</div>

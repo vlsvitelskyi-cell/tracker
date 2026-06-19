@@ -5877,6 +5877,104 @@ html { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
 .settings-tab-content { display: none; }
 .settings-tab-content.act { display: block; }
 
+/* ===== FREE / PRO PLAN UI ===== */
+:root{ --pro:#6d42f9; --pro-soft:rgba(109,66,249,.12); }
+.pro-badge{
+  display:inline-flex;align-items:center;gap:4px;vertical-align:middle;
+  padding:2px 7px;border-radius:999px;font-size:10px;font-weight:700;
+  letter-spacing:.04em;text-transform:uppercase;
+  background:var(--pro-soft);color:#b9a3ff;border:1px solid rgba(109,66,249,.35);
+}
+.plan-chip{
+  display:inline-flex;align-items:center;gap:6px;cursor:pointer;
+  padding:5px 11px;border-radius:999px;font-size:12px;font-weight:600;
+  background:var(--pro-soft);color:#c3b0ff;border:1px solid rgba(109,66,249,.4);
+  transition:background .15s,border-color .15s;white-space:nowrap;
+}
+.plan-chip:hover{ background:rgba(109,66,249,.2);border-color:rgba(109,66,249,.6); }
+.plan-chip svg{ flex:0 0 auto; }
+
+/* Upsell card (shown inside locked sections) */
+.upsell-card{
+  position:relative;border:1px solid rgba(109,66,249,.3);
+  background:linear-gradient(160deg,var(--pro-soft),rgba(109,66,249,.03));
+  border-radius:14px;padding:26px 24px;text-align:center;
+}
+.upsell-card .uc-icon{
+  width:46px;height:46px;border-radius:13px;margin:0 auto 14px;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(109,66,249,.18);color:#c3b0ff;
+}
+.upsell-card .uc-title{ font-size:16px;font-weight:700;color:var(--text);margin-bottom:6px; }
+.upsell-card .uc-body{ font-size:13.5px;line-height:1.6;color:var(--text2);max-width:380px;margin:0 auto 18px; }
+.btn-pro{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:11px 22px;border-radius:9px;border:0;cursor:pointer;
+  background:var(--pro);color:#fff;font-weight:700;font-size:13.5px;text-decoration:none;
+  transition:filter .15s,transform .05s;
+}
+.btn-pro:hover{ filter:brightness(1.1); }
+.btn-pro:active{ transform:translateY(1px); }
+
+/* Upgrade modal */
+.upgrade-ov{
+  display:none;position:fixed;inset:0;z-index:120;
+  background:rgba(8,10,16,.74);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  align-items:center;justify-content:center;padding:20px;
+}
+.upgrade-ov.open{ display:flex; }
+.upgrade-modal{
+  width:100%;max-width:440px;background:var(--card);
+  border:1px solid var(--border2);border-radius:18px;overflow:hidden;
+  box-shadow:0 24px 70px rgba(0,0,0,.5);
+}
+.upgrade-modal .um-top{
+  padding:26px 26px 22px;text-align:center;
+  background:linear-gradient(160deg,rgba(109,66,249,.2),rgba(109,66,249,.04));
+  border-bottom:1px solid var(--border2);
+}
+.upgrade-modal .um-icon{
+  width:52px;height:52px;border-radius:15px;margin:0 auto 14px;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(109,66,249,.22);color:#c8b6ff;
+}
+.upgrade-modal .um-title{ font-size:19px;font-weight:700;color:var(--text);margin-bottom:7px; }
+.upgrade-modal .um-body{ font-size:14px;line-height:1.6;color:var(--text2); }
+.upgrade-modal .um-feats{ padding:20px 26px 6px;list-style:none;margin:0; }
+.upgrade-modal .um-feats li{
+  display:flex;align-items:flex-start;gap:10px;font-size:13.5px;color:var(--text);
+  padding:7px 0;line-height:1.45;
+}
+.upgrade-modal .um-feats li svg{ flex:0 0 auto;margin-top:2px;color:#a8f740; }
+.upgrade-modal .um-price{ text-align:center;font-size:13px;color:var(--text2);padding:8px 26px 0; }
+.upgrade-modal .um-price b{ color:var(--text);font-size:16px; }
+.upgrade-modal .um-actions{ padding:18px 26px 24px;display:flex;flex-direction:column;gap:10px; }
+.upgrade-modal .um-later{
+  background:transparent;border:0;color:var(--text2);font-size:13px;cursor:pointer;padding:4px;
+}
+.upgrade-modal .um-later:hover{ color:var(--text); }
+
+/* Plan comparison (settings → Plan) */
+.plan-grid{ display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:4px; }
+@media(max-width:640px){ .plan-grid{ grid-template-columns:1fr; } }
+.plan-card{
+  border:1px solid var(--border2);border-radius:14px;padding:20px 18px;background:var(--card);
+  position:relative;
+}
+.plan-card.is-pro{ border-color:rgba(109,66,249,.45);background:linear-gradient(170deg,var(--pro-soft),transparent); }
+.plan-card.current{ outline:2px solid var(--accent);outline-offset:-1px; }
+.plan-card .pc-name{ font-size:15px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px; }
+.plan-card .pc-price{ font-size:24px;font-weight:800;color:var(--text);margin:8px 0 2px; }
+.plan-card .pc-price span{ font-size:13px;font-weight:600;color:var(--text2); }
+.plan-card .pc-cur{ font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.05em; }
+.plan-card ul{ list-style:none;margin:16px 0 0;padding:0; }
+.plan-card ul li{ display:flex;gap:9px;align-items:flex-start;font-size:13px;color:var(--text2);padding:6px 0;line-height:1.45; }
+.plan-card ul li svg{ flex:0 0 auto;margin-top:2px; }
+.plan-card ul li.on{ color:var(--text); }
+.plan-card ul li.on svg{ color:#a8f740; }
+.plan-card ul li.off svg{ color:var(--text3,#5A6680);opacity:.6; }
+.plan-card .pc-cta{ margin-top:18px; }
+
 /* ===== SETTINGS BODY COMPONENTS ===== */
 .settings-section-heading {
   font-size: var(--f11);
@@ -6784,6 +6882,32 @@ button, a,
       </a>
     </div>
 
+    <!-- UPGRADE MODAL (free → Pro) -->
+    <div class="upgrade-ov" id="upgradeOverlay" onclick="if(event.target===this)closeUpgrade()">
+      <div class="upgrade-modal" role="dialog" aria-modal="true">
+        <div class="um-top">
+          <div class="um-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          </div>
+          <div class="um-title" id="upgradeTitle">Unlock Payout Manager Pro</div>
+          <div class="um-body" id="upgradeBody">Automation, team and reporting in one upgrade.</div>
+        </div>
+        <ul class="um-feats">
+          <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Auto-sync every Fanvue transaction</li>
+          <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Invite partners &amp; track chatters</li>
+          <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>PDF payout reports &amp; daily digest</li>
+          <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Tax tracking &amp; set-aside</li>
+        </ul>
+        <div class="um-price"><b>$14.99</b><span>/month</span> · cancel anytime</div>
+        <div class="um-actions">
+          <a class="btn-pro" id="upgradeCta" href="https://www.fanvue.com/app-store" target="_blank" rel="noopener" style="justify-content:center" onclick="closeUpgrade()">
+            Upgrade on Fanvue →
+          </a>
+          <button class="um-later" onclick="closeUpgrade()">Maybe later</button>
+        </div>
+      </div>
+    </div>
+
     <!-- TOP BAR -->
     <div class="topbar">
       <div class="page-title" id="pageTitle">Overview</div>
@@ -6801,6 +6925,10 @@ button, a,
         <div class="user-chip" id="userChip" style="display:none">
           <span id="userEmail" style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
           <span class="user-role-badge" id="userRoleBadge"></span>
+        </div>
+        <div class="plan-chip" id="planChip" style="display:none" onclick="showTab('settings',document.querySelector('[data-tab=settings]'));switchSettingsTab('plan')" title="You're on the Free plan">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          <span>Free · Upgrade</span>
         </div>
         <button id="reportBtn" onclick="openReportModal()">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -7227,6 +7355,7 @@ button, a,
         <!-- Settings sub-nav -->
         <div class="settings-tabs" id="settingsTabs">
           <button class="settings-tab act" data-stab="team" onclick="switchSettingsTab('team')">Team</button>
+          <button class="settings-tab" data-stab="plan" id="planSettingsTab" style="display:none" onclick="switchSettingsTab('plan')">Plan</button>
           <button class="settings-tab" data-stab="integration" onclick="switchSettingsTab('integration')">Integration</button>
           <button class="settings-tab" data-stab="preferences" onclick="switchSettingsTab('preferences')">Preferences</button>
           <button class="settings-tab" data-stab="about" onclick="switchSettingsTab('about')">About</button>
@@ -7248,6 +7377,13 @@ button, a,
           <div class="card">
             <div class="sec-label">Partners</div>
             <div id="partnersList"></div>
+          </div>
+          <!-- Team upsell (free plan) -->
+          <div class="upsell-card" id="teamUpsell" style="display:none;margin-top:14px">
+            <div class="uc-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+            <div class="uc-title">Bring your whole team</div>
+            <div class="uc-body">Invite partners with per-model revenue splits, and track chatters paid on the transactions they close. Team &amp; chatters are part of <b>Pro</b>.</div>
+            <a class="btn-pro" href="https://www.fanvue.com/app-store" target="_blank" rel="noopener" onclick="event.preventDefault();showUpgrade('team')">Upgrade to Pro →</a>
           </div>
           <!-- Invite form (admin only) -->
           <div class="form-panel" id="inviteNewPartner" style="display:none">
@@ -7349,6 +7485,20 @@ button, a,
 
         </div><!-- end settings-team tab -->
 
+        <!-- ── TAB: PLAN ── -->
+        <div id="settings-plan" class="settings-tab-content">
+          <div class="settings-section">
+            <div class="settings-section-header">
+              <div class="settings-section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+              <div>
+                <div class="settings-section-title">Plan &amp; billing</div>
+                <div class="settings-section-subtitle">Your current plan and what's included</div>
+              </div>
+            </div>
+            <div id="planTabBody"></div>
+          </div>
+        </div><!-- end settings-plan tab -->
+
         <!-- ── TAB: INTEGRATION ── -->
         <div id="settings-integration" class="settings-tab-content">
         <!-- SECTION: INTEGRATIONS -->
@@ -7360,7 +7510,13 @@ button, a,
               <div class="settings-section-subtitle">Connect Fanvue to sync earnings automatically in real-time</div>
             </div>
           </div>
-          <div class="card">
+          <div class="upsell-card" id="integrationUpsell" style="display:none">
+            <div class="uc-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+            <div class="uc-title">Put your earnings on autopilot</div>
+            <div class="uc-body">Connect Fanvue and Payout Manager syncs every transaction automatically — no manual entry, updated around the clock. Auto-sync is part of <b>Pro</b>.</div>
+            <a class="btn-pro" href="https://www.fanvue.com/app-store" target="_blank" rel="noopener" onclick="event.preventDefault();showUpgrade('sync')">Upgrade to Pro →</a>
+          </div>
+          <div class="card" id="integrationRealCard">
             <div class="sec-label">Fanvue Account</div>
             <div id="fanvueStatusBlock"></div>
             <div class="settings-divider"></div>
@@ -8815,6 +8971,7 @@ async function loadAgencySettings(){
   await loadPartnersList();
   await ensureAdminPartnerExists();
   await loadDigestPreference();
+  await loadAgencyPlan();
 }
 
 async function loadDigestPreference(){
@@ -8833,6 +8990,7 @@ function setDigestToggleUI(enabled){
 }
 
 async function saveDigestPreference(enabled){
+  if(enabled&&isFreePlan()){setDigestToggleUI(false);return showUpgrade('digest');}
   setDigestToggleUI(enabled);
   if(!_agencyId)return;
   await db.from('agencies').update({digest_enabled:enabled}).eq('id',_agencyId);
@@ -9045,6 +9203,91 @@ function getInviteModels(){
   return[{model_id:mid,split_pct:pct}];
 }
 
+/* ===== FREE / PRO PLAN ===== */
+// Default 'paid' so we never flash feature-locks on a paying user during load;
+// loadAgencyPlan() corrects it from agencies.plan_tier once the agency is known.
+var AGENCY_PLAN='paid';
+var FANVUE_STORE_URL='https://www.fanvue.com/app-store/details/04d3aa20-b096-4b0b-bf3c-f509e3d4990c';
+function isFreePlan(){return AGENCY_PLAN==='free';}
+
+async function loadAgencyPlan(){
+  if(DEMO_MODE){AGENCY_PLAN='paid';applyPlanUI();return;}
+  if(!_agencyId){applyPlanUI();return;}
+  try{
+    var r=await db.from('agencies').select('plan_tier').eq('id',_agencyId).single();
+    if(!r.error&&r.data&&r.data.plan_tier)AGENCY_PLAN=r.data.plan_tier;
+  }catch(e){}
+  applyPlanUI();
+}
+
+function applyPlanUI(){
+  var free=isFreePlan();
+  var isAdmin=currentRole==='admin'||currentRole==='owner';
+  // Topbar "Free · Upgrade" chip — free admins only
+  var chip=g('planChip');
+  if(chip)chip.style.display=(free&&isAdmin)?'inline-flex':'none';
+  // Plan settings tab — admins only (free shows upgrade, paid shows status)
+  var planTab=g('planSettingsTab');
+  if(planTab)planTab.style.display=isAdmin?'':'none';
+  // Integration: free → Pro upsell, hide the real connect/sync card
+  var iu=g('integrationUpsell'),irc=g('integrationRealCard');
+  if(iu)iu.style.display=free?'block':'none';
+  if(irc)irc.style.display=free?'none':'block';
+  // Team: free admin → Pro upsell, hide the invite form (free = solo)
+  var tu=g('teamUpsell'),inv=g('inviteNewPartner');
+  if(tu)tu.style.display=(free&&isAdmin)?'block':'none';
+  if(inv&&free)inv.style.display='none';
+  renderPlanTab();
+}
+
+var UPGRADE_COPY={
+  sync:    {t:'Put your earnings on autopilot', b:'Connect Fanvue and Payout Manager syncs every transaction automatically — no manual entry, updated around the clock.'},
+  team:    {t:'Bring your whole team',          b:'Invite partners with per-model revenue splits, and track chatters paid on the transactions they close.'},
+  chatters:{t:'Track your chatters',            b:'Assign transactions to chatters and pay them their % automatically — all reconciled for you.'},
+  reports: {t:'Professional PDF reports',       b:'Generate branded payout statements and tax-ready reports for any period in one click.'},
+  digest:  {t:'Daily earnings digest',          b:'A clean summary of yesterday’s earnings delivered to your inbox every morning.'},
+  tax:     {t:'Tax tracking & set-aside',       b:'Track how much tax you owe, log payments, and stay ready for filing season.'},
+  generic: {t:'Unlock Payout Manager Pro',      b:'Automation, team and reporting — everything to run payouts on autopilot.'}
+};
+function showUpgrade(feature){
+  var c=UPGRADE_COPY[feature]||UPGRADE_COPY.generic;
+  var t=g('upgradeTitle'),b=g('upgradeBody');
+  if(t)t.textContent=c.t;
+  if(b)b.textContent=c.b;
+  var cta=g('upgradeCta');if(cta)cta.href=FANVUE_STORE_URL;
+  var ov=g('upgradeOverlay');if(ov)ov.classList.add('open');
+}
+function closeUpgrade(){var ov=g('upgradeOverlay');if(ov)ov.classList.remove('open');}
+
+function _planCheck(on){
+  return on
+    ?'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>'
+    :'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+}
+function renderPlanTab(){
+  var el=g('planTabBody');if(!el)return;
+  var free=isFreePlan();
+  var freeFeats=[[1,'Manual income, expenses & withdrawals'],[1,'Earnings dashboard & revenue history'],[1,'Multi-currency payout view'],[0,'Auto-sync from Fanvue'],[0,'Team & chatter tracking'],[0,'PDF reports & daily digest'],[0,'Tax tracking']];
+  var proFeats =[[1,'Everything in Free'],[1,'Auto-sync every Fanvue transaction'],[1,'Invite partners & track chatters'],[1,'PDF payout reports'],[1,'Daily earnings digest'],[1,'Tax tracking & set-aside']];
+  function li(rows){return rows.map(function(r){return '<li class="'+(r[0]?'on':'off')+'">'+_planCheck(!!r[0])+'<span>'+r[1]+'</span></li>';}).join('');}
+  el.innerHTML=
+    '<div class="plan-grid">'
+    +'<div class="plan-card'+(free?' current':'')+'">'
+      +'<div class="pc-name">Free'+(free?' <span class="pc-cur">Current</span>':'')+'</div>'
+      +'<div class="pc-price">$0</div>'
+      +'<ul>'+li(freeFeats)+'</ul>'
+    +'</div>'
+    +'<div class="plan-card is-pro'+(!free?' current':'')+'">'
+      +'<div class="pc-name">Pro <span class="pro-badge">Pro</span>'+(!free?' <span class="pc-cur">Current</span>':'')+'</div>'
+      +'<div class="pc-price">$14.99<span>/mo</span></div>'
+      +'<ul>'+li(proFeats)+'</ul>'
+      +(free
+        ?'<div class="pc-cta"><a class="btn-pro" style="width:100%;box-sizing:border-box;justify-content:center" href="'+FANVUE_STORE_URL+'" target="_blank" rel="noopener">Upgrade to Pro →</a></div>'
+        :'<div class="pc-cta" style="font-size:12.5px;color:var(--text2);text-align:center;line-height:1.6">Your Pro plan is active. Manage billing on <a href="'+FANVUE_STORE_URL+'" target="_blank" rel="noopener" style="color:var(--accent);font-weight:600">Fanvue</a>.</div>')
+    +'</div>'
+    +'</div>';
+}
+
 function checkSubscriptionGate(){
   var m=ALL_MODELS.find(function(x){return x.id===ACTIVE_MODEL_ID;});
   if(m&&m.subscription_active===false){
@@ -9073,6 +9316,7 @@ function updateInviteRoleUI(){
 
 async function invitePartner(){
   if(demoGuard())return;
+  if(isFreePlan())return showUpgrade('team');
   var name=(g('inviteName').value||'').trim();
   var email=(g('inviteEmail').value||'').trim();
   var models=getInviteModels();
@@ -9114,6 +9358,7 @@ async function invitePartner(){
   });
   var data=await res.json();
   if(!res.ok||data.error){
+    if(data.error==='plan_required'){setBtnLoading(btn,false);return showUpgrade(data.feature||'team');}
     var msg=data.error||'Could not send invite. Please try again.';
     if(data.current_total!==undefined)
       msg='Split for "'+data.model_name+'" would exceed 100% ('+data.current_total+'% already used).';
@@ -9362,6 +9607,7 @@ async function onboardingNext(){
 }
 
 async function connectFanvueOnboarding(){
+  if(isFreePlan())return showUpgrade('sync');
   var btn=g('obConnectBtn');
   btn.disabled=true;btn.textContent='Connecting…';
   try{
@@ -9387,6 +9633,7 @@ async function connectFanvueOnboarding(){
 
 async function connectFanvue(){
   if(demoGuard())return;
+  if(isFreePlan())return showUpgrade('sync');
   var btn=g('connectBtn');
   if(btn){btn.disabled=true;btn.textContent='Connecting…';}
   try{
@@ -9805,6 +10052,7 @@ function exitDemoMode(){
 
 /* ── Report Modal ──────────────────────────────────────────────────────────── */
 function openReportModal(){
+  if(isFreePlan())return showUpgrade('reports');
   setReportPeriod('this_month');
   g('reportModal').style.display='flex';
   g('reportErr').style.display='none';
@@ -10387,6 +10635,7 @@ var PAGE_TITLES={
 
 /* ---- Tabs ---- */
 function showTab(name,btn,isMobile){
+  if(name==='tax'&&isFreePlan()){showUpgrade('tax');return;}
   currentTab=name;
   document.querySelectorAll('.tab-page').forEach(function(p){p.classList.remove('act');});
   g('tab-'+name).classList.add('act');
@@ -11527,6 +11776,7 @@ function switchSettingsTab(tabName){
   if(content)content.classList.add('act');
   var btn=document.querySelector('[data-stab="'+tabName+'"]');
   if(btn)btn.classList.add('act');
+  if(tabName==='plan')renderPlanTab();
   if(tabName==='preferences')loadTaxSettings();
   if(tabName==='about'){
     var wn=g('workspaceName');
@@ -11548,6 +11798,7 @@ function _syncTaxNavVisibility(enabled){
 }
 
 function handleTaxToggle(enabled){
+  if(enabled&&isFreePlan()){var _tt=g('taxTrackingToggle');if(_tt)_tt.checked=false;return showUpgrade('tax');}
   TAX_ENABLED=enabled;
   var toggle=g('taxTrackingToggle');if(toggle)toggle.checked=enabled;
   var row=g('taxRateRow');

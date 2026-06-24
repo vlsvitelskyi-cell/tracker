@@ -11813,33 +11813,87 @@ function suggestSplit(eur){
 function expectedEur(usd){return r2(usd*WISE_RATE);}
 
 function toggleExp(id){EXP[id]=!EXP[id];renderList();}
-function onWithdrawalSplitInput(wId){
-  var eur=pn(g('e_'+wId).value)||0;
+// Smart split for "money received". Invariant: the partner splits ALWAYS sum to
+// exactly R = received − chatter cut. Partners the user has manually edited are
+// "touched" and kept; untouched partners auto-share the leftover (proportional
+// to configured split, i.e. equal when splits are equal). You can never enter
+// more than R for a partner — the edited field is clamped.
+//   editedId — set only when a PARTNER field was the one being typed into.
+function onWithdrawalSplitInput(wId, editedId){
+  var eEl=g('e_'+wId); if(!eEl)return;
+  var eur=pn(eEl.value)||0;
+  var w=S.ws.find(function(x){return x.id===wId;});
   var hint=g('rh_'+wId);
-  if(hint&&eur>0){
-    var w=S.ws.find(function(x){return x.id===wId;});
-    if(w){var expE=expectedEur(w.usd),loss=r2(expE-eur);
+  if(hint){
+    if(eur>0&&w){var expE=expectedEur(w.usd),loss=r2(expE-eur);
       hint.textContent='Expected: '+fe(expE)+(loss>0?'  |  Loss: '+fe(loss):'  |  On par or better');}
+    else if(w){hint.textContent='Expected: '+fe(expectedEur(w.usd));}
   }
-  if(!eur)return;
+
   var partners=PARTNERS.filter(function(p){return p.status==='active'&&p.role!=='chatter';});
-  var totalSplit=partners.reduce(function(s,p){return s+getCurrentSplit(ACTIVE_MODEL_ID,p.id);},0)||100;
-  /* Chatter cut(s) come off the top first; partners split only the remainder. */
+  if(!partners.length)return;
+
+  // Chatter cut comes off the top (never more than received).
   var chatterTotal=0;
   (CHATTERS||[]).forEach(function(c){var ci=g('sp_'+wId+'_'+c.id);if(ci)chatterTotal+=pn(ci.value)||0;});
-  var remaining=r2(eur-chatterTotal);
-  if(remaining<0)remaining=0;
-  var distributable=remaining;
-  partners.forEach(function(p,i){
-    var inp=g('sp_'+wId+'_'+p.id);if(!inp)return;
-    if(i===partners.length-1){
-      inp.value=r2(remaining).toFixed(2);
-    }else{
-      var portion=r2(distributable*getCurrentSplit(ACTIVE_MODEL_ID,p.id)/totalSplit);
-      inp.value=portion.toFixed(2);
-      remaining-=portion;
+  if(chatterTotal>eur)chatterTotal=eur;
+  var R=r2(eur-chatterTotal); if(R<0)R=0;
+
+  // A partner field was edited → mark it touched and clamp so touched ≤ R.
+  if(editedId){
+    var inpE=g('sp_'+wId+'_'+editedId);
+    if(inpE){
+      inpE.setAttribute('data-touched','1');
+      var otherTouched=0;
+      partners.forEach(function(p){
+        if(p.id===editedId)return;
+        var ip=g('sp_'+wId+'_'+p.id);
+        if(ip&&ip.getAttribute('data-touched')==='1')otherTouched+=pn(ip.value)||0;
+      });
+      var maxV=r2(R-otherTouched); if(maxV<0)maxV=0;
+      var v=pn(inpE.value)||0;
+      if(v>maxV){v=maxV;inpE.value=v.toFixed(2);}
+      else if(v<0){inpE.value='0.00';}
     }
+  }
+
+  // Partition touched vs untouched.
+  var touchedSum=0, untouched=[];
+  partners.forEach(function(p){
+    var ip=g('sp_'+wId+'_'+p.id); if(!ip)return;
+    if(ip.getAttribute('data-touched')==='1')touchedSum+=pn(ip.value)||0;
+    else untouched.push(p);
   });
+  touchedSum=r2(touchedSum); if(touchedSum>R)touchedSum=R;
+  var leftover=r2(R-touchedSum); if(leftover<0)leftover=0;
+
+  if(untouched.length){
+    // Untouched share the leftover (proportional to configured split; the last
+    // one absorbs the rounding remainder so the sum is exact).
+    var cfgTotal=untouched.reduce(function(s,p){return s+(getCurrentSplit(ACTIVE_MODEL_ID,p.id)||0);},0);
+    var acc=leftover;
+    untouched.forEach(function(p,i){
+      var ip=g('sp_'+wId+'_'+p.id); if(!ip)return;
+      var portion;
+      if(i===untouched.length-1){portion=r2(acc);}
+      else{
+        portion=cfgTotal>0?r2(leftover*(getCurrentSplit(ACTIVE_MODEL_ID,p.id)||0)/cfgTotal):r2(leftover/untouched.length);
+        acc=r2(acc-portion);
+      }
+      if(portion<0)portion=0;
+      ip.value=portion.toFixed(2);
+    });
+  } else if(editedId){
+    // Every partner is touched → the just-edited one absorbs the remainder so
+    // the total is always exactly R (never less, never more).
+    var ipE=g('sp_'+wId+'_'+editedId);
+    if(ipE){
+      var others=0;
+      partners.forEach(function(p){if(p.id===editedId)return;var ip=g('sp_'+wId+'_'+p.id);if(ip)others+=pn(ip.value)||0;});
+      var val=r2(R-others); if(val<0)val=0;
+      ipE.value=val.toFixed(2);
+    }
+  }
 }
 // LEGACY: can remove after testing
 function eurChanged(id){onWithdrawalSplitInput(id);}
@@ -13088,7 +13142,7 @@ function renderList(){
           +PARTNERS.filter(function(p){return p.status==='active'&&p.role!=='chatter';}).map(function(p,i){
             var colorClass=PARTNER_COLOR_KEYS[i%PARTNER_COLOR_KEYS.length];
             return '<div class="field"><label style="color:var(--'+colorClass+'-text)">'+escHtml(p.name)+' (EUR)</label>'
-              +'<input class="num" id="sp_'+w.id+'_'+p.id+'" placeholder="0.00" data-partner="'+p.id+'"></div>';
+              +'<input class="num" id="sp_'+w.id+'_'+p.id+'" placeholder="0.00" data-partner="'+p.id+'" oninput="onWithdrawalSplitInput(\''+w.id+'\',\''+p.id+'\')"></div>';
           }).join('')
           +((CHATTERS&&CHATTERS.length)?CHATTERS.map(function(c){
             return '<div class="field"><label style="color:var(--green)">'+escHtml(c.name)+' · chatter (EUR)</label>'
